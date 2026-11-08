@@ -1,6 +1,10 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/bookmarks/bookmarks_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../../features/quran/quran_list_screen.dart';
+import '../../features/quran/surah_screen.dart';
 import '../widgets/main_shell.dart';
 import '../widgets/placeholder_screen.dart';
 
@@ -23,8 +27,7 @@ final appRouter = GoRouter(
             routes: [
               GoRoute(
                 path: 'bookmarks',
-                builder: (context, state) =>
-                    const PlaceholderScreen(title: 'Saved'),
+                builder: (context, state) => const BookmarksScreen(),
               ),
             ],
           ),
@@ -33,9 +36,25 @@ final appRouter = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/quran',
-            builder: (context, state) =>
-                const PlaceholderScreen(title: 'Quran'),
+            builder: (context, state) => const QuranListScreen(),
             routes: [
+              GoRoute(
+                path: 'surah/:number',
+                builder: (context, state) {
+                  final number =
+                      int.tryParse(state.pathParameters['number'] ?? '') ?? 1;
+                  // ?page=5  opens a saved page, ?end=1 opens the last page
+                  final page =
+                      int.tryParse(state.uri.queryParameters['page'] ?? '');
+                  final end = state.uri.queryParameters['end'] == '1';
+                  return SurahScreen(
+                    key: ValueKey('$number-$page-$end'),
+                    number: number,
+                    initialPage: page,
+                    startAtEnd: end,
+                  );
+                },
+              ),
               GoRoute(
                 path: 'player',
                 builder: (context, state) =>

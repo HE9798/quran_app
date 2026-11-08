@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
+import '../bookmarks/data/bookmark_store.dart';
 
 /// Home screen. All data here is sample data: replace it with real values
 /// (prayer times from Aladhan, last-read from local storage, etc.).
@@ -335,64 +336,83 @@ class _ContinueReadingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-      decoration: BoxDecoration(
-        color: p.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: p.border),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: () => context.go('/quran'),
-              child: Row(
-                children: [
-                  const _IconTile(icon: Icons.menu_book_outlined, size: 48),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Continue reading',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: p.muted,
-                          ),
+
+    // Listens to the saved reading position, so the card updates by itself
+    // when you come back from the reader.
+    return ListenableBuilder(
+      listenable: BookmarkStore.instance,
+      builder: (context, _) {
+        final last = BookmarkStore.instance.lastRead;
+        final label = last == null ? 'Start reading' : 'Continue reading';
+        final title =
+            last == null ? 'Al-Fatihah' : '${last.surahName} · Page ${last.page}';
+        final subtitle = last == null ? 'Surah 1 · 7 verses' : 'Juz ${last.juz}';
+        final target = last == null
+            ? '/quran/surah/1'
+            : '/quran/surah/${last.surahNumber}?page=${last.page}';
+
+        return Container(
+          padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+          decoration: BoxDecoration(
+            color: p.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: p.border),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => context.go(target),
+                  child: Row(
+                    children: [
+                      const _IconTile(icon: Icons.menu_book_outlined, size: 48),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: p.muted,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              subtitle,
+                              style: TextStyle(fontSize: 13, color: p.muted),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          'Al-Baqarah · 2:255',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          'Page 42 · Juz 3',
-                          style: TextStyle(fontSize: 13, color: p.muted),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              IconButton.filled(
+                onPressed: () => context.go('/quran/player'),
+                tooltip: 'Listen',
+                style: IconButton.styleFrom(fixedSize: const Size(44, 44)),
+                icon: const Icon(Icons.play_arrow_rounded, size: 26),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          IconButton.filled(
-            onPressed: () => context.go('/quran/player'),
-            tooltip: 'Listen to Al-Baqarah',
-            style: IconButton.styleFrom(fixedSize: const Size(44, 44)),
-            icon: const Icon(Icons.play_arrow_rounded, size: 26),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

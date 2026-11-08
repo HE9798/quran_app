@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/bookmarks/data/bookmark_store.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await BookmarkStore.instance.load(); // saved pages + last read position
   runApp(const QuranApp());
 }
 

@@ -58,6 +58,10 @@ class AppTheme {
       surface: isLight ? Colors.white : const Color(0xFF0A1A2A),
       onSurface: isLight ? const Color(0xFF0E2A21) : const Color(0xFFE6F2EE),
       outline: palette.border,
+      // Without these two, tonal buttons got a white icon on a white
+      // background in light mode (icon looked missing).
+      secondaryContainer: palette.primarySoft,
+      onSecondaryContainer: palette.onPrimarySoft,
     );
 
     final base = ThemeData(
