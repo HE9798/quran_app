@@ -117,9 +117,22 @@ class QuranRepository {
         ),
     ];
 
+    // A verse ends a quarter when the next verse is in a different quarter.
+    // (A quarter that ends exactly on the last verse of the surah cannot be
+    // seen from here, because the next verse belongs to the next surah.)
+    final quarterEnds = <int>{};
+    for (var i = 0; i + 1 < ayahs.length; i++) {
+      final current = ayahs[i];
+      if (current.hizbQuarter != 0 &&
+          ayahs[i + 1].hizbQuarter != current.hizbQuarter) {
+        quarterEnds.add(current.numberInSurah);
+      }
+    }
+
     return SurahDetail(
       surah: Surah.fromJson(editions.first),
       ayahs: ayahs,
+      quarterEnds: quarterEnds,
     );
   }
 

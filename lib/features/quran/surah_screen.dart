@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -608,11 +610,13 @@ const _lineHeight = 2.0;
 const _minFont = 14.0;
 const _maxFont = 26.0;
 
-/// The verses of one page as inline spans (text + circled number).
+/// The verses of one page as inline spans: text, circled verse number, and
+/// a star after the verse that ends a quarter of a hizb.
 /// When [onSelect] is null the spans are only used to measure the page.
 List<InlineSpan> _verseSpans(
   _MushafPage page,
-  double fontSize, {
+  double fontSize,
+  Set<int> quarterEnds, {
   int? selected,
   Color? highlight,
   TapGestureRecognizer Function(int verse)? recognizerFor,
@@ -620,6 +624,7 @@ List<InlineSpan> _verseSpans(
 }) {
   final measuring = onSelect == null;
   final markerSize = fontSize * 1.3;
+  final quarterSize = fontSize * 1.5;
   final spans = <InlineSpan>[];
   for (final ayah in page.ayahs) {
     final isSelected = selected == ayah.numberInSurah;
@@ -641,6 +646,16 @@ List<InlineSpan> _verseSpans(
             ),
     ));
     spans.add(const TextSpan(text: ' '));
+
+    if (quarterEnds.contains(ayah.numberInSurah)) {
+      spans.add(WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: measuring
+            ? const SizedBox.shrink()
+            : _QuarterMark(size: quarterSize, quarter: ayah.hizbQuarter),
+      ));
+      spans.add(const TextSpan(text: ' '));
+    }
   }
   return spans;
 }
@@ -651,26 +666,36 @@ double _measureHeight(
   double fontSize,
   double width,
   TextScaler scaler,
+  Set<int> quarterEnds,
 ) {
   final markerSize = fontSize * 1.3;
+  final quarterSize = fontSize * 1.5;
+
+  // one entry per WidgetSpan, in the same order as in _verseSpans
+  final placeholders = <PlaceholderDimensions>[];
+  for (final ayah in page.ayahs) {
+    placeholders.add(PlaceholderDimensions(
+      size: Size(markerSize + 4, markerSize), // circle + its 2px margins
+      alignment: PlaceholderAlignment.middle,
+    ));
+    if (quarterEnds.contains(ayah.numberInSurah)) {
+      placeholders.add(PlaceholderDimensions(
+        size: Size(quarterSize + 4, quarterSize),
+        alignment: PlaceholderAlignment.middle,
+      ));
+    }
+  }
+
   final painter = TextPainter(
     text: TextSpan(
       style: AppTheme.arabic(size: fontSize, height: _lineHeight),
-      children: _verseSpans(page, fontSize),
+      children: _verseSpans(page, fontSize, quarterEnds),
     ),
     textDirection: TextDirection.rtl,
     textAlign: TextAlign.justify,
     textScaler: scaler,
   );
-  painter.setPlaceholderDimensions(
-    List.filled(
-      page.ayahs.length,
-      PlaceholderDimensions(
-        size: Size(markerSize + 4, markerSize), // circle + its 2px margins
-        alignment: PlaceholderAlignment.middle,
-      ),
-    ),
-  );
+  painter.setPlaceholderDimensions(placeholders);
   painter.layout(maxWidth: width);
   final height = painter.height;
   painter.dispose();
@@ -685,15 +710,19 @@ double _fitFontSize(
   double width,
   double height,
   TextScaler scaler,
+  Set<int> quarterEnds,
 ) {
-  if (_measureHeight(page, _maxFont, width, scaler) <= height) return _maxFont;
-  if (_measureHeight(page, _minFont, width, scaler) > height) return _minFont;
+  double measure(double size) =>
+      _measureHeight(page, size, width, scaler, quarterEnds);
+
+  if (measure(_maxFont) <= height) return _maxFont;
+  if (measure(_minFont) > height) return _minFont;
 
   var low = _minFont; //  fits
   var high = _maxFont; // does not fit
   for (var i = 0; i < 7; i++) {
     final mid = (low + high) / 2;
-    if (_measureHeight(page, mid, width, scaler) <= height) {
+    if (measure(mid) <= height) {
       low = mid;
     } else {
       high = mid;
@@ -748,7 +777,13 @@ class _MushafPageView extends StatelessWidget {
                   '${page.number}-${width.round()}-${height.round()}-${scaler.scale(10).round()}';
               final fontSize = fitCache.putIfAbsent(
                 key,
-                () => _fitFontSize(page, width, height, scaler),
+                () => _fitFontSize(
+                  page,
+                  width,
+                  height,
+                  scaler,
+                  detail.quarterEnds,
+                ),
               );
 
               return SingleChildScrollView(
@@ -764,6 +799,7 @@ class _MushafPageView extends StatelessWidget {
                       children: _verseSpans(
                         page,
                         fontSize,
+                        detail.quarterEnds,
                         selected: selected,
                         highlight: p.primarySoft,
                         recognizerFor: recognizerFor,
@@ -789,6 +825,76 @@ class _MushafPageView extends StatelessWidget {
       ],
     );
   }
+}
+
+/// End-of-quarter mark (rub' al-hizb): a solid eight-pointed star with a dot.
+/// It is drawn as a shape, not typed as a character, so it is always visible
+/// whatever the font supports, and it looks different from the round verse
+/// numbers.
+class _QuarterMark extends StatelessWidget {
+  const _QuarterMark({required this.size, required this.quarter});
+
+  final double size;
+
+  /// 1-240. Only used for the screen-reader label.
+  final int quarter;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final label = quarter > 0
+        ? 'End of quarter ${(quarter - 1) % 4 + 1} of hizb ${(quarter - 1) ~/ 4 + 1}'
+        : 'End of quarter';
+    return Semantics(
+      label: label,
+      excludeSemantics: true,
+      child: Container(
+        width: size,
+        height: size,
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        child: CustomPaint(
+          painter: _QuarterMarkPainter(fill: scheme.primary, dot: scheme.onPrimary),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuarterMarkPainter extends CustomPainter {
+  const _QuarterMarkPainter({required this.fill, required this.dot});
+
+  final Color fill;
+  final Color dot;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final outer = size.width / 2;
+    final inner = outer * 0.765; // two overlapping squares = 8-point star
+
+    final path = Path();
+    for (var i = 0; i < 16; i++) {
+      final radius = i.isEven ? outer : inner;
+      final angle = -math.pi / 2 + i * math.pi / 8;
+      final point = Offset(
+        center.dx + radius * math.cos(angle),
+        center.dy + radius * math.sin(angle),
+      );
+      if (i == 0) {
+        path.moveTo(point.dx, point.dy);
+      } else {
+        path.lineTo(point.dx, point.dy);
+      }
+    }
+    path.close();
+
+    canvas.drawPath(path, Paint()..color = fill);
+    canvas.drawCircle(center, outer * 0.28, Paint()..color = dot);
+  }
+
+  @override
+  bool shouldRepaint(covariant _QuarterMarkPainter oldDelegate) =>
+      oldDelegate.fill != fill || oldDelegate.dot != dot;
 }
 
 /// Circled verse number, written with Arabic-Indic digits (١ ٢ ٣).
@@ -821,8 +927,11 @@ class _VerseMarker extends StatelessWidget {
           padding: EdgeInsets.all(size * 0.1),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: selected ? scheme.primary : null,
-            border: Border.all(color: scheme.primary, width: 1.5),
+            color: scheme.primary,
+            // the selected verse gets an extra ring so it still stands out
+            border: selected
+                ? Border.all(color: scheme.onSurface, width: 2)
+                : null,
           ),
           child: FittedBox(
             fit: BoxFit.scaleDown,
@@ -831,7 +940,10 @@ class _VerseMarker extends StatelessWidget {
               style: AppTheme.arabic(
                 size: size * 0.5,
                 height: 1.3,
-                color: selected ? scheme.onPrimary : scheme.primary,
+                // white on the green (dark mode's lighter green needs dark text)
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? scheme.onPrimary
+                    : Colors.white,
               ),
             ),
           ),

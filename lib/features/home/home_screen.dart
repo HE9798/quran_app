@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../bookmarks/data/bookmark_store.dart';
+import '../prayer_times/data/prayer_models.dart';
+import '../prayer_times/prayer_controller.dart';
 
-/// Home screen. All data here is sample data: replace it with real values
-/// (prayer times from Aladhan, last-read from local storage, etc.).
+/// Home screen. Prayer times and last-read are real; the Hadith of the day
+/// is still sample text.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -49,9 +51,23 @@ class _Header extends StatelessWidget {
                     style: AppTheme.arabic(size: 24, height: 1.3)),
               ),
               const SizedBox(height: 2),
-              Text(
-                'Cairo · 14 Jumada I 1448',
-                style: TextStyle(fontSize: 13, color: p.muted),
+              // real city + Hijri date, the same source as the Prayer tab
+              ListenableBuilder(
+                listenable: PrayerController.instance,
+                builder: (context, _) {
+                  final c = PrayerController.instance;
+                  final parts = [
+                    if (c.location != null) c.location!.city,
+                    if (c.today != null && c.today!.hijri.isNotEmpty)
+                      c.today!.hijri,
+                  ];
+                  return Text(
+                    parts.join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 13, color: p.muted),
+                  );
+                },
               ),
             ],
           ),
@@ -108,142 +124,209 @@ class _SquareIconButton extends StatelessWidget {
 
 // ------------------------------------------------------- next prayer card
 
-class _NextPrayerCard extends StatelessWidget {
+class _NextPrayerCard extends StatefulWidget {
   const _NextPrayerCard();
-
-  static const _times = [
-    ('Fajr', '4:57'),
-    ('Dhuhr', '11:47'),
-    ('Asr', '2:50'),
-    ('Maghrib', '5:10'),
-    ('Isha', '6:31'),
-  ];
-  static const _nextIndex = 2;
 
   static const _onHeroSoft = Color(0xEBFFFFFF); // white 92%
   static const _heroGreenText = Color(0xFF0B6B49);
 
   @override
+  State<_NextPrayerCard> createState() => _NextPrayerCardState();
+}
+
+class _NextPrayerCardState extends State<_NextPrayerCard> {
+  final _controller = PrayerController.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.start(); // loads location + times (once) and ticks the countdown
+  }
+
+  @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: p.hero,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Stack(
-        children: [
-          const Positioned(
-            right: -44,
-            top: -44,
-            child: SizedBox(
-              width: 190,
-              height: 190,
-              child: CustomPaint(painter: StarPatternPainter()),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: DefaultTextStyle.merge(
-              style: const TextStyle(color: Colors.white),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
+    const onHeroSoft = _NextPrayerCard._onHeroSoft;
+    const heroGreenText = _NextPrayerCard._heroGreenText;
+
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) {
+        final c = _controller;
+        final nextOrNull = c.next;
+        final today = c.today;
+        final hasData = c.schedule != null && nextOrNull != null;
+
+        final String title;
+        final String? arabic;
+        final String? clock;
+        final String badge;
+        if (c.schedule != null && nextOrNull != null) {
+          final next = nextOrNull;
+          title = next.prayer.english;
+          arabic = next.prayer.arabic;
+          clock = formatClock(next.time);
+          badge = formatCountdown(next.time.difference(DateTime.now()));
+        } else if (c.locationProblem != null) {
+          title = 'Allow location';
+          arabic = null;
+          clock = 'Tap to set up prayer times';
+          badge = 'Set up';
+        } else if (c.schedule == null && !c.loading) {
+          title = "Couldn't load";
+          arabic = null;
+          clock = 'Tap to try again';
+          badge = 'Retry';
+        } else {
+          title = 'Loading…';
+          arabic = null;
+          clock = null;
+          badge = '';
+        }
+
+        return Material(
+          color: p.hero,
+          borderRadius: BorderRadius.circular(24),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              if (c.schedule == null && !c.loading) {
+                c.load(refreshLocation: c.locationProblem != null);
+              }
+              context.go('/prayer');
+            },
+            child: Stack(
+              children: [
+                const Positioned(
+                  right: -44,
+                  top: -44,
+                  child: SizedBox(
+                    width: 190,
+                    height: 190,
+                    child: CustomPaint(painter: StarPatternPainter()),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: DefaultTextStyle.merge(
+                    style: const TextStyle(color: Colors.white),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Next prayer',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: _onHeroSoft,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: [
-                                const Text(
-                                  'Asr',
-                                  style: TextStyle(
-                                    fontSize: 34,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: -0.5,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Directionality(
-                                  textDirection: TextDirection.rtl,
-                                  child: Text(
-                                    'العصر',
-                                    style: AppTheme.arabic(
-                                      size: 22,
-                                      height: 1.2,
-                                      color: _onHeroSoft,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Next prayer',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: onHeroSoft,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const Text(
-                              '2:50 PM',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.baseline,
+                                    textBaseline: TextBaseline.alphabetic,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          title,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 34,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: -0.5,
+                                          ),
+                                        ),
+                                      ),
+                                      if (arabic != null) ...[
+                                        const SizedBox(width: 10),
+                                        Directionality(
+                                          textDirection: TextDirection.rtl,
+                                          child: Text(
+                                            arabic,
+                                            style: AppTheme.arabic(
+                                              size: 22,
+                                              height: 1.2,
+                                              color: onHeroSoft,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  if (clock != null)
+                                    Text(
+                                      clock,
+                                      style: TextStyle(
+                                        fontSize: hasData ? 18 : 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
+                            if (badge.isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  badge,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: heroGreenText,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: const Text(
-                          'in 1h 24m',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: _heroGreenText,
+                        const SizedBox(height: 18),
+                        Container(
+                          padding: const EdgeInsets.only(top: 12),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                                top: BorderSide(color: Color(0x47FFFFFF))),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              for (final prayer in Prayer.values)
+                                if (prayer.isPrayer)
+                                  _PrayerChip(
+                                    label: prayer.english,
+                                    time: today == null
+                                        ? '--:--'
+                                        : formatClock(today.times[prayer]!,
+                                            withPeriod: false),
+                                    highlighted: nextOrNull != null &&
+                                        today != null &&
+                                        nextOrNull.prayer == prayer &&
+                                        nextOrNull.time == today.times[prayer],
+                                  ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Container(
-                    padding: const EdgeInsets.only(top: 12),
-                    decoration: const BoxDecoration(
-                      border: Border(top: BorderSide(color: Color(0x47FFFFFF))),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        for (var i = 0; i < _times.length; i++)
-                          _PrayerChip(
-                            label: _times[i].$1,
-                            time: _times[i].$2,
-                            highlighted: i == _nextIndex,
-                          ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

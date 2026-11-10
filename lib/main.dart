@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:timezone/data/latest.dart' as tz_data;
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/bookmarks/data/bookmark_store.dart';
+import 'features/prayer_times/data/prayer_notifications.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await BookmarkStore.instance.load(); // saved pages + last read position
+  tz_data.initializeTimeZones(); // time zone database for prayer reminders
+  try {
+    await PrayerNotifications.instance.init();
+  } catch (_) {
+    // reminders are optional: the app must still start without them
+  }
   runApp(const QuranApp());
 }
 

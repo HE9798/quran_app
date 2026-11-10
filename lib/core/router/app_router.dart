@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/bookmarks/bookmarks_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../../features/prayer_times/prayer_screen.dart';
+import '../../features/qibla/qibla_screen.dart';
 import '../../features/quran/quran_list_screen.dart';
 import '../../features/quran/surah_screen.dart';
 import '../widgets/main_shell.dart';
@@ -67,13 +69,11 @@ final appRouter = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/prayer',
-            builder: (context, state) =>
-                const PlaceholderScreen(title: 'Prayer times'),
+            builder: (context, state) => const PrayerScreen(),
             routes: [
               GoRoute(
                 path: 'qibla',
-                builder: (context, state) =>
-                    const PlaceholderScreen(title: 'Qibla'),
+                builder: (context, state) => const QiblaScreen(),
               ),
             ],
           ),

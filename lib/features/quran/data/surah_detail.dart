@@ -12,6 +12,7 @@ class Ayah {
     required this.tafseer,
     required this.page,
     required this.juz,
+    this.hizbQuarter = 0,
   });
 
   final int numberInSurah;
@@ -27,6 +28,10 @@ class Ayah {
 
   final int page;
   final int juz;
+
+  /// Which quarter of a hizb (1-240) this verse is in. When it changes from
+  /// one verse to the next, the previous verse was the end of a quarter.
+  final int hizbQuarter;
 
   static const _bismillahKey = 'بسماللهالرحمنالرحيم';
 
@@ -57,6 +62,7 @@ class Ayah {
       tafseer: (tafseer?['text'] ?? '') as String,
       page: (arabic['page'] as num?)?.toInt() ?? 0,
       juz: (arabic['juz'] as num?)?.toInt() ?? 0,
+      hizbQuarter: (arabic['hizbQuarter'] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -64,10 +70,17 @@ class Ayah {
 /// A surah together with all of its verses.
 @immutable
 class SurahDetail {
-  const SurahDetail({required this.surah, required this.ayahs});
+  const SurahDetail({
+    required this.surah,
+    required this.ayahs,
+    this.quarterEnds = const <int>{},
+  });
 
   final Surah surah;
   final List<Ayah> ayahs;
+
+  /// Numbers of the verses that end a quarter of a hizb (they get a star mark).
+  final Set<int> quarterEnds;
 
   /// Al-Fatihah has it as verse 1, At-Tawbah has none.
   bool get showBismillah => surah.number != 1 && surah.number != 9;
