@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/athkar/athkar_screen.dart';
 import '../../features/bookmarks/bookmarks_screen.dart';
 import '../../features/hadith/hadith_screen.dart';
 import '../../features/home/home_screen.dart';
@@ -83,8 +84,7 @@ final appRouter = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/athkar',
-            builder: (context, state) =>
-                const PlaceholderScreen(title: 'Athkar'),
+            builder: (context, state) => const AthkarScreen(),
           ),
         ]),
         // 4 - Hadith
