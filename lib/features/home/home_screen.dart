@@ -4,11 +4,12 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../bookmarks/data/bookmark_store.dart';
+import '../hadith/data/hadith_models.dart';
+import '../hadith/data/hadith_repository.dart';
 import '../prayer_times/data/prayer_models.dart';
 import '../prayer_times/prayer_controller.dart';
 
-/// Home screen. Prayer times and last-read are real; the Hadith of the day
-/// is still sample text.
+/// Home screen. Prayer times, last-read and the Hadith of the day are real.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -618,8 +619,23 @@ class _QuickAction extends StatelessWidget {
 
 // -------------------------------------------------------- hadith of the day
 
-class _HadithOfTheDay extends StatelessWidget {
+class _HadithOfTheDay extends StatefulWidget {
   const _HadithOfTheDay();
+
+  @override
+  State<_HadithOfTheDay> createState() => _HadithOfTheDayState();
+}
+
+class _HadithOfTheDayState extends State<_HadithOfTheDay> {
+  late Future<HadithCollection> _future =
+      HadithRepository.instance.load(HadithBook.nawawi);
+
+  /// One hadith of the Forty Nawawi per day, the same all day long.
+  Hadith _today(HadithCollection collection) {
+    final now = DateTime.now();
+    final dayOfYear = now.difference(DateTime(now.year)).inDays;
+    return collection.hadiths[dayOfYear % collection.hadiths.length];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -645,59 +661,110 @@ class _HadithOfTheDay extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-          decoration: BoxDecoration(
-            color: p.surface,
+        Material(
+          color: p.surface,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: p.border),
+            side: BorderSide(color: p.border),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: Text(
-                    'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ',
-                    style: AppTheme.arabic(size: 22, height: 1.9),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 2),
-              const Text(
-                'Actions are judged by intentions.',
-                style: TextStyle(fontSize: 14, height: 1.5),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: p.primarySoft,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      'Sahih',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: p.onPrimarySoft,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => context.go('/hadith'),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+              child: FutureBuilder<HadithCollection>(
+                future: _future,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Tap to open the ahadeeth',
+                            style: TextStyle(color: p.muted),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => setState(() => _future =
+                              HadithRepository.instance
+                                  .load(HadithBook.nawawi)),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    );
+                  }
+                  if (!snapshot.hasData) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      child: Center(
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: p.muted,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Sahih al-Bukhari 1',
-                    style: TextStyle(fontSize: 12, color: p.muted),
-                  ),
-                ],
+                    );
+                  }
+
+                  final hadith = _today(snapshot.data!);
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          hadith.text,
+                          textDirection: TextDirection.rtl,
+                          maxLines: 5,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTheme.arabic(size: 21, height: 1.9),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          if (hadith.grade != null) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: p.primarySoft,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                hadith.grade!,
+                                style: AppTheme.arabic(
+                                  size: 14,
+                                  height: 1.3,
+                                  color: p.onPrimarySoft,
+                                ).copyWith(fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          Expanded(
+                            child: Text(
+                              hadith.label,
+                              textDirection: TextDirection.rtl,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTheme.arabic(
+                                size: 15,
+                                height: 1.3,
+                                color: p.muted,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
               ),
-            ],
+            ),
           ),
         ),
       ],

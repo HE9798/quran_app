@@ -111,7 +111,8 @@ class LocationService {
     var country = '';
     var countryCode = '';
     try {
-      final places = await Geocoding().placemarkFromCoordinates(
+      final places = await Geocoding()
+          .placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       ).timeout(const Duration(seconds: 8));

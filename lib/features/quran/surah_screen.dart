@@ -633,7 +633,8 @@ List<InlineSpan> _verseSpans(
       recognizer: measuring ? null : recognizerFor!(ayah.numberInSurah),
       style: TextStyle(backgroundColor: isSelected ? highlight : null),
     ));
-    spans.add(const TextSpan(text: ' '));
+    // word joiner: the number can never be pushed to the next line alone
+    spans.add(const TextSpan(text: '\u2060'));
     spans.add(WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: measuring
@@ -675,7 +676,7 @@ double _measureHeight(
   final placeholders = <PlaceholderDimensions>[];
   for (final ayah in page.ayahs) {
     placeholders.add(PlaceholderDimensions(
-      size: Size(markerSize + 4, markerSize), // circle + its 2px margins
+      size: Size(markerSize + 6, markerSize), // circle + its 3px margins
       alignment: PlaceholderAlignment.middle,
     ));
     if (quarterEnds.contains(ayah.numberInSurah)) {
@@ -692,7 +693,7 @@ double _measureHeight(
       children: _verseSpans(page, fontSize, quarterEnds),
     ),
     textDirection: TextDirection.rtl,
-    textAlign: TextAlign.justify,
+    textAlign: TextAlign.start,
     textScaler: scaler,
   );
   painter.setPlaceholderDimensions(placeholders);
@@ -806,7 +807,7 @@ class _MushafPageView extends StatelessWidget {
                         onSelect: onSelect,
                       ),
                     ),
-                    textAlign: TextAlign.justify,
+                    textAlign: TextAlign.start,
                   ),
                 ),
               );
@@ -923,7 +924,7 @@ class _VerseMarker extends StatelessWidget {
         child: Container(
           width: size,
           height: size,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
+          margin: const EdgeInsets.symmetric(horizontal: 3),
           padding: EdgeInsets.all(size * 0.1),
           decoration: BoxDecoration(
             shape: BoxShape.circle,

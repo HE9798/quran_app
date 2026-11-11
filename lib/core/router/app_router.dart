@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/bookmarks/bookmarks_screen.dart';
+import '../../features/hadith/hadith_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/prayer_times/prayer_screen.dart';
 import '../../features/qibla/qibla_screen.dart';
@@ -90,8 +91,7 @@ final appRouter = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/hadith',
-            builder: (context, state) =>
-                const PlaceholderScreen(title: 'Ahadeeth'),
+            builder: (context, state) => const HadithScreen(),
           ),
         ]),
       ],

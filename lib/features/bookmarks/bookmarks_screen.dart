@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
+import '../hadith/data/hadith_bookmark_store.dart';
 import 'data/bookmark_store.dart';
 
 /// "Saved": the page you stopped on, and every page you bookmarked.
@@ -33,10 +34,15 @@ class BookmarksScreen extends StatelessWidget {
     final p = context.palette;
 
     return ListenableBuilder(
-      listenable: BookmarkStore.instance,
+      listenable: Listenable.merge([
+        BookmarkStore.instance,
+        HadithBookmarkStore.instance,
+      ]),
       builder: (context, _) {
         final store = BookmarkStore.instance;
         final items = store.bookmarks;
+        final hadiths = HadithBookmarkStore.instance.items;
+        final total = items.length + hadiths.length;
         final last = store.lastRead;
 
         return Column(
@@ -73,9 +79,7 @@ class BookmarksScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        items.length == 1
-                            ? '1 bookmark'
-                            : '${items.length} bookmarks',
+                        total == 1 ? '1 bookmark' : '$total bookmarks',
                         style: TextStyle(fontSize: 13, color: p.muted),
                       ),
                     ],
@@ -84,7 +88,7 @@ class BookmarksScreen extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: (items.isEmpty && last == null)
+              child: (items.isEmpty && last == null && hadiths.isEmpty)
                   ? const _EmptyState()
                   : ListView(
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -104,6 +108,27 @@ class BookmarksScreen extends StatelessWidget {
                             onRemove: () => store.remove(b),
                           ),
                           const SizedBox(height: 10),
+                        ],
+                        if (hadiths.isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(2, 8, 0, 8),
+                            child: Text(
+                              'Ahadeeth',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: p.muted,
+                              ),
+                            ),
+                          ),
+                          for (final h in hadiths) ...[
+                            _SavedHadithTile(
+                              hadith: h,
+                              onRemove: () =>
+                                  HadithBookmarkStore.instance.removeById(h.id),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
                         ],
                       ],
                     ),
@@ -275,6 +300,87 @@ class _BookmarkTile extends StatelessWidget {
   }
 }
 
+/// A saved hadith. Tap to read all of it, tap again to fold it.
+class _SavedHadithTile extends StatefulWidget {
+  const _SavedHadithTile({required this.hadith, required this.onRemove});
+
+  final SavedHadith hadith;
+  final VoidCallback onRemove;
+
+  @override
+  State<_SavedHadithTile> createState() => _SavedHadithTileState();
+}
+
+class _SavedHadithTileState extends State<_SavedHadithTile> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+      side: BorderSide(color: p.border),
+    );
+    return Material(
+      color: p.surface,
+      shape: shape,
+      child: InkWell(
+        customBorder: shape,
+        onTap: () => setState(() => _open = !_open),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 4, 6),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.hadith.label,
+                      textDirection: TextDirection.rtl,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTheme.arabic(
+                        size: 15,
+                        height: 1.3,
+                        color: p.muted,
+                      ).copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Remove bookmark',
+                    onPressed: widget.onRemove,
+                    style: IconButton.styleFrom(
+                      foregroundColor: scheme.primary,
+                      fixedSize: const Size(44, 44),
+                    ),
+                    icon: const Icon(Icons.bookmark_rounded),
+                  ),
+                ],
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12, bottom: 10),
+                  child: Text(
+                    widget.hadith.text,
+                    textDirection: TextDirection.rtl,
+                    maxLines: _open ? null : 3,
+                    overflow:
+                        _open ? TextOverflow.visible : TextOverflow.ellipsis,
+                    style: AppTheme.arabic(size: 19, height: 1.8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 
@@ -290,12 +396,12 @@ class _EmptyState extends StatelessWidget {
             Icon(Icons.bookmark_border_rounded, size: 48, color: p.muted),
             const SizedBox(height: 12),
             const Text(
-              'No saved pages yet',
+              'Nothing saved yet',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Text(
-              'While reading, tap the bookmark icon to save the page you are on.',
+              'Tap the bookmark icon while reading the Quran or the ahadeeth to save it here.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: p.muted),
             ),
