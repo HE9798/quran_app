@@ -3,6 +3,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/audio/quran_audio_controller.dart';
 import 'features/bookmarks/data/bookmark_store.dart';
 import 'features/hadith/data/hadith_bookmark_store.dart';
 import 'features/prayer_times/data/prayer_notifications.dart';
@@ -11,6 +12,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await BookmarkStore.instance.load(); // saved pages + last read position
   await HadithBookmarkStore.instance.load(); // saved ahadeeth
+  try {
+    await QuranAudioController.instance.init(); // saved reciter + player
+  } catch (_) {}
   tz_data.initializeTimeZones(); // time zone database for prayer reminders
   try {
     await PrayerNotifications.instance.init();

@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_view.dart';
+import '../audio/quran_audio_controller.dart';
 import '../bookmarks/data/bookmark_store.dart';
 import 'data/quran_repository.dart';
 import 'data/surah.dart';
@@ -205,6 +206,13 @@ class _SurahReaderState extends State<_SurahReader> {
   bool _tafseerTab = true;
   bool _leaving = false; // already opening another surah
 
+  final _audio = QuranAudioController.instance;
+  int? _lastAudioAyah;
+
+  /// The verse being recited, only when it is in THIS surah.
+  int? get _playingVerse =>
+      _audio.surah?.number == widget.detail.surah.number ? _audio.ayah : null;
+
   int get _offset => _hasPrev ? 1 : 0;
   int get _total => _pages.length + _offset + (_hasNext ? 1 : 0);
   bool _isContent(int i) => i >= _offset && i < _offset + _pages.length;
@@ -225,6 +233,9 @@ class _SurahReaderState extends State<_SurahReader> {
     _index = content + _offset;
     _controller = PageController(initialPage: _index);
 
+    _lastAudioAyah = _playingVerse;
+    _audio.addListener(_onAudio);
+
     // remember where we are (after the first frame, not during build)
     WidgetsBinding.instance.addPostFrameCallback((_) => _saveLastRead());
 
@@ -238,6 +249,7 @@ class _SurahReaderState extends State<_SurahReader> {
 
   @override
   void dispose() {
+    _audio.removeListener(_onAudio);
     _controller.dispose();
     for (final r in _recognizers.values) {
       r.dispose();
@@ -292,6 +304,54 @@ class _SurahReaderState extends State<_SurahReader> {
   }
 
   void _closePanel() => setState(() => _selected = null);
+
+  /// The audio moved to another verse: repaint, and turn the page so the
+  /// verse being recited stays on screen.
+  void _onAudio() {
+    if (!mounted) return;
+    final verse = _playingVerse;
+    setState(() {});
+    if (verse == null || verse == _lastAudioAyah) return;
+    _lastAudioAyah = verse;
+    if (!_audio.playing) return;
+
+    final target = _pages.indexWhere(
+      (page) => page.ayahs.any((a) => a.numberInSurah == verse),
+    );
+    if (target == -1) return;
+    final index = target + _offset;
+    if (index != _index && _controller.hasClients) {
+      _controller.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  /// Play button next to the bookmark button.
+  ///  - a verse is selected: listen from that verse
+  ///  - this surah is already loaded: pause / resume
+  ///  - otherwise: start from the first verse of the visible page
+  void _onPlayPressed() {
+    final surah = widget.detail.surah;
+    final selected = _selected;
+    final audio = _audio;
+    final sameSurah = audio.surah?.number == surah.number;
+
+    if (selected != null) {
+      if (sameSurah && audio.ayah == selected && audio.playing) {
+        audio.togglePlay();
+      } else {
+        audio.playSurah(surah, startAyah: selected);
+      }
+      setState(() => _selected = null); // close the panel
+    } else if (sameSurah) {
+      audio.togglePlay();
+    } else {
+      audio.playSurah(surah, startAyah: _current.ayahs.first.numberInSurah);
+    }
+  }
 
   void _copy(Ayah ayah) {
     final surah = widget.detail.surah;
@@ -360,13 +420,41 @@ class _SurahReaderState extends State<_SurahReader> {
               title: surah.englishName,
               subtitle: 'Page ${current.number} · Juz ${current.juz}',
               onBack: () => _goBack(context),
-              trailing: _BarButton(
-                icon: saved
-                    ? Icons.bookmark_rounded
-                    : Icons.bookmark_border_rounded,
-                tooltip: saved ? 'Remove bookmark' : 'Save this page',
-                color: saved ? scheme.primary : null,
-                onPressed: _toggleBookmark,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListenableBuilder(
+                    listenable: _audio,
+                    builder: (context, _) {
+                      final here = _audio.surah?.number == surah.number;
+                      final playingHere = here && _audio.playing;
+                      final busy = here && _audio.loading && !_audio.playing;
+                      return _BarButton(
+                        icon: busy
+                            ? Icons.hourglass_top_rounded
+                            : playingHere
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                        tooltip: _selected != null
+                            ? 'Listen from verse $_selected'
+                            : playingHere
+                                ? 'Pause'
+                                : 'Listen',
+                        color: playingHere ? scheme.primary : null,
+                        onPressed: _onPlayPressed,
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _BarButton(
+                    icon: saved
+                        ? Icons.bookmark_rounded
+                        : Icons.bookmark_border_rounded,
+                    tooltip: saved ? 'Remove bookmark' : 'Save this page',
+                    color: saved ? scheme.primary : null,
+                    onPressed: _toggleBookmark,
+                  ),
+                ],
               ),
             );
           },
@@ -409,6 +497,7 @@ class _SurahReaderState extends State<_SurahReader> {
                           detail: detail,
                           showHeader: contentIndex == 0,
                           selected: _selected,
+                          playing: _playingVerse,
                           recognizerFor: _recognizerFor,
                           onSelect: _selectVerse,
                           // The font is sized so the page fits without scrolling.
@@ -618,6 +707,7 @@ List<InlineSpan> _verseSpans(
   double fontSize,
   Set<int> quarterEnds, {
   int? selected,
+  int? playing,
   Color? highlight,
   TapGestureRecognizer Function(int verse)? recognizerFor,
   void Function(int verse)? onSelect,
@@ -628,10 +718,13 @@ List<InlineSpan> _verseSpans(
   final spans = <InlineSpan>[];
   for (final ayah in page.ayahs) {
     final isSelected = selected == ayah.numberInSurah;
+    final isPlaying = playing == ayah.numberInSurah;
     spans.add(TextSpan(
       text: ayah.arabic,
       recognizer: measuring ? null : recognizerFor!(ayah.numberInSurah),
-      style: TextStyle(backgroundColor: isSelected ? highlight : null),
+      style: TextStyle(
+          backgroundColor: (isSelected || isPlaying) ? highlight : null,
+        ),
     ));
     // word joiner: the number can never be pushed to the next line alone
     spans.add(const TextSpan(text: '\u2060'));
@@ -740,6 +833,7 @@ class _MushafPageView extends StatelessWidget {
     required this.detail,
     required this.showHeader,
     required this.selected,
+    required this.playing,
     required this.recognizerFor,
     required this.onSelect,
     required this.bottomPadding,
@@ -750,6 +844,9 @@ class _MushafPageView extends StatelessWidget {
   final SurahDetail detail;
   final bool showHeader;
   final int? selected;
+
+  /// Verse being recited right now (null when this surah is not playing).
+  final int? playing;
   final TapGestureRecognizer Function(int verse) recognizerFor;
   final void Function(int verse) onSelect;
 
@@ -802,6 +899,7 @@ class _MushafPageView extends StatelessWidget {
                         fontSize,
                         detail.quarterEnds,
                         selected: selected,
+                        playing: playing,
                         highlight: p.primarySoft,
                         recognizerFor: recognizerFor,
                         onSelect: onSelect,

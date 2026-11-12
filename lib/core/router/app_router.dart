@@ -7,10 +7,10 @@ import '../../features/hadith/hadith_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/prayer_times/prayer_screen.dart';
 import '../../features/qibla/qibla_screen.dart';
+import '../../features/audio/player_screen.dart';
 import '../../features/quran/quran_list_screen.dart';
 import '../../features/quran/surah_screen.dart';
 import '../widgets/main_shell.dart';
-import '../widgets/placeholder_screen.dart';
 
 /// One branch per bottom-bar tab. Sub-routes (bookmarks, player, qibla)
 /// live inside their parent tab so the bottom bar stays visible.
@@ -61,8 +61,7 @@ final appRouter = GoRouter(
               ),
               GoRoute(
                 path: 'player',
-                builder: (context, state) =>
-                    const PlaceholderScreen(title: 'Player'),
+                builder: (context, state) => const PlayerScreen(),
               ),
             ],
           ),

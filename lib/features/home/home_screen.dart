@@ -3,11 +3,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
+import '../audio/quran_audio_controller.dart';
 import '../bookmarks/data/bookmark_store.dart';
 import '../hadith/data/hadith_models.dart';
 import '../hadith/data/hadith_repository.dart';
 import '../prayer_times/data/prayer_models.dart';
 import '../prayer_times/prayer_controller.dart';
+import '../quran/data/quran_repository.dart';
 
 /// Home screen. Prayer times, last-read and the Hadith of the day are real.
 class HomeScreen extends StatelessWidget {
@@ -417,6 +419,28 @@ class StarPatternPainter extends CustomPainter {
 class _ContinueReadingCard extends StatelessWidget {
   const _ContinueReadingCard();
 
+  /// Play button: listen from the first verse of the page you will continue
+  /// reading (or Al-Fatihah if nothing was read yet). Pauses if playing.
+  Future<void> _listenFromLastRead(SavedPage? last) async {
+    final audio = QuranAudioController.instance;
+    if (audio.playing) {
+      await audio.togglePlay();
+      return;
+    }
+    try {
+      final detail =
+          await QuranRepository().getSurahDetail(last?.surahNumber ?? 1);
+      var start = 1;
+      if (last != null) {
+        final match = detail.ayahs.where((a) => a.page == last.page);
+        if (match.isNotEmpty) start = match.first.numberInSurah;
+      }
+      await audio.playSurah(detail.surah, startAyah: start);
+    } catch (e) {
+      audio.reportError(e); // the shell shows the "couldn't play" message
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
@@ -487,11 +511,33 @@ class _ContinueReadingCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              IconButton.filled(
-                onPressed: () => context.go('/quran/player'),
-                tooltip: 'Listen',
-                style: IconButton.styleFrom(fixedSize: const Size(44, 44)),
-                icon: const Icon(Icons.play_arrow_rounded, size: 26),
+              ListenableBuilder(
+                listenable: QuranAudioController.instance,
+                builder: (context, _) {
+                  final audio = QuranAudioController.instance;
+                  final playing = audio.playing;
+                  final busy = audio.loading && !audio.playing;
+                  return IconButton.filled(
+                    onPressed: () => _listenFromLastRead(last),
+                    tooltip: playing ? 'Pause' : 'Listen from where you stopped',
+                    style: IconButton.styleFrom(fixedSize: const Size(44, 44)),
+                    icon: busy
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Icon(
+                            playing
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                            size: 26,
+                          ),
+                  );
+                },
               ),
             ],
           ),

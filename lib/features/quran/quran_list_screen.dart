@@ -4,12 +4,14 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_view.dart';
+import '../audio/quran_audio_controller.dart';
+import '../audio/reciter_sheet.dart';
 import 'data/quran_repository.dart';
 import 'data/surah.dart';
 
 enum _Filter { all, meccan, medinan }
 
-/// Second tab: all 114 surahs with search and a Meccan / Medinan filter.
+/// Quran tab: reciter, then all 114 surahs with search and a Meccan / Medinan filter.
 class QuranListScreen extends StatefulWidget {
   const QuranListScreen({super.key});
 
@@ -17,7 +19,11 @@ class QuranListScreen extends StatefulWidget {
   State<QuranListScreen> createState() => _QuranListScreenState();
 }
 
-class _QuranListScreenState extends State<QuranListScreen> {
+class _QuranListScreenState extends State<QuranListScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   final _repo = QuranRepository();
   final _searchController = TextEditingController();
 
@@ -47,6 +53,7 @@ class _QuranListScreenState extends State<QuranListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final p = context.palette;
     final primary = Theme.of(context).colorScheme.primary;
 
@@ -81,9 +88,15 @@ class _QuranListScreenState extends State<QuranListScreen> {
           ),
         ),
 
+        // reciter (above the search bar)
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 4, 20, 0),
+          child: ReciterCard(),
+        ),
+
         // search
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
           child: TextField(
             controller: _searchController,
             onChanged: (value) => setState(() => _query = value),
@@ -179,6 +192,14 @@ class _QuranListScreenState extends State<QuranListScreen> {
                   return _SurahTile(
                     surah: surah,
                     onTap: () => context.go('/quran/surah/${surah.number}'),
+                    onPlay: () {
+                      final audio = QuranAudioController.instance;
+                      if (audio.surah?.number == surah.number) {
+                        audio.togglePlay();
+                      } else {
+                        audio.playSurah(surah);
+                      }
+                    },
                   );
                 },
               );
@@ -247,10 +268,15 @@ class _FilterChip extends StatelessWidget {
 // ------------------------------------------------------------- surah row
 
 class _SurahTile extends StatelessWidget {
-  const _SurahTile({required this.surah, required this.onTap});
+  const _SurahTile({
+    required this.surah,
+    required this.onTap,
+    required this.onPlay,
+  });
 
   final Surah surah;
   final VoidCallback onTap;
+  final VoidCallback onPlay;
 
   @override
   Widget build(BuildContext context) {
@@ -310,6 +336,43 @@ class _SurahTile extends StatelessWidget {
                       ),
                     ),
                   ),
+                ),
+                const SizedBox(width: 6),
+                ListenableBuilder(
+                  listenable: QuranAudioController.instance,
+                  builder: (context, _) {
+                    final audio = QuranAudioController.instance;
+                    final current = audio.surah?.number == surah.number;
+                    final playing = current && audio.playing;
+                    final busy = current && audio.loading && !audio.playing;
+                    final scheme = Theme.of(context).colorScheme;
+                    return IconButton(
+                      tooltip: playing ? 'Pause' : 'Listen',
+                      onPressed: onPlay,
+                      style: IconButton.styleFrom(
+                        backgroundColor:
+                            current ? scheme.primary : p.surfaceAlt,
+                        foregroundColor:
+                            current ? scheme.onPrimary : scheme.onSurface,
+                        fixedSize: const Size(40, 40),
+                      ),
+                      icon: busy
+                          ? SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: scheme.onPrimary,
+                              ),
+                            )
+                          : Icon(
+                              playing
+                                  ? Icons.pause_rounded
+                                  : Icons.play_arrow_rounded,
+                              size: 22,
+                            ),
+                    );
+                  },
                 ),
               ],
             ),
