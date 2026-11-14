@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 
 import 'core/router/app_router.dart';
+import 'core/settings/app_settings.dart';
 import 'core/theme/app_theme.dart';
 import 'features/audio/quran_audio_controller.dart';
 import 'features/bookmarks/data/bookmark_store.dart';
@@ -10,6 +12,7 @@ import 'features/prayer_times/data/prayer_notifications.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppSettings.instance.load(); // theme, language, font size, ...
   await BookmarkStore.instance.load(); // saved pages + last read position
   await HadithBookmarkStore.instance.load(); // saved ahadeeth
   try {
@@ -29,13 +32,38 @@ class QuranApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Quran',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system, // follows the phone's light/dark setting
-      routerConfig: appRouter,
+    final settings = AppSettings.instance;
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, _) {
+        return MaterialApp.router(
+          title: 'Quran',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: settings.themeMode, // follows the phone by default
+          locale: settings.locale, // also flips the layout for Arabic (RTL)
+          supportedLocales: const [Locale('en'), Locale('ar')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          // font size: scales every text in the app
+          builder: (context, child) {
+            final media = MediaQuery.of(context);
+            return MediaQuery(
+              data: media.copyWith(
+                textScaler: TextScaler.linear(
+                  media.textScaler.scale(1) * settings.fontScale,
+                ),
+              ),
+              child: child!,
+            );
+          },
+          routerConfig: appRouter,
+        );
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../settings/tr.dart';
 import '../../features/audio/mini_player.dart';
 import '../../features/audio/quran_audio_controller.dart';
 
@@ -61,6 +62,7 @@ class _MainShellState extends State<MainShell> {
   }
 
   Widget _nav(StatefulNavigationShell navigationShell) {
+    final context = this.context;
     return NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (index) => navigationShell.goBranch(
@@ -68,31 +70,31 @@ class _MainShellState extends State<MainShell> {
           // tapping the current tab returns to its first screen
           initialLocation: index == navigationShell.currentIndex,
         ),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
+            icon: const Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
+            label: context.tr('Home', 'الرئيسية'),
           ),
           NavigationDestination(
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book_rounded),
-            label: 'Quran',
+            label: context.tr('Quran', 'القرآن'),
           ),
           NavigationDestination(
             icon: Icon(Icons.access_time_rounded),
             selectedIcon: Icon(Icons.access_time_filled_rounded),
-            label: 'Prayer',
+            label: context.tr('Prayer', 'الصلاة'),
           ),
           NavigationDestination(
             icon: Icon(Icons.wb_sunny_outlined),
             selectedIcon: Icon(Icons.wb_sunny_rounded),
-            label: 'Athkar',
+            label: context.tr('Athkar', 'الأذكار'),
           ),
           NavigationDestination(
             icon: Icon(Icons.article_outlined),
             selectedIcon: Icon(Icons.article_rounded),
-            label: 'Hadith',
+            label: context.tr('Hadith', 'الحديث'),
           ),
         ],
     );

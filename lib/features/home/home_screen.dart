@@ -1,3 +1,4 @@
+import '../../core/settings/tr.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,6 +9,7 @@ import '../bookmarks/data/bookmark_store.dart';
 import '../hadith/data/hadith_models.dart';
 import '../hadith/data/hadith_repository.dart';
 import '../prayer_times/data/prayer_models.dart';
+import '../prayer_times/azkar_countdown.dart';
 import '../prayer_times/prayer_controller.dart';
 import '../quran/data/quran_repository.dart';
 
@@ -77,14 +79,14 @@ class _Header extends StatelessWidget {
         ),
         _SquareIconButton(
           icon: Icons.bookmark_border_rounded,
-          label: 'Saved',
+          label: context.tr('Saved', 'المحفوظات'),
           onTap: () => context.go('/bookmarks'),
         ),
         const SizedBox(width: 8),
         _SquareIconButton(
           icon: Icons.tune_rounded,
           label: 'Settings',
-          onTap: () {},
+          onTap: () => context.go('/settings'),
         ),
       ],
     );
@@ -223,8 +225,8 @@ class _NextPrayerCardState extends State<_NextPrayerCard> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Next prayer',
+                                  Text(
+                                    context.tr('Next prayer', 'الصلاة القادمة'),
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
@@ -321,6 +323,7 @@ class _NextPrayerCardState extends State<_NextPrayerCard> {
                             ],
                           ),
                         ),
+                        AzkarCountdown(controller: c),
                       ],
                     ),
                   ),
@@ -451,7 +454,9 @@ class _ContinueReadingCard extends StatelessWidget {
       listenable: BookmarkStore.instance,
       builder: (context, _) {
         final last = BookmarkStore.instance.lastRead;
-        final label = last == null ? 'Start reading' : 'Continue reading';
+        final label = last == null
+            ? context.tr('Start reading', 'ابدأ القراءة')
+            : context.tr('Continue reading', 'تابع القراءة');
         final title =
             last == null ? 'Al-Fatihah' : '${last.surahName} · Page ${last.page}';
         final subtitle = last == null ? 'Surah 1 · 7 verses' : 'Juz ${last.juz}';
@@ -580,7 +585,7 @@ class _QuickActions extends StatelessWidget {
         Expanded(
           child: _QuickAction(
             icon: Icons.explore_outlined,
-            label: 'Qibla',
+            label: context.tr('Qibla', 'القبلة'),
             onTap: () => context.go('/prayer/qibla'),
           ),
         ),
@@ -588,7 +593,7 @@ class _QuickActions extends StatelessWidget {
         Expanded(
           child: _QuickAction(
             icon: Icons.wb_sunny_outlined,
-            label: 'Athkar',
+            label: context.tr('Athkar', 'الأذكار'),
             onTap: () => context.go('/athkar'),
           ),
         ),
@@ -596,7 +601,7 @@ class _QuickActions extends StatelessWidget {
         Expanded(
           child: _QuickAction(
             icon: Icons.article_outlined,
-            label: 'Hadith',
+            label: context.tr('Hadith', 'الحديث'),
             onTap: () => context.go('/hadith'),
           ),
         ),
@@ -604,7 +609,7 @@ class _QuickActions extends StatelessWidget {
         Expanded(
           child: _QuickAction(
             icon: Icons.bookmark_border_rounded,
-            label: 'Saved',
+            label: context.tr('Saved', 'المحفوظات'),
             onTap: () => context.go('/bookmarks'),
           ),
         ),
@@ -692,8 +697,8 @@ class _HadithOfTheDayState extends State<_HadithOfTheDay> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Hadith of the day',
+            Text(
+              context.tr('Hadith of the day', 'حديث اليوم'),
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
             TextButton(

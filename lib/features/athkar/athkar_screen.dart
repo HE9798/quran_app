@@ -1,3 +1,4 @@
+import '../../core/settings/tr.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -95,8 +96,8 @@ class _Title extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Athkar',
+                Text(
+                  context.tr('Athkar', 'الأذكار'),
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,

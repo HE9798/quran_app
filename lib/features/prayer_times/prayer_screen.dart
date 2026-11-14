@@ -1,3 +1,4 @@
+import '../../core/settings/tr.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,6 +8,7 @@ import '../../core/widgets/error_view.dart';
 import '../home/home_screen.dart' show StarPatternPainter;
 import '../qibla/qibla_math.dart';
 import 'data/location_service.dart';
+import 'azkar_countdown.dart';
 import 'data/prayer_models.dart';
 import 'prayer_controller.dart';
 
@@ -161,8 +163,8 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Prayer times',
+                Text(
+                  context.tr('Prayer times', 'مواقيت الصلاة'),
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
@@ -411,8 +413,8 @@ class _NextCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Next prayer',
+                            Text(
+                              context.tr('Next prayer', 'الصلاة القادمة'),
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -486,6 +488,7 @@ class _NextCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  AzkarCountdown(controller: controller),
                 ],
               ),
             ),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../core/settings/app_settings.dart';
 import 'data/location_service.dart';
 import 'data/prayer_alert_store.dart';
 import 'data/prayer_models.dart';
@@ -35,6 +36,7 @@ class PrayerController extends ChangeNotifier {
   bool loading = false;
   bool _started = false;
   Timer? _ticker;
+  String? _reminderSignature;
 
   // ------------------------------------------------------------- loading
 
@@ -45,6 +47,8 @@ class PrayerController extends ChangeNotifier {
     });
     if (_started) return;
     _started = true;
+    _reminderSignature = AppSettings.instance.reminderSignature;
+    AppSettings.instance.addListener(_onSettings);
     await _alerts.load();
     await load();
   }
@@ -97,6 +101,17 @@ class PrayerController extends ChangeNotifier {
     location = place;
     schedule = loaded;
     _scheduleReminders();
+  }
+
+  /// Reminder-related settings changed (notifications, vibration, azkar,
+  /// language): create the phone reminders again. Theme / font changes are
+  /// ignored here.
+  void _onSettings() {
+    final signature = AppSettings.instance.reminderSignature;
+    if (signature == _reminderSignature) return;
+    _reminderSignature = signature;
+    _scheduleReminders();
+    notifyListeners();
   }
 
   void _scheduleReminders() {
@@ -169,6 +184,33 @@ class PrayerController extends ChangeNotifier {
     if (total <= 0) return 0;
     final passed = DateTime.now().difference(prev.time).inSeconds;
     return (passed / total).clamp(0.0, 1.0);
+  }
+
+  /// The azkar window that is open right now (morning: Fajr -> Sunrise,
+  /// evening: Asr -> Maghrib), with the time it closes. Null between windows.
+  ({bool morning, tz.TZDateTime end})? get activeAzkar {
+    final current = schedule;
+    if (current == null) return null;
+    final moment = DateTime.now();
+    for (final day in current.days) {
+      final fajr = day.times[Prayer.fajr];
+      final sunrise = day.times[Prayer.sunrise];
+      final asr = day.times[Prayer.asr];
+      final maghrib = day.times[Prayer.maghrib];
+      if (fajr != null &&
+          sunrise != null &&
+          !moment.isBefore(fajr) &&
+          moment.isBefore(sunrise)) {
+        return (morning: true, end: sunrise);
+      }
+      if (asr != null &&
+          maghrib != null &&
+          !moment.isBefore(asr) &&
+          moment.isBefore(maghrib)) {
+        return (morning: false, end: maghrib);
+      }
+    }
+    return null;
   }
 
   /// True when the downloaded days no longer cover tomorrow.

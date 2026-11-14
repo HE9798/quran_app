@@ -1,3 +1,4 @@
+import '../../core/settings/tr.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -42,8 +43,8 @@ class _HadithScreenState extends State<HadithScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Ahadeeth',
+              Text(
+                context.tr('Ahadeeth', 'الأحاديث'),
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
@@ -52,7 +53,7 @@ class _HadithScreenState extends State<HadithScreen>
               ),
               const SizedBox(height: 2),
               Text(
-                'Authentic collections in Arabic',
+                context.tr('Authentic collections in Arabic', 'مجموعات صحيحة'),
                 style: TextStyle(fontSize: 13, color: p.muted),
               ),
             ],

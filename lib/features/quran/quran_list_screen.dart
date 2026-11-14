@@ -1,3 +1,4 @@
+import '../../core/settings/tr.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -71,8 +72,8 @@ class _QuranListScreenState extends State<QuranListScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Quran',
+              Text(
+                context.tr('Quran', 'القرآن'),
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
@@ -81,7 +82,7 @@ class _QuranListScreenState extends State<QuranListScreen>
               ),
               const SizedBox(height: 2),
               Text(
-                '114 surahs',
+                context.tr('114 surahs', '١١٤ سورة'),
                 style: TextStyle(fontSize: 13, color: p.muted),
               ),
             ],
@@ -102,7 +103,7 @@ class _QuranListScreenState extends State<QuranListScreen>
             onChanged: (value) => setState(() => _query = value),
             textInputAction: TextInputAction.search,
             decoration: InputDecoration(
-              hintText: 'Search surah name or number',
+              hintText: context.tr('Search surah name or number', 'ابحث باسم السورة أو رقمها'),
               hintStyle: TextStyle(color: p.muted),
               prefixIcon: Icon(Icons.search_rounded, color: p.muted),
               suffixIcon: _query.isEmpty
