@@ -33,11 +33,16 @@ double distanceToKaabaKm(double lat, double lng) =>
     distanceKm(lat, lng, kaabaLat, kaabaLng);
 
 /// "South-east", "North" ... for a bearing in degrees.
-String compassName(double degrees) {
-  const names = [
+String compassName(double degrees, {bool arabic = false}) {
+  const english = [
     'North', 'North-east', 'East', 'South-east',
     'South', 'South-west', 'West', 'North-west',
   ];
+  const arabicNames = [
+    'الشمال', 'الشمال الشرقي', 'الشرق', 'الجنوب الشرقي',
+    'الجنوب', 'الجنوب الغربي', 'الغرب', 'الشمال الغربي',
+  ];
+  final names = arabic ? arabicNames : english;
   return names[(((degrees % 360) + 360) % 360 / 45).round() % 8];
 }
 

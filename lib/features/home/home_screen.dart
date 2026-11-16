@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/lang_text.dart';
 import '../audio/quran_audio_controller.dart';
+import '../khatma/data/khatma_store.dart';
 import '../bookmarks/data/bookmark_store.dart';
 import '../hadith/data/hadith_models.dart';
 import '../hadith/data/hadith_repository.dart';
@@ -27,6 +29,8 @@ class HomeScreen extends StatelessWidget {
         _NextPrayerCard(),
         SizedBox(height: 20),
         _ContinueReadingCard(),
+        SizedBox(height: 12),
+        _KhatmaCard(),
         SizedBox(height: 20),
         _QuickActions(),
         SizedBox(height: 20),
@@ -50,11 +54,13 @@ class _Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Directionality(
-                textDirection: TextDirection.rtl,
-                child: Text('السلام عليكم',
-                    style: AppTheme.arabic(size: 24, height: 1.3)),
-              ),
+              context.isArabic
+                  ? Text('السلام عليكم',
+                      style: AppTheme.arabic(size: 26, height: 1.3))
+                  : const Text(
+                      'Assalamu Alaykum',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                    ),
               const SizedBox(height: 2),
               // real city + Hijri date, the same source as the Prayer tab
               ListenableBuilder(
@@ -62,9 +68,13 @@ class _Header extends StatelessWidget {
                 builder: (context, _) {
                   final c = PrayerController.instance;
                   final parts = [
-                    if (c.location != null) c.location!.city,
-                    if (c.today != null && c.today!.hijri.isNotEmpty)
-                      c.today!.hijri,
+                    if (c.location != null)
+                      c.location!.city == 'Your location'
+                          ? context.tr('Your location', 'موقعك')
+                          : c.location!.city,
+                    if (c.today != null &&
+                        c.today!.hijriFor(context.isArabic).isNotEmpty)
+                      context.digits(c.today!.hijriFor(context.isArabic)),
                   ];
                   return Text(
                     parts.join(' · '),
@@ -85,7 +95,7 @@ class _Header extends StatelessWidget {
         const SizedBox(width: 8),
         _SquareIconButton(
           icon: Icons.tune_rounded,
-          label: 'Settings',
+          label: context.tr('Settings', 'الإعدادات'),
           onTap: () => context.go('/settings'),
         ),
       ],
@@ -132,8 +142,8 @@ class _SquareIconButton extends StatelessWidget {
 class _NextPrayerCard extends StatefulWidget {
   const _NextPrayerCard();
 
-  static const _onHeroSoft = Color(0xEBFFFFFF); // white 92%
-  static const _heroGreenText = Color(0xFF0B6B49);
+  static const _onHeroSoft = Color(0xEBF7EBD4); // white 92%
+  static const _heroGreenText = AppColors.teal;
 
   @override
   State<_NextPrayerCard> createState() => _NextPrayerCardState();
@@ -163,28 +173,23 @@ class _NextPrayerCardState extends State<_NextPrayerCard> {
         final hasData = c.schedule != null && nextOrNull != null;
 
         final String title;
-        final String? arabic;
         final String? clock;
         final String badge;
         if (c.schedule != null && nextOrNull != null) {
           final next = nextOrNull;
-          title = next.prayer.english;
-          arabic = next.prayer.arabic;
-          clock = formatClock(next.time);
-          badge = formatCountdown(next.time.difference(DateTime.now()));
+          title = next.prayer.label(context.isArabic);
+          clock = context.clock(next.time);
+          badge = context.countdown(next.time.difference(DateTime.now()));
         } else if (c.locationProblem != null) {
-          title = 'Allow location';
-          arabic = null;
-          clock = 'Tap to set up prayer times';
-          badge = 'Set up';
+          title = context.tr('Allow location', 'اسمح بالموقع');
+          clock = context.tr('Tap to set up prayer times', 'اضغط لإعداد مواقيت الصلاة');
+          badge = context.tr('Set up', 'إعداد');
         } else if (c.schedule == null && !c.loading) {
-          title = "Couldn't load";
-          arabic = null;
-          clock = 'Tap to try again';
-          badge = 'Retry';
+          title = context.tr("Couldn't load", 'تعذّر التحميل');
+          clock = context.tr('Tap to try again', 'اضغط للمحاولة مرة أخرى');
+          badge = context.tr('Retry', 'إعادة');
         } else {
-          title = 'Loading…';
-          arabic = null;
+          title = context.tr('Loading…', 'جارٍ التحميل…');
           clock = null;
           badge = '';
         }
@@ -214,7 +219,7 @@ class _NextPrayerCardState extends State<_NextPrayerCard> {
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: DefaultTextStyle.merge(
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: AppColors.cream),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -251,20 +256,6 @@ class _NextPrayerCardState extends State<_NextPrayerCard> {
                                           ),
                                         ),
                                       ),
-                                      if (arabic != null) ...[
-                                        const SizedBox(width: 10),
-                                        Directionality(
-                                          textDirection: TextDirection.rtl,
-                                          child: Text(
-                                            arabic,
-                                            style: AppTheme.arabic(
-                                              size: 22,
-                                              height: 1.2,
-                                              color: onHeroSoft,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
                                     ],
                                   ),
                                   if (clock != null)
@@ -283,7 +274,7 @@ class _NextPrayerCardState extends State<_NextPrayerCard> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: AppColors.cream,
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Text(
@@ -302,7 +293,7 @@ class _NextPrayerCardState extends State<_NextPrayerCard> {
                           padding: const EdgeInsets.only(top: 12),
                           decoration: const BoxDecoration(
                             border: Border(
-                                top: BorderSide(color: Color(0x47FFFFFF))),
+                                top: BorderSide(color: Color(0x47F7EBD4))),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -310,10 +301,10 @@ class _NextPrayerCardState extends State<_NextPrayerCard> {
                               for (final prayer in Prayer.values)
                                 if (prayer.isPrayer)
                                   _PrayerChip(
-                                    label: prayer.english,
+                                    label: prayer.label(context.isArabic),
                                     time: today == null
                                         ? '--:--'
-                                        : formatClock(today.times[prayer]!,
+                                        : context.clock(today.times[prayer]!,
                                             withPeriod: false),
                                     highlighted: nextOrNull != null &&
                                         today != null &&
@@ -356,7 +347,7 @@ class _PrayerChip extends StatelessWidget {
       width: 56,
       padding: const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
-        color: highlighted ? Colors.white : null,
+        color: highlighted ? AppColors.cream : null,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -375,7 +366,7 @@ class _PrayerChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: highlighted ? FontWeight.w800 : FontWeight.w700,
-              color: highlighted ? _NextPrayerCard._heroGreenText : Colors.white,
+              color: highlighted ? _NextPrayerCard._heroGreenText : AppColors.cream,
             ),
           ),
         ],
@@ -457,9 +448,15 @@ class _ContinueReadingCard extends StatelessWidget {
         final label = last == null
             ? context.tr('Start reading', 'ابدأ القراءة')
             : context.tr('Continue reading', 'تابع القراءة');
-        final title =
-            last == null ? 'Al-Fatihah' : '${last.surahName} · Page ${last.page}';
-        final subtitle = last == null ? 'Surah 1 · 7 verses' : 'Juz ${last.juz}';
+        final ar = context.isArabic;
+        final title = last == null
+            ? context.tr('Al-Fatihah', 'الفاتحة')
+            : (ar
+                ? 'سورة ${last.arabicName} · صفحة ${context.n(last.page)}'
+                : '${last.surahName} · Page ${last.page}');
+        final subtitle = last == null
+            ? context.tr('Surah 1 · 7 verses', 'السورة ١ · ٧ آيات')
+            : (ar ? 'الجزء ${context.n(last.juz)}' : 'Juz ${last.juz}');
         final target = last == null
             ? '/quran/surah/1'
             : '/quran/surah/${last.surahNumber}?page=${last.page}';
@@ -524,7 +521,10 @@ class _ContinueReadingCard extends StatelessWidget {
                   final busy = audio.loading && !audio.playing;
                   return IconButton.filled(
                     onPressed: () => _listenFromLastRead(last),
-                    tooltip: playing ? 'Pause' : 'Listen from where you stopped',
+                    tooltip: playing
+                        ? context.tr('Pause', 'إيقاف مؤقت')
+                        : context.tr('Listen from where you stopped',
+                            'استمع من حيث توقفت'),
                     style: IconButton.styleFrom(fixedSize: const Size(44, 44)),
                     icon: busy
                         ? const SizedBox(
@@ -532,7 +532,7 @@ class _ContinueReadingCard extends StatelessWidget {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: AppColors.cream,
                             ),
                           )
                         : Icon(
@@ -545,6 +545,102 @@ class _ContinueReadingCard extends StatelessWidget {
                 },
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// "ختم القرآن": its own progress, separate from "Continue reading".
+class _KhatmaCard extends StatelessWidget {
+  const _KhatmaCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+
+    return ListenableBuilder(
+      listenable: KhatmaStore.instance,
+      builder: (context, _) {
+        final k = KhatmaStore.instance;
+        final String subtitle;
+        if (!k.active) {
+          subtitle = context.tr('Set a timeline and finish the Quran',
+              'حدد مدة لختم القرآن الكريم');
+        } else if (k.todayDone) {
+          subtitle = context.tr("Today's goal is done", 'أنجزت ورد اليوم');
+        } else {
+          subtitle = context.tr(
+            'Today: pages ${k.todayStart}–${k.todayEnd} · ${k.daysLeft} days left',
+            'اليوم: صفحات ${context.n(k.todayStart)}–${context.n(k.todayEnd)} · متبقٍ ${context.n(k.daysLeft)} يوم',
+          );
+        }
+
+        return Material(
+          color: p.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: p.border),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => context.go('/khatma'),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const _IconTile(icon: Icons.auto_stories_outlined, size: 48),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              context.tr('Quran Khatma', 'ختم القرآن'),
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w800),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              subtitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 13, color: p.muted),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right_rounded, color: p.muted),
+                    ],
+                  ),
+                  if (k.active) ...[
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: k.progress,
+                        minHeight: 8,
+                        backgroundColor: p.surfaceAlt,
+                        valueColor: AlwaysStoppedAnimation(scheme.primary),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      context.tr(
+                        '${k.currentPage} / ${KhatmaStore.totalPages} pages',
+                        '${context.n(k.currentPage)} / ${context.n(KhatmaStore.totalPages)} صفحة',
+                      ),
+                      style: TextStyle(fontSize: 12, color: p.muted),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -678,8 +774,18 @@ class _HadithOfTheDay extends StatefulWidget {
 }
 
 class _HadithOfTheDayState extends State<_HadithOfTheDay> {
-  late Future<HadithCollection> _future =
-      HadithRepository.instance.load(HadithBook.nawawi);
+  late Future<HadithCollection> _future;
+  bool? _arabic;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final arabic = context.isArabic;
+    if (_arabic != arabic) {
+      _arabic = arabic;
+      _future = HadithRepository.instance.load(HadithBook.nawawi, arabic: arabic);
+    }
+  }
 
   /// One hadith of the Forty Nawawi per day, the same all day long.
   Hadith _today(HadithCollection collection) {
@@ -704,8 +810,8 @@ class _HadithOfTheDayState extends State<_HadithOfTheDay> {
             TextButton(
               onPressed: () => context.go('/hadith'),
               style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
-              child: const Text(
-                'See all',
+              child: Text(
+                context.tr('See all', 'عرض الكل'),
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
               ),
             ),
@@ -731,15 +837,15 @@ class _HadithOfTheDayState extends State<_HadithOfTheDay> {
                       children: [
                         Expanded(
                           child: Text(
-                            'Tap to open the ahadeeth',
+                            context.tr('Tap to open the ahadeeth', 'اضغط لفتح الأحاديث'),
                             style: TextStyle(color: p.muted),
                           ),
                         ),
                         TextButton(
                           onPressed: () => setState(() => _future =
-                              HadithRepository.instance
-                                  .load(HadithBook.nawawi)),
-                          child: const Text('Retry'),
+                              HadithRepository.instance.load(HadithBook.nawawi,
+                                  arabic: context.isArabic)),
+                          child: Text(context.tr('Retry', 'إعادة')),
                         ),
                       ],
                     );
@@ -768,10 +874,10 @@ class _HadithOfTheDayState extends State<_HadithOfTheDay> {
                         width: double.infinity,
                         child: Text(
                           hadith.text,
-                          textDirection: TextDirection.rtl,
+                          textDirection: dirFor(hadith.text),
                           maxLines: 5,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTheme.arabic(size: 21, height: 1.9),
+                          style: contentStyle(hadith.text, size: 21, height: 1.9),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -787,11 +893,13 @@ class _HadithOfTheDayState extends State<_HadithOfTheDay> {
                               ),
                               child: Text(
                                 hadith.grade!,
-                                style: AppTheme.arabic(
+                                style: contentStyle(
+                                  hadith.grade!,
                                   size: 14,
                                   height: 1.3,
                                   color: p.onPrimarySoft,
-                                ).copyWith(fontWeight: FontWeight.w700),
+                                  weight: FontWeight.w700,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -799,10 +907,11 @@ class _HadithOfTheDayState extends State<_HadithOfTheDay> {
                           Expanded(
                             child: Text(
                               hadith.label,
-                              textDirection: TextDirection.rtl,
+                              textDirection: dirFor(hadith.label),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppTheme.arabic(
+                              style: contentStyle(
+                                hadith.label,
                                 size: 15,
                                 height: 1.3,
                                 color: p.muted,

@@ -28,6 +28,9 @@ class Surah {
 
   final int ayahCount;
 
+  /// Surah name in the chosen language.
+  String name(bool arabic) => arabic ? arabicName : englishName;
+
   bool get isMeccan => revelationType.toLowerCase().startsWith('mecc');
 
   /// Second line of a list row: "The Opening · Meccan · 7 verses"
@@ -35,6 +38,24 @@ class Surah {
     final verses = ayahCount == 1 ? 'verse' : 'verses';
     return '$translation · $revelationType · $ayahCount $verses';
   }
+
+  /// Second line of a list row in the chosen language.
+  String metaFor(bool arabic) {
+    if (!arabic) return meta;
+    final place = isMeccan ? 'مكية' : 'مدنية';
+    final n = ayahCount;
+    final count = n == 1
+        ? 'آية واحدة'
+        : n == 2
+            ? 'آيتان'
+            : (n >= 3 && n <= 10 ? '${_arDigits(n)} آيات' : '${_arDigits(n)} آية');
+    return '$place · $count';
+  }
+
+  static String _arDigits(int n) => '$n'
+      .split('')
+      .map((d) => String.fromCharCode(0x0660 + int.parse(d)))
+      .join();
 
   /// Lower-case text used by the search box (English + Arabic, no symbols).
   String get searchKey => normalize('$englishName $translation $arabicName');

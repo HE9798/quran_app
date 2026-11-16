@@ -6,12 +6,14 @@ import 'core/router/app_router.dart';
 import 'core/settings/app_settings.dart';
 import 'core/theme/app_theme.dart';
 import 'features/audio/quran_audio_controller.dart';
+import 'features/khatma/data/khatma_store.dart';
 import 'features/bookmarks/data/bookmark_store.dart';
 import 'features/hadith/data/hadith_bookmark_store.dart';
 import 'features/prayer_times/data/prayer_notifications.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await KhatmaStore.instance.load();
   await AppSettings.instance.load(); // theme, language, font size, ...
   await BookmarkStore.instance.load(); // saved pages + last read position
   await HadithBookmarkStore.instance.load(); // saved ahadeeth

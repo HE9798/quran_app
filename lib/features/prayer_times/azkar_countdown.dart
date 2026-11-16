@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_palette.dart';
+
 import '../../core/settings/tr.dart';
 import 'prayer_controller.dart';
-import 'data/prayer_models.dart';
 
 /// Line for the green prayer cards: how long is left before the morning /
 /// evening azkar window closes. Shows nothing outside those windows.
@@ -19,18 +20,11 @@ class AzkarCountdown extends StatelessWidget {
     if (active == null) return const SizedBox.shrink();
 
     final left = active.end.difference(DateTime.now());
-    final minutes = (left.inSeconds / 60).ceil();
-    final h = minutes ~/ 60;
-    final m = minutes % 60;
-    final arabic = context.isArabic;
-    final time = h == 0
-        ? (arabic ? '$m د' : '${m}m')
-        : (arabic ? '$h س $m د' : '${h}h ${m}m');
-
+    final time = context.span(left);
     final name = active.morning
         ? context.tr('Morning azkar', 'أذكار الصباح')
         : context.tr('Evening azkar', 'أذكار المساء');
-    final endsAt = formatClock(active.end);
+    final endsAt = context.clock(active.end);
 
     return Padding(
       padding: const EdgeInsets.only(top: 12),
@@ -38,7 +32,7 @@ class AzkarCountdown extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0x26FFFFFF), // white 15%
+          color: const Color(0x26F7EBD4), // white 15%
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -46,7 +40,7 @@ class AzkarCountdown extends StatelessWidget {
             Icon(
               active.morning ? Icons.wb_twilight_rounded : Icons.nights_stay_rounded,
               size: 18,
-              color: Colors.white,
+              color: AppColors.cream,
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -55,7 +49,7 @@ class AzkarCountdown extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.cream,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                 ),
@@ -64,7 +58,7 @@ class AzkarCountdown extends StatelessWidget {
             Text(
               endsAt,
               style: const TextStyle(
-                color: Color(0xEBFFFFFF),
+                color: Color(0xEBF7EBD4),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),

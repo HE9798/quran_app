@@ -49,14 +49,14 @@ class AppTheme {
 
     final scheme = ColorScheme(
       brightness: brightness,
-      primary: isLight ? const Color(0xFF0B7A52) : const Color(0xFF34D399),
-      onPrimary: isLight ? Colors.white : const Color(0xFF06281B),
-      secondary: isLight ? const Color(0xFF0B7A52) : const Color(0xFF34D399),
-      onSecondary: isLight ? Colors.white : const Color(0xFF06281B),
+      primary: isLight ? AppColors.teal : const Color(0xFF5BBFB0),
+      onPrimary: isLight ? AppColors.cream : const Color(0xFF08211D),
+      secondary: isLight ? AppColors.teal : const Color(0xFF5BBFB0),
+      onSecondary: isLight ? AppColors.cream : const Color(0xFF08211D),
       error: isLight ? const Color(0xFFB3261E) : const Color(0xFFF2B8B5),
-      onError: isLight ? Colors.white : const Color(0xFF601410),
-      surface: isLight ? Colors.white : const Color(0xFF0A1A2A),
-      onSurface: isLight ? const Color(0xFF0E2A21) : const Color(0xFFE6F2EE),
+      onError: isLight ? AppColors.cream : const Color(0xFF601410),
+      surface: isLight ? AppColors.cream : const Color(0xFF0A1A2A),
+      onSurface: isLight ? const Color(0xFF10302B) : AppColors.cream,
       outline: palette.border,
       // Without these two, tonal buttons got a white icon on a white
       // background in light mode (icon looked missing).

@@ -25,12 +25,6 @@ class _PrayerScreenState extends State<PrayerScreen>
     with WidgetsBindingObserver {
   final _controller = PrayerController.instance;
 
-  static const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -76,11 +70,12 @@ class _PrayerScreenState extends State<PrayerScreen>
     if (!ok && mounted) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(
-          content: Text(
+        ..showSnackBar(SnackBar(
+          content: Text(context.tr(
             'Notifications are blocked. Allow them in the phone settings '
-            'to get prayer reminders.',
-          ),
+                'to get prayer reminders.',
+            'الإشعارات محظورة. اسمح بها من إعدادات الهاتف لتصلك تنبيهات الصلاة.',
+          )),
         ));
     }
   }
@@ -102,7 +97,7 @@ class _PrayerScreenState extends State<PrayerScreen>
           );
         } else if (c.schedule == null) {
           body = ErrorView(
-            title: "Couldn't load prayer times",
+            title: context.tr("Couldn't load prayer times", 'تعذّر تحميل مواقيت الصلاة'),
             onRetry: () => c.load(),
           );
         } else {
@@ -116,8 +111,10 @@ class _PrayerScreenState extends State<PrayerScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _Header(
-              dateLine: _dateLine(c),
-              city: c.location?.city,
+              dateLine: _dateLine(context, c),
+              city: c.location?.city == 'Your location'
+                  ? context.tr('Your location', 'موقعك')
+                  : c.location?.city,
               busy: c.loading,
               onCityTap: () => c.load(refreshLocation: true),
             ),
@@ -128,11 +125,10 @@ class _PrayerScreenState extends State<PrayerScreen>
     );
   }
 
-  String _dateLine(PrayerController c) {
+  String _dateLine(BuildContext context, PrayerController c) {
     final now = c.now ?? DateTime.now();
-    final date =
-        '${_weekdays[now.weekday - 1]}, ${now.day} ${_months[now.month - 1]}';
-    final hijri = c.today?.hijri ?? '';
+    final date = context.dateLine(now);
+    final hijri = context.digits(c.today?.hijriFor(context.isArabic) ?? '');
     return hijri.isEmpty ? date : '$date · $hijri';
   }
 }
@@ -184,7 +180,7 @@ class _Header extends StatelessWidget {
           const SizedBox(width: 12),
           Semantics(
             button: true,
-            label: 'Update my location',
+            label: context.tr('Update my location', 'تحديث موقعي'),
             child: Material(
               color: p.primarySoft,
               borderRadius: BorderRadius.circular(999),
@@ -213,7 +209,7 @@ class _Header extends StatelessWidget {
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
-                          city ?? 'Locating',
+                          city ?? context.tr('Locating', 'جارٍ التحديد'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -249,7 +245,7 @@ class _Loading extends StatelessWidget {
           const CircularProgressIndicator(),
           const SizedBox(height: 16),
           Text(
-            'Finding your location…',
+            context.tr('Finding your location…', 'جارٍ تحديد موقعك…'),
             style: TextStyle(color: context.palette.muted),
           ),
         ],
@@ -269,23 +265,35 @@ class _LocationProblemView extends StatelessWidget {
     final p = context.palette;
     final (title, message, needsSettings) = switch (problem) {
       LocationProblem.serviceOff => (
-          'Location is turned off',
-          'Switch on location so we can calculate prayer times for where you are.',
+          context.tr('Location is turned off', 'خدمة الموقع متوقفة'),
+          context.tr(
+            'Switch on location so we can calculate prayer times for where you are.',
+            'شغّل خدمة الموقع لنحسب مواقيت الصلاة حسب مكانك.',
+          ),
           true,
         ),
       LocationProblem.denied => (
-          'Location permission needed',
-          'Prayer times and Qibla depend on where you are. Allow location access to continue.',
+          context.tr('Location permission needed', 'نحتاج إذن الموقع'),
+          context.tr(
+            'Prayer times and Qibla depend on where you are. Allow location access to continue.',
+            'تعتمد مواقيت الصلاة والقبلة على مكانك. اسمح بالوصول إلى الموقع للمتابعة.',
+          ),
           false,
         ),
       LocationProblem.deniedForever => (
-          'Location permission is blocked',
-          'Allow location for this app in the phone settings, then come back.',
+          context.tr('Location permission is blocked', 'إذن الموقع محظور'),
+          context.tr(
+            'Allow location for this app in the phone settings, then come back.',
+            'اسمح بالموقع لهذا التطبيق من إعدادات الهاتف ثم ارجع.',
+          ),
           true,
         ),
       LocationProblem.unavailable => (
-          "Couldn't find your location",
-          'Make sure you are not in airplane mode, then try again.',
+          context.tr("Couldn't find your location", 'تعذّر تحديد موقعك'),
+          context.tr(
+            'Make sure you are not in airplane mode, then try again.',
+            'تأكد أنك لست في وضع الطيران ثم حاول مرة أخرى.',
+          ),
           false,
         ),
     };
@@ -313,16 +321,18 @@ class _LocationProblemView extends StatelessWidget {
             if (needsSettings)
               FilledButton(
                 onPressed: () => LocationService.instance.openSettings(problem),
-                child: const Text('Open settings'),
+                child: Text(context.tr('Open settings', 'فتح الإعدادات')),
               ),
             if (needsSettings) const SizedBox(height: 8),
             needsSettings
-                ? TextButton(onPressed: onRetry, child: const Text('Try again'))
+                ? TextButton(
+                    onPressed: onRetry,
+                    child: Text(context.tr('Try again', 'إعادة المحاولة')))
                 : FilledButton(
                     onPressed: onRetry,
                     child: Text(problem == LocationProblem.denied
-                        ? 'Allow location'
-                        : 'Try again'),
+                        ? context.tr('Allow location', 'اسمح بالموقع')
+                        : context.tr('Try again', 'إعادة المحاولة')),
                   ),
           ],
         ),
@@ -375,8 +385,8 @@ class _NextCard extends StatelessWidget {
   final PrayerController controller;
   final NextPrayer next;
 
-  static const _onHeroSoft = Color(0xEBFFFFFF); // white 92%
-  static const _heroGreenText = Color(0xFF0B6B49);
+  static const _onHeroSoft = Color(0xEBF7EBD4); // white 92%
+  static const _heroGreenText = AppColors.teal;
 
   @override
   Widget build(BuildContext context) {
@@ -404,7 +414,7 @@ class _NextCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
             child: DefaultTextStyle.merge(
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.cream),
               child: Column(
                 children: [
                   Row(
@@ -423,8 +433,8 @@ class _NextCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${next.prayer.english} · '
-                              '${_PrayerScreenState.time12(next.time)}',
+                              '${next.prayer.label(context.isArabic)} · '
+                              '${context.clock(next.time)}',
                               style: const TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.w800,
@@ -438,11 +448,11 @@ class _NextCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: AppColors.cream,
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          _PrayerScreenState._countdown(remaining),
+                          context.countdown(remaining),
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -458,8 +468,8 @@ class _NextCard extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: controller.progressOf(next),
                       minHeight: 6,
-                      backgroundColor: const Color(0x4DFFFFFF), // white 30%
-                      valueColor: const AlwaysStoppedAnimation(Colors.white),
+                      backgroundColor: const Color(0x4DF7EBD4), // white 30%
+                      valueColor: const AlwaysStoppedAnimation(AppColors.cream),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -469,8 +479,8 @@ class _NextCard extends StatelessWidget {
                       Text(
                         previous == null
                             ? ''
-                            : '${previous.prayer.english} '
-                                '${_PrayerScreenState.time12(previous.time)}',
+                            : '${previous.prayer.label(context.isArabic)} '
+                                '${context.clock(previous.time)}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -478,8 +488,8 @@ class _NextCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${next.prayer.english} '
-                        '${_PrayerScreenState.time12(next.time)}',
+                        '${next.prayer.label(context.isArabic)} '
+                        '${context.clock(next.time)}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -546,19 +556,9 @@ class _PrayerRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  prayer.english,
+                  prayer.label(context.isArabic),
                   style: TextStyle(
                       fontSize: 16, fontWeight: weight, color: nameColor),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  prayer.arabic,
-                  textDirection: TextDirection.rtl,
-                  style: AppTheme.arabic(
-                    size: 17,
-                    height: 1.2,
-                    color: isNext ? p.onPrimarySoft : p.muted,
-                  ),
                 ),
                 if (isNext) ...[
                   const SizedBox(width: 10),
@@ -570,7 +570,7 @@ class _PrayerRow extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      'Next',
+                      context.tr('Next', 'التالية'),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -583,7 +583,7 @@ class _PrayerRow extends StatelessWidget {
             ),
           ),
           Text(
-            _PrayerScreenState.time12(time),
+            context.clock(time),
             style: TextStyle(
               fontSize: 15,
               fontWeight: weight,
@@ -592,7 +592,9 @@ class _PrayerRow extends StatelessWidget {
             ),
           ),
           _AlertSwitch(
-            label: '${prayer.english} reminder',
+            label: context.isArabic
+                ? 'تنبيه ${prayer.arabic}'
+                : '${prayer.english} reminder',
             value: on,
             onChanged: onChanged,
           ),
@@ -703,14 +705,14 @@ class _QiblaCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Qibla direction',
+                    Text(
+                      context.tr('Qibla direction', 'اتجاه القبلة'),
                       style:
                           TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      '${bearing.round()}° · ${compassName(bearing)}',
+                      '${context.n(bearing.round())}° · ${compassName(bearing, arabic: context.isArabic)}',
                       style: TextStyle(fontSize: 13, color: p.muted),
                     ),
                   ],

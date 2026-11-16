@@ -50,21 +50,22 @@ class _AthkarScreenState extends State<AthkarScreen> {
                             Icon(Icons.cloud_off_rounded,
                                 size: 44, color: p.muted),
                             const SizedBox(height: 12),
-                            const Text(
-                              "Couldn't load the athkar",
+                            Text(
+                              context.tr("Couldn't load the athkar", 'تعذّر تحميل الأذكار'),
                               style: TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Check your internet connection and try again.',
+                              context.tr('Check your internet connection and try again.',
+                                  'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.'),
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: 13, color: p.muted),
                             ),
                             const SizedBox(height: 16),
                             FilledButton(
                               onPressed: _retry,
-                              child: const Text('Try again'),
+                              child: Text(context.tr('Try again', 'إعادة المحاولة')),
                             ),
                           ],
                         ),
@@ -114,7 +115,7 @@ class _Title extends StatelessWidget {
           ),
           if (onReset != null)
             IconButton(
-              tooltip: 'Start again',
+              tooltip: context.tr('Start again', 'ابدأ من جديد'),
               onPressed: onReset,
               style: IconButton.styleFrom(fixedSize: const Size(44, 44)),
               icon: Icon(Icons.refresh_rounded, color: p.muted),
@@ -158,16 +159,19 @@ class _AthkarBodyState extends State<_AthkarBody>
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Start ${set.label.toLowerCase()} athkar again?'),
-        content: const Text("Today's counts for this list will be cleared."),
+        title: Text(context.isArabic
+            ? 'هل تبدأ ${set.arabic} من جديد؟'
+            : 'Start ${set.label.toLowerCase()} athkar again?'),
+        content: Text(context.tr("Today's counts for this list will be cleared.",
+            'سيتم مسح عدّاد اليوم لهذه القائمة.')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('Cancel', 'إلغاء')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Start again'),
+            child: Text(context.tr('Start again', 'ابدأ من جديد')),
           ),
         ],
       ),
@@ -193,7 +197,9 @@ class _AthkarBodyState extends State<_AthkarBody>
               if (counts[i] >= items[i].repeat) done++;
             }
             return _Title(
-              subtitle: '${_set.label} · $done of ${items.length} completed',
+              subtitle: context.isArabic
+                  ? '${_set.arabic} · ${context.n(done)} من ${context.n(items.length)} مكتمل'
+                  : '${_set.label} · $done of ${items.length} completed',
               onReset: _confirmReset,
             );
           },
@@ -222,15 +228,15 @@ class _AthkarBodyState extends State<_AthkarBody>
                 const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             splashBorderRadius: BorderRadius.circular(12),
             overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-            tabs: const [
+            tabs: [
               Tab(
                 height: 44,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.wb_sunny_outlined, size: 20),
-                    SizedBox(width: 8),
-                    Text('Morning'),
+                    const Icon(Icons.wb_sunny_outlined, size: 20),
+                    const SizedBox(width: 8),
+                    Text(context.tr('Morning', 'الصباح')),
                   ],
                 ),
               ),
@@ -239,9 +245,9 @@ class _AthkarBodyState extends State<_AthkarBody>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.dark_mode_outlined, size: 20),
-                    SizedBox(width: 8),
-                    Text('Evening'),
+                    const Icon(Icons.dark_mode_outlined, size: 20),
+                    const SizedBox(width: 8),
+                    Text(context.tr('Evening', 'المساء')),
                   ],
                 ),
               ),
@@ -361,8 +367,8 @@ class _SetViewState extends State<_SetView>
             ),
             if (upNext.isNotEmpty) ...[
               const SizedBox(height: 18),
-              const Text(
-                'Up next',
+              Text(
+                context.tr('Up next', 'التالي'),
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
@@ -418,8 +424,12 @@ class _DhikrCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _Pill('$position of $total'),
-              _Pill(dhikr.repeat > 1 ? 'Repeat × ${dhikr.repeat}' : 'Once'),
+              _Pill(context.isArabic
+                  ? '${context.n(position)} من ${context.n(total)}'
+                  : '$position of $total'),
+              _Pill(dhikr.repeat > 1
+                  ? context.tr('Repeat × ${dhikr.repeat}', 'تكرار × ${context.n(dhikr.repeat)}')
+                  : context.tr('Once', 'مرة واحدة')),
             ],
           ),
           const SizedBox(height: 6),
@@ -464,7 +474,7 @@ class _DhikrCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Tap the circle to count',
+            context.tr('Tap the circle to count', 'اضغط على الدائرة للعدّ'),
             style: TextStyle(fontSize: 12, color: p.muted),
           ),
         ],
@@ -518,7 +528,8 @@ class _CounterButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: 'Count dhikr, $count of $total',
+      label: context.tr('Count dhikr, $count of $total',
+          'عدّ الذكر، ${context.n(count)} من ${context.n(total)}'),
       excludeSemantics: true,
       child: GestureDetector(
         onTap: onTap,
@@ -553,7 +564,7 @@ class _CounterButton extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '$count',
+                    context.n(count),
                     style: const TextStyle(
                       fontSize: 42,
                       fontWeight: FontWeight.w800,
@@ -562,7 +573,7 @@ class _CounterButton extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'of $total',
+                    context.tr('of $total', 'من ${context.n(total)}'),
                     style: TextStyle(fontSize: 13, color: p.muted),
                   ),
                 ],
@@ -613,7 +624,7 @@ class _UpNextTile extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Text(
-                  '$number',
+                  context.n(number),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
@@ -635,7 +646,7 @@ class _UpNextTile extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                '×${dhikr.repeat}',
+                '×${context.n(dhikr.repeat)}',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -679,21 +690,29 @@ class _AllDone extends StatelessWidget {
             child: Icon(Icons.check_rounded, size: 40, color: scheme.onPrimary),
           ),
           const SizedBox(height: 16),
-          Text(
-            'تقبل الله منا ومنكم',
-            textDirection: TextDirection.rtl,
-            style: AppTheme.arabic(size: 28, height: 1.6),
-          ),
+          context.isArabic
+              ? Text(
+                  'تقبل الله منا ومنكم',
+                  textDirection: TextDirection.rtl,
+                  style: AppTheme.arabic(size: 28, height: 1.6),
+                )
+              : const Text(
+                  'May Allah accept from us and from you',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                ),
           const SizedBox(height: 4),
           Text(
-            "You've completed the ${set.label.toLowerCase()} athkar",
+            context.isArabic
+                ? 'لقد أتممت ${set.arabic}'
+                : "You've completed the ${set.label.toLowerCase()} athkar",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: p.muted),
           ),
           const SizedBox(height: 16),
           OutlinedButton(
             onPressed: onAgain,
-            child: const Text('Start again'),
+            child: Text(context.tr('Start again', 'ابدأ من جديد')),
           ),
         ],
       ),

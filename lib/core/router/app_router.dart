@@ -5,12 +5,14 @@ import '../../features/athkar/athkar_screen.dart';
 import '../../features/bookmarks/bookmarks_screen.dart';
 import '../../features/hadith/hadith_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../../features/khatma/khatma_screen.dart';
 import '../../features/prayer_times/prayer_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/qibla/qibla_screen.dart';
 import '../../features/audio/player_screen.dart';
 import '../../features/quran/quran_list_screen.dart';
 import '../../features/quran/surah_screen.dart';
+import '../../features/welcome/welcome_screen.dart';
 import '../widgets/main_shell.dart';
 
 /// One branch per bottom-bar tab. Sub-routes (bookmarks, player, qibla)
@@ -18,8 +20,12 @@ import '../widgets/main_shell.dart';
 ///
 /// Replace each PlaceholderScreen with the real screen as you build it.
 final appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/welcome', // shown every time the app opens
   routes: [
+    GoRoute(
+      path: '/welcome',
+      builder: (context, state) => const WelcomeScreen(),
+    ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
           MainShell(navigationShell: navigationShell),
@@ -30,6 +36,10 @@ final appRouter = GoRouter(
             path: '/',
             builder: (context, state) => const HomeScreen(),
             routes: [
+              GoRoute(
+                path: 'khatma',
+                builder: (context, state) => const KhatmaScreen(),
+              ),
               GoRoute(
                 path: 'settings',
                 builder: (context, state) => const SettingsScreen(),

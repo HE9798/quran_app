@@ -25,6 +25,20 @@ class Reciter {
     return (words.first[0] + words[1][0]).toUpperCase();
   }
 
+  /// Name in the chosen language (falls back to the other if one is empty).
+  String displayName(bool arabic) {
+    final value = arabic ? name : englishName;
+    return value.trim().isNotEmpty ? value : (arabic ? englishName : name);
+  }
+
+  /// Letters for the round avatar in the chosen language.
+  String initialsFor(bool arabic) {
+    if (!arabic) return initials;
+    final words = name.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    if (words.isEmpty) return initials;
+    return words.length == 1 ? words.first[0] : words.first[0] + words[1][0];
+  }
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,

@@ -14,42 +14,52 @@ class HadithRepository {
   static final instance = HadithRepository._();
 
   final _client = http.Client();
-  final _memory = <HadithBook, HadithCollection>{};
-  final _pending = <HadithBook, Future<HadithCollection>>{};
+  final _memory = <String, HadithCollection>{};
+  final _pending = <String, Future<HadithCollection>>{};
 
   /// Two addresses for the same file: if the first is blocked or down, the
   /// second one is tried.
-  static List<String> _urls(HadithBook book) => [
-        'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${book.editionId}.min.json',
-        'https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions/${book.editionId}.min.json',
+  static List<String> _urls(String edition) => [
+        'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/$edition.min.json',
+        'https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions/$edition.min.json',
       ];
 
-  Future<HadithCollection> load(HadithBook book) {
-    final ready = _memory[book];
+  /// The book in Arabic or in English. If the English edition can't be
+  /// loaded, the Arabic one is shown instead of an error.
+  /// Hadith are content, not interface: they are always shown in Arabic,
+  /// whatever language the app is set to.
+  Future<HadithCollection> load(HadithBook book, {bool arabic = true}) =>
+      _loadEdition(book, true);
+
+  Future<HadithCollection> _loadEdition(HadithBook book, bool arabic) {
+    final key = book.edition(arabic);
+    final ready = _memory[key];
     if (ready != null) return Future.value(ready);
     // Two screens asking for the same book share one download.
-    return _pending[book] ??= _load(book).whenComplete(() {
-      _pending.remove(book);
+    return _pending[key] ??= _load(book, arabic).whenComplete(() {
+      _pending.remove(key);
     });
   }
 
-  Future<HadithCollection> _load(HadithBook book) async {
-    final file = _cacheFile(book);
+  Future<HadithCollection> _load(HadithBook book, bool arabic) async {
+    final edition = book.edition(arabic);
+    final file = _cacheFile(edition);
 
     if (file != null && await file.exists()) {
       try {
         final collection = await compute(_parse, [
           await file.readAsString(),
           book.name,
+          arabic ? 'ar' : 'en',
         ]);
-        return _memory[book] = collection;
+        return _memory[edition] = collection;
       } catch (_) {
         await file.delete().catchError((_) => file); // damaged, download again
       }
     }
 
     Object? lastError;
-    for (final url in _urls(book)) {
+    for (final url in _urls(edition)) {
       try {
         final response = await _client
             .get(Uri.parse(url))
@@ -58,19 +68,19 @@ class HadithRepository {
           throw Exception('Server error (${response.statusCode})');
         }
         final body = utf8.decode(response.bodyBytes); // keeps Arabic correct
-        final collection = await compute(_parse, [body, book.name]);
+        final collection = await compute(_parse, [body, book.name, arabic ? 'ar' : 'en']);
         await _save(file, body);
-        return _memory[book] = collection;
+        return _memory[edition] = collection;
       } catch (e) {
         lastError = e;
       }
     }
-    throw lastError ?? Exception('Could not load ${book.editionId}');
+    throw lastError ?? Exception('Could not load $edition');
   }
 
-  File? _cacheFile(HadithBook book) {
+  File? _cacheFile(String edition) {
     try {
-      return File('${Directory.systemTemp.path}/hadith_${book.editionId}_v1.json');
+      return File('${Directory.systemTemp.path}/hadith_${edition}_v1.json');
     } catch (_) {
       return null;
     }
@@ -92,6 +102,7 @@ class HadithRepository {
 
 HadithCollection _parse(List<String> args) {
   final book = HadithBook.values.byName(args[1]);
+  final arabic = args[2] == 'ar';
   final json = jsonDecode(args[0]) as Map<String, dynamic>;
   final meta = (json['metadata'] as Map<String, dynamic>?) ?? const {};
 
@@ -154,8 +165,9 @@ HadithCollection _parse(List<String> args) {
       number: number,
       text: text,
       section: section,
-      grade: _grade(raw['grades'], book),
+      grade: _grade(raw['grades'], book, arabic),
       searchKey: normalizeArabic(text),
+      label: '${book.titleFor(arabic)} · $number',
     ));
   }
   if (hadiths.isEmpty) throw const FormatException('No hadiths found');
@@ -168,7 +180,9 @@ HadithCollection _parse(List<String> args) {
           number: entry.key,
           name: (names[entry.key] ?? '').isNotEmpty
               ? names[entry.key]!
-              : (entry.key == 0 ? 'أحاديث أخرى' : 'القسم ${entry.key}'),
+              : (entry.key == 0
+                  ? (arabic ? 'أحاديث أخرى' : 'Other hadiths')
+                  : (arabic ? 'القسم ${entry.key}' : 'Section ${entry.key}')),
           count: entry.value,
         ),
   ];
@@ -189,16 +203,17 @@ String _numberLabel(Object? value) {
 
 /// Turns the grade given by the API into Arabic. The big two books are
 /// agreed to be authentic, so they are marked "صحيح" when the API has none.
-String? _grade(Object? grades, HadithBook book) {
+String? _grade(Object? grades, HadithBook book, bool arabic) {
+  String g(String ar, String en) => arabic ? ar : en;
   if (grades is List) {
     for (final entry in grades) {
       final raw = (entry is Map ? '${entry['grade']}' : '$entry').toLowerCase();
-      if (raw.contains('sahih') || raw.contains('صحيح')) return 'صحيح';
-      if (raw.contains('hasan') || raw.contains('حسن')) return 'حسن';
+      if (raw.contains('sahih') || raw.contains('صحيح')) return g('صحيح', 'Sahih');
+      if (raw.contains('hasan') || raw.contains('حسن')) return g('حسن', 'Hasan');
       if (raw.contains('da') && raw.contains('if') || raw.contains('ضعيف')) {
-        return 'ضعيف';
+        return g('ضعيف', "Da'if");
       }
     }
   }
-  return book == HadithBook.nawawi ? null : 'صحيح';
+  return book == HadithBook.nawawi ? null : g('صحيح', 'Sahih');
 }

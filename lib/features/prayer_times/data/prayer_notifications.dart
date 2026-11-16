@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/settings/app_settings.dart';
+import '../../../core/settings/tr.dart' show toArabicDigits;
 import 'prayer_models.dart';
 
 /// Schedules one phone notification per switched-on prayer for every day we
@@ -140,7 +141,10 @@ class PrayerNotifications {
                     day.date.day) *
                 10 +
             kind;
-        final until = formatClock(end);
+        final until = arabic
+            ? toArabicDigits(
+                '${end.hour % 12 == 0 ? 12 : end.hour % 12}:${end.minute.toString().padLeft(2, '0')} ${end.hour < 12 ? 'ص' : 'م'}')
+            : formatClock(end);
         await _plugin.zonedSchedule(
           id: id,
           title: morning

@@ -168,9 +168,19 @@ class PrayerRepository {
         date: DateTime(year, month, day),
         times: times,
         hijri: _hijri(date['hijri'] as Map<String, dynamic>?),
+        hijriAr: _hijriAr(date['hijri'] as Map<String, dynamic>?),
       ));
     }
     return (zone, days);
+  }
+
+  /// Same date with the month name in Arabic, as the API gives it.
+  static String _hijriAr(Map<String, dynamic>? hijri) {
+    if (hijri == null) return '';
+    final month = hijri['month'] as Map<String, dynamic>?;
+    final name = '${month?['ar'] ?? ''}'.trim();
+    if (name.isEmpty) return '';
+    return '${hijri['day']} $name ${hijri['year']}'.trim();
   }
 
   static const _hijriMonths = [

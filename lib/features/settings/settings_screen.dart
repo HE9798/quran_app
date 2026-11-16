@@ -138,35 +138,43 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                     const _Gap(),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(context.tr('Follow device theme',
-                          'اتباع مظهر الجهاز')),
-                      subtitle: Text(context.tr('Light or dark like your phone',
-                          'فاتح أو داكن مثل هاتفك')),
-                      value: settings.followDevice,
-                      onChanged: settings.setFollowDevice,
+                    _Label(context.tr('Theme', 'المظهر')),
+                    SegmentedButton<ThemeMode>(
+                      showSelectedIcon: false,
+                      segments: [
+                        ButtonSegment(
+                          value: ThemeMode.system,
+                          icon: const Icon(Icons.brightness_auto_rounded),
+                          label: Text(context.tr('Device', 'الجهاز')),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.light,
+                          icon: const Icon(Icons.light_mode_rounded),
+                          label: Text(context.tr('Light', 'فاتح')),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.dark,
+                          icon: const Icon(Icons.dark_mode_rounded),
+                          label: Text(context.tr('Dark', 'داكن')),
+                        ),
+                      ],
+                      selected: {settings.themeMode},
+                      onSelectionChanged: (v) {
+                        final mode = v.first;
+                        if (mode == ThemeMode.system) {
+                          settings.setFollowDevice(true);
+                        } else {
+                          settings.setDarkMode(mode == ThemeMode.dark);
+                          settings.setFollowDevice(false);
+                        }
+                      },
                     ),
-                    if (!settings.followDevice) ...[
-                      const SizedBox(height: 4),
-                      SegmentedButton<bool>(
-                        showSelectedIcon: false,
-                        segments: [
-                          ButtonSegment(
-                            value: false,
-                            icon: const Icon(Icons.light_mode_rounded),
-                            label: Text(context.tr('Light', 'فاتح')),
-                          ),
-                          ButtonSegment(
-                            value: true,
-                            icon: const Icon(Icons.dark_mode_rounded),
-                            label: Text(context.tr('Dark', 'داكن')),
-                          ),
-                        ],
-                        selected: {settings.darkMode},
-                        onSelectionChanged: (v) => settings.setDarkMode(v.first),
-                      ),
-                    ],
+                    const SizedBox(height: 6),
+                    Text(
+                      context.tr('Device follows your phone\'s light or dark mode.',
+                          'خيار الجهاز يتبع الوضع الفاتح أو الداكن في هاتفك.'),
+                      style: TextStyle(fontSize: 12, color: context.palette.muted),
+                    ),
                   ]),
 
                   // ----------------------------------------- notifications

@@ -22,6 +22,9 @@ class SavedPage {
   final int juz;
   final DateTime savedAt;
 
+  /// Surah name in the chosen language.
+  String name(bool arabic) => arabic ? arabicName : surahName;
+
   Map<String, dynamic> toJson() => {
         'surahNumber': surahNumber,
         'surahName': surahName,

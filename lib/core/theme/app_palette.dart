@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
 
+/// The two brand colours.
+class AppColors {
+  AppColors._();
+
+  /// Replaces white everywhere.
+  static const cream = Color(0xFFF7EBD4);
+  static const creamSoft = Color(0xB3F7EBD4); // 70%
+  static const creamFaint = Color(0x3DF7EBD4); // 24%
+
+  /// Replaces the old green.
+  static const teal = Color(0xFF12685E);
+}
+
 /// Extra design tokens that don't fit into Material's ColorScheme.
 /// Values come straight from the Figma-style design (light and dark).
 @immutable
@@ -35,24 +48,25 @@ class AppPalette extends ThemeExtension<AppPalette> {
   /// Big green card background (hero)
   final Color hero;
 
+  // Brand colours: cream #F7EBD4 replaces white, teal #12685E replaces green.
   static const light = AppPalette(
-    surface: Color(0xFFF4F8F6),
-    surfaceAlt: Color(0xFFE4F1EA),
-    muted: Color(0xFF566B62),
-    border: Color(0xFFDFE9E4),
-    primarySoft: Color(0xFFE3F3EB),
-    onPrimarySoft: Color(0xFF086043),
-    hero: Color(0xFF0B7A52),
+    surface: Color(0xFFFBF4E3), //       cards, inputs (lighter cream)
+    surfaceAlt: Color(0xFFEDDFC0), //    segmented controls, tracks
+    muted: Color(0xFF5F5C45),
+    border: Color(0xFFE0D0AA),
+    primarySoft: Color(0xFFD6E4D3), //   soft teal tint
+    onPrimarySoft: AppColors.teal,
+    hero: AppColors.teal,
   );
 
   static const dark = AppPalette(
     surface: Color(0xFF11273A),
     surfaceAlt: Color(0xFF183449),
-    muted: Color(0xFF9AB3AB),
+    muted: Color(0xFFB9B39C),
     border: Color(0xFF264760),
     primarySoft: Color(0xFF123A38),
-    onPrimarySoft: Color(0xFF6EE7B7),
-    hero: Color(0xFF0E6B4C),
+    onPrimarySoft: Color(0xFF8FD3C8),
+    hero: AppColors.teal,
   );
 
   @override

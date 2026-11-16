@@ -19,6 +19,9 @@ enum Prayer {
   final String apiKey;
 
   bool get isPrayer => this != Prayer.sunrise;
+
+  /// Name in the chosen language.
+  String label(bool arabicLanguage) => arabicLanguage ? arabic : english;
 }
 
 /// All times of one day. The times are [tz.TZDateTime]s in the time zone of
@@ -28,6 +31,7 @@ class PrayerDay {
     required this.date,
     required this.times,
     required this.hijri,
+    this.hijriAr = '',
   });
 
   /// Calendar date (year, month, day only).
@@ -36,6 +40,12 @@ class PrayerDay {
 
   /// e.g. "14 Jumada I 1448"
   final String hijri;
+
+  /// e.g. "١٤ جمادى الأولى ١٤٤٨"
+  final String hijriAr;
+
+  String hijriFor(bool arabicLanguage) =>
+      arabicLanguage && hijriAr.isNotEmpty ? hijriAr : hijri;
 }
 
 /// A run of days (about one to two months), enough for the list, the

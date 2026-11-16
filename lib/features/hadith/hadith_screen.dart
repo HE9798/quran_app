@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/lang_text.dart';
 import 'data/hadith_bookmark_store.dart';
 import 'data/hadith_models.dart';
 import 'data/hadith_repository.dart';
@@ -53,7 +54,7 @@ class _HadithScreenState extends State<HadithScreen>
               ),
               const SizedBox(height: 2),
               Text(
-                context.tr('Authentic collections in Arabic', 'مجموعات صحيحة'),
+                context.tr('Authentic collections', 'مجموعات صحيحة'),
                 style: TextStyle(fontSize: 13, color: p.muted),
               ),
             ],
@@ -79,9 +80,9 @@ class _HadithScreenState extends State<HadithScreen>
             unselectedLabelColor: scheme.onSurface,
             splashBorderRadius: BorderRadius.circular(12),
             overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-            tabs: const [
-              _TabLabel('الأربعين النووية'),
-              _TabLabel('الأحاديث النبوية الصحيحة'),
+            tabs: [
+              _TabLabel(context.tr("Nawawi's Forty", 'الأربعين النووية')),
+              _TabLabel(context.tr('Authentic Hadith', 'الأحاديث النبوية الصحيحة')),
             ],
           ),
         ),
@@ -112,10 +113,8 @@ class _TabLabel extends StatelessWidget {
           fit: BoxFit.scaleDown,
           child: Text(
             text,
-            textDirection: TextDirection.rtl,
-            style: AppTheme.arabic(size: 17, height: 1.3).copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+            textDirection: dirFor(text),
+            style: contentStyle(text, size: 17, height: 1.3, weight: FontWeight.w700),
           ),
         ),
       ),
@@ -171,8 +170,12 @@ class _NawawiBodyState extends State<_NawawiBody> {
         Expanded(
           child: _HadithList(
             hadiths: items,
-            emptyText: searching ? 'لا توجد نتائج' : 'لا توجد أحاديث',
-            header: searching ? '${items.length} نتيجة' : null,
+            emptyText: searching
+                ? context.tr('No results', 'لا توجد نتائج')
+                : context.tr('No hadiths', 'لا توجد أحاديث'),
+            header: searching
+                ? context.tr('${items.length} results', '${context.n(items.length)} نتيجة')
+                : null,
           ),
         ),
       ],
@@ -279,12 +282,14 @@ class _BookChip extends StatelessWidget {
           ),
           child: Text(
             label,
-            textDirection: TextDirection.rtl,
-            style: AppTheme.arabic(
+            textDirection: dirFor(label),
+            style: contentStyle(
+              label,
               size: 16,
               height: 1.2,
               color: selected ? scheme.onPrimary : scheme.onSurface,
-            ).copyWith(fontWeight: FontWeight.w700),
+              weight: FontWeight.w700,
+            ),
           ),
         ),
       ),
@@ -361,11 +366,14 @@ class _SahihBodyState extends State<_SahihBody> {
         Expanded(
           child: _HadithList(
             hadiths: items,
-            emptyText: searching ? 'لا توجد نتائج' : 'لا توجد أحاديث',
+            emptyText: searching
+                ? context.tr('No results', 'لا توجد نتائج')
+                : context.tr('No hadiths', 'لا توجد أحاديث'),
             header: searching
                 ? (items.length >= 100
-                    ? 'أول ١٠٠ نتيجة'
-                    : '${items.length} نتيجة')
+                    ? context.tr('First 100 results', 'أول ١٠٠ نتيجة')
+                    : context.tr('${items.length} results',
+                        '${context.n(items.length)} نتيجة'))
                 : null,
           ),
         ),
@@ -403,13 +411,18 @@ class _SectionButton extends StatelessWidget {
               Expanded(
                 child: Text(
                   section == null
-                      ? 'اختر الكتاب'
-                      : '${section!.name} (${section!.count})',
-                  textDirection: TextDirection.rtl,
+                      ? context.tr('Choose a chapter', 'اختر الكتاب')
+                      : '${section!.name} (${toArabicDigits('${section!.count}')})',
+                  textDirection: section == null
+                      ? (context.isArabic ? TextDirection.rtl : TextDirection.ltr)
+                      : dirFor(section!.name),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTheme.arabic(size: 17, height: 1.4).copyWith(
-                    fontWeight: FontWeight.w700,
+                  style: contentStyle(
+                    section?.name ?? context.tr('Choose a chapter', 'اختر الكتاب'),
+                    size: 17,
+                    height: 1.4,
+                    weight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -453,15 +466,17 @@ class _SectionSheet extends StatelessWidget {
                 : null,
             title: Text(
               s.name,
-              textDirection: TextDirection.rtl,
-              style: AppTheme.arabic(
+              textDirection: dirFor(s.name),
+              style: contentStyle(
+                s.name,
                 size: 17,
                 height: 1.4,
                 color: isSelected ? p.onPrimarySoft : scheme.onSurface,
-              ).copyWith(fontWeight: FontWeight.w700),
+                weight: FontWeight.w700,
+              ),
             ),
             trailing: Text(
-              '${s.count}',
+              toArabicDigits('${s.count}'),
               style: TextStyle(color: p.muted, fontSize: 13),
             ),
           );
@@ -490,11 +505,23 @@ class _CollectionLoader extends StatefulWidget {
 }
 
 class _CollectionLoaderState extends State<_CollectionLoader> {
-  late Future<HadithCollection> _future =
-      HadithRepository.instance.load(widget.book);
+  late Future<HadithCollection> _future;
+  bool? _arabic;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // first build, or the app language changed: load that language's book
+    final arabic = context.isArabic;
+    if (_arabic != arabic) {
+      _arabic = arabic;
+      _future = HadithRepository.instance.load(widget.book, arabic: arabic);
+    }
+  }
 
   void _retry() {
-    setState(() => _future = HadithRepository.instance.load(widget.book));
+    setState(() => _future = HadithRepository.instance
+        .load(widget.book, arabic: context.isArabic));
   }
 
   @override
@@ -514,22 +541,23 @@ class _CollectionLoaderState extends State<_CollectionLoader> {
                 children: [
                   Icon(Icons.cloud_off_rounded, size: 44, color: p.muted),
                   const SizedBox(height: 12),
-                  const Text(
-                    "Couldn't load the ahadeeth",
+                  Text(
+                    context.tr("Couldn't load the ahadeeth", 'تعذّر تحميل الأحاديث'),
                     textAlign: TextAlign.center,
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Check your internet connection and try again.',
+                    context.tr('Check your internet connection and try again.',
+                        'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.'),
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 13, color: p.muted),
                   ),
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: _retry,
-                    child: const Text('Try again'),
+                    child: Text(context.tr('Try again', 'إعادة المحاولة')),
                   ),
                 ],
               ),
@@ -545,8 +573,10 @@ class _CollectionLoaderState extends State<_CollectionLoader> {
               const SizedBox(height: 16),
               Text(
                 widget.book == HadithBook.nawawi
-                    ? 'Loading…'
-                    : 'Downloading ${widget.book.title}…\nOnly the first time.',
+                    ? context.tr('Loading…', 'جارٍ التحميل…')
+                    : context.tr(
+                        'Downloading ${widget.book.title}…\nOnly the first time.',
+                        'جارٍ تحميل ${widget.book.title}…\nفي المرة الأولى فقط.'),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: p.muted, height: 1.4),
               ),
@@ -604,7 +634,7 @@ class _SearchFieldState extends State<_SearchField> {
                 },
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  hintText: 'Search hadith',
+                  hintText: context.tr('Search hadith', 'ابحث في الأحاديث'),
                   hintStyle: TextStyle(color: p.muted),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
@@ -640,8 +670,7 @@ class _HadithList extends StatelessWidget {
       return Center(
         child: Text(
           emptyText,
-          textDirection: TextDirection.rtl,
-          style: AppTheme.arabic(size: 18, height: 1.4, color: p.muted),
+          style: contentStyle(emptyText, size: 18, height: 1.4, color: p.muted),
         ),
       );
     }
@@ -656,8 +685,7 @@ class _HadithList extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               header!,
-              textDirection: TextDirection.rtl,
-              style: AppTheme.arabic(size: 15, height: 1.3, color: p.muted),
+              style: contentStyle(header!, size: 15, height: 1.3, color: p.muted),
             ),
           );
         }
@@ -691,7 +719,9 @@ class _HadithCardState extends State<HadithCard> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Hadith copied')));
+      ..showSnackBar(SnackBar(
+        content: Text(context.tr('Hadith copied', 'تم نسخ الحديث')),
+      ));
   }
 
   @override
@@ -716,11 +746,11 @@ class _HadithCardState extends State<HadithCard> {
               Expanded(
                 child: Text(
                   h.label,
-                  textDirection: TextDirection.rtl,
+                  textDirection: dirFor(h.label),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTheme.arabic(size: 15, height: 1.3, color: p.muted)
-                      .copyWith(fontWeight: FontWeight.w700),
+                  style: contentStyle(h.label,
+                      size: 15, height: 1.3, color: p.muted, weight: FontWeight.w700),
                 ),
               ),
               if (h.grade != null)
@@ -733,11 +763,13 @@ class _HadithCardState extends State<HadithCard> {
                   ),
                   child: Text(
                     h.grade!,
-                    style: AppTheme.arabic(
+                    style: contentStyle(
+                      h.grade!,
                       size: 14,
                       height: 1.3,
                       color: p.onPrimarySoft,
-                    ).copyWith(fontWeight: FontWeight.w700),
+                      weight: FontWeight.w700,
+                    ),
                   ),
                 ),
             ],
@@ -747,28 +779,29 @@ class _HadithCardState extends State<HadithCard> {
             width: double.infinity,
             child: Text(
               h.text,
-              textDirection: TextDirection.rtl,
+              textDirection: dirFor(h.text),
               maxLines: (long && !_expanded) ? 8 : null,
               overflow: (long && !_expanded)
                   ? TextOverflow.ellipsis
                   : TextOverflow.visible,
-              style: AppTheme.arabic(size: 21, height: 1.9),
+              style: contentStyle(h.text, size: 21, height: 1.9),
             ),
           ),
           if (long)
             Align(
-              alignment: Alignment.centerRight,
+              alignment: AlignmentDirectional.centerEnd,
               child: TextButton(
                 onPressed: () => setState(() => _expanded = !_expanded),
                 style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
                 child: Text(
-                  _expanded ? 'عرض أقل' : 'عرض المزيد',
-                  textDirection: TextDirection.rtl,
-                  style: AppTheme.arabic(
-                    size: 16,
-                    height: 1.3,
+                  _expanded
+                      ? context.tr('Show less', 'عرض أقل')
+                      : context.tr('Show more', 'عرض المزيد'),
+                  style: TextStyle(
+                    fontSize: 14,
                     color: scheme.primary,
-                  ).copyWith(fontWeight: FontWeight.w700),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -781,7 +814,7 @@ class _HadithCardState extends State<HadithCard> {
             child: Row(
               children: [
                 IconButton(
-                  tooltip: 'Copy hadith',
+                  tooltip: context.tr('Copy hadith', 'نسخ الحديث'),
                   onPressed: _copy,
                   style: IconButton.styleFrom(
                     foregroundColor: scheme.onSurface,
@@ -795,7 +828,9 @@ class _HadithCardState extends State<HadithCard> {
                   builder: (context, _) {
                     final saved = HadithBookmarkStore.instance.isSaved(h.id);
                     return IconButton(
-                      tooltip: saved ? 'Remove bookmark' : 'Bookmark hadith',
+                      tooltip: saved
+                          ? context.tr('Remove bookmark', 'إزالة الإشارة')
+                          : context.tr('Bookmark hadith', 'حفظ الحديث'),
                       onPressed: () => HadithBookmarkStore.instance.toggle(h),
                       style: IconButton.styleFrom(
                         foregroundColor:

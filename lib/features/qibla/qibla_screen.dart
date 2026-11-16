@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import '../prayer_times/prayer_controller.dart';
 import '../prayer_times/data/location_service.dart';
@@ -92,7 +93,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    tooltip: 'Back',
+                    tooltip: context.tr('Back', 'رجوع'),
                     onPressed: () =>
                         context.canPop() ? context.pop() : context.go('/prayer'),
                     style: IconButton.styleFrom(
@@ -103,9 +104,9 @@ class _QiblaScreenState extends State<QiblaScreen> {
                     ),
                     icon: const Icon(Icons.arrow_back_rounded, size: 22),
                   ),
-                  const Text(
-                    'Qibla',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                  Text(
+                    context.tr('Qibla', 'القبلة'),
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(width: 44, height: 44),
                 ],
@@ -146,27 +147,28 @@ class _NoLocation extends StatelessWidget {
           children: [
             Icon(Icons.location_off_outlined, size: 44, color: p.muted),
             const SizedBox(height: 12),
-            const Text(
-              'We need your location',
+            Text(
+              context.tr('We need your location', 'نحتاج إلى موقعك'),
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Text(
-              'The Qibla direction depends on where you are.',
+              context.tr('The Qibla direction depends on where you are.',
+                  'يعتمد اتجاه القبلة على مكانك.'),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: p.muted),
             ),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () => controller.load(refreshLocation: true),
-              child: const Text('Allow location'),
+              child: Text(context.tr('Allow location', 'اسمح بالموقع')),
             ),
             if (controller.locationProblem == LocationProblem.deniedForever ||
                 controller.locationProblem == LocationProblem.serviceOff)
               TextButton(
                 onPressed: () => LocationService.instance
                     .openSettings(controller.locationProblem!),
-                child: const Text('Open settings'),
+                child: Text(context.tr('Open settings', 'فتح الإعدادات')),
               ),
           ],
         ),
@@ -186,14 +188,14 @@ class _Body extends StatelessWidget {
   final ValueNotifier<double?> heading;
   final bool noSensor;
 
-  static String _km(double km) {
+  static String _km(BuildContext context, double km) {
     final digits = km.round().toString();
     final buffer = StringBuffer();
     for (var i = 0; i < digits.length; i++) {
       if (i > 0 && (digits.length - i) % 3 == 0) buffer.write(',');
       buffer.write(digits[i]);
     }
-    return '$buffer km';
+    return context.isArabic ? '${toArabicDigits('$buffer')} كم' : '$buffer km';
   }
 
   @override
@@ -235,7 +237,7 @@ class _Body extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                '${bearing.round()}°',
+                '${context.n(bearing.round())}°',
                 style: const TextStyle(
                   fontSize: 44,
                   fontWeight: FontWeight.w800,
@@ -245,7 +247,9 @@ class _Body extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${compassName(bearing)} · towards Makkah',
+                context.isArabic
+                    ? '${compassName(bearing, arabic: true)} · نحو مكة المكرمة'
+                    : '${compassName(bearing)} · towards Makkah',
                 style: TextStyle(fontSize: 15, color: p.muted),
               ),
             ],
@@ -256,14 +260,14 @@ class _Body extends StatelessWidget {
           children: [
             Expanded(
               child: _StatTile(
-                label: 'Distance to the Kaaba',
-                value: _km(distance),
+                label: context.tr('Distance to the Kaaba', 'المسافة إلى الكعبة'),
+                value: _km(context, distance),
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: _StatTile(
-                label: 'Your location',
+                label: context.tr('Your location', 'موقعك'),
                 value: location.label,
               ),
             ),
@@ -288,11 +292,19 @@ class _Body extends StatelessWidget {
               Expanded(
                 child: Text(
                   noSensor
-                      ? "This phone has no compass sensor. Use a compass or "
-                          "a map to face ${bearing.round()}° from north."
-                      : 'Hold your phone flat and away from metal objects. '
-                          'If the marker drifts, move your phone in a '
-                          'figure 8 to calibrate.',
+                      ? context.tr(
+                          "This phone has no compass sensor. Use a compass or "
+                              "a map to face ${bearing.round()}° from north.",
+                          'هذا الهاتف لا يحتوي على حساس بوصلة. استخدم بوصلة أو '
+                              'خريطة لتتجه ${context.n(bearing.round())}° من الشمال.',
+                        )
+                      : context.tr(
+                          'Hold your phone flat and away from metal objects. '
+                              'If the marker drifts, move your phone in a '
+                              'figure 8 to calibrate.',
+                          'أمسك هاتفك بشكل أفقي وبعيدًا عن المعادن. إذا اهتز '
+                              'المؤشر فحرّك هاتفك على شكل ٨ للمعايرة.',
+                        ),
                   style: TextStyle(
                     fontSize: 13,
                     height: 1.5,
@@ -320,10 +332,14 @@ class _StatusChip extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     final (text, icon) = noSensor
-        ? ('No compass sensor', Icons.sensors_off_outlined)
+        ? (context.tr('No compass sensor', 'لا يوجد حساس بوصلة'),
+            Icons.sensors_off_outlined)
         : aligned
-            ? ("You're facing the Qibla", Icons.check_rounded)
-            : ('Turn until the Kaaba is at the top', Icons.rotate_right_rounded);
+            ? (context.tr("You're facing the Qibla", 'أنت تواجه القبلة'),
+                Icons.check_rounded)
+            : (context.tr('Turn until the Kaaba is at the top',
+                    'أدر الهاتف حتى تصبح الكعبة في الأعلى'),
+                Icons.rotate_right_rounded);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -410,8 +426,12 @@ class _Compass extends StatelessWidget {
     final turn = -(heading ?? 0) * math.pi / 180;
 
     return Semantics(
-      label: 'Qibla compass. The Kaaba is ${bearing.round()} degrees, '
-          '${compassName(bearing)} of north.',
+      label: context.tr(
+        'Qibla compass. The Kaaba is ${bearing.round()} degrees, '
+            '${compassName(bearing)} of north.',
+        'بوصلة القبلة. الكعبة على ${context.n(bearing.round())} درجة، '
+            '${compassName(bearing, arabic: true)}.',
+      ),
       child: SizedBox(
         width: size,
         height: size,
@@ -430,6 +450,7 @@ class _Compass extends StatelessWidget {
                   text: scheme.onSurface,
                   accent: scheme.primary,
                   onAccent: scheme.onPrimary,
+                  arabic: context.isArabic,
                 ),
               ),
             ),
@@ -475,8 +496,10 @@ class _DialPainter extends CustomPainter {
     required this.text,
     required this.accent,
     required this.onAccent,
+    this.arabic = false,
   });
 
+  final bool arabic;
   final double bearing;
   final Color surface;
   final Color border;
@@ -527,10 +550,10 @@ class _DialPainter extends CustomPainter {
     }
 
     // N E S W
-    _letter(canvas, c, 'N', 0, 88 * k, accent, FontWeight.w800, 17);
-    _letter(canvas, c, 'E', 90, 94 * k, text, FontWeight.w700, 15);
-    _letter(canvas, c, 'S', 180, 94 * k, text, FontWeight.w700, 15);
-    _letter(canvas, c, 'W', 270, 94 * k, text, FontWeight.w700, 15);
+    _letter(canvas, c, arabic ? 'ش' : 'N', 0, 88 * k, accent, FontWeight.w800, 17);
+    _letter(canvas, c, arabic ? 'ق' : 'E', 90, 94 * k, text, FontWeight.w700, 15);
+    _letter(canvas, c, arabic ? 'ج' : 'S', 180, 94 * k, text, FontWeight.w700, 15);
+    _letter(canvas, c, arabic ? 'غ' : 'W', 270, 94 * k, text, FontWeight.w700, 15);
 
     // the Kaaba marker, at the Qibla bearing
     canvas.save();
@@ -595,5 +618,6 @@ class _DialPainter extends CustomPainter {
       old.bearing != bearing ||
       old.surface != surface ||
       old.accent != accent ||
+      old.arabic != arabic ||
       old.text != text;
 }

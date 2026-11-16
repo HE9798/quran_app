@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import 'quran_audio_controller.dart';
 
@@ -41,21 +42,23 @@ class MiniPlayer extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                surah.englishName,
+                                surah.name(context.isArabic),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.cream,
                                   fontWeight: FontWeight.w800,
                                   fontSize: 15,
                                 ),
                               ),
                               Text(
-                                '${audio.reciter.englishName} · Verse ${audio.ayah}/${surah.ayahCount}',
+                                context.isArabic
+                                    ? '${audio.reciter.displayName(true)} · الآية ${context.n(audio.ayah)}/${context.n(surah.ayahCount)}'
+                                    : '${audio.reciter.englishName} · Verse ${audio.ayah}/${surah.ayahCount}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                    color: Colors.white70, fontSize: 12),
+                                    color: AppColors.creamSoft, fontSize: 12),
                               ),
                             ],
                           ),
@@ -67,13 +70,15 @@ class MiniPlayer extends StatelessWidget {
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
+                                  strokeWidth: 2, color: AppColors.cream),
                             ),
                           )
                         else
                           IconButton(
-                            tooltip: audio.playing ? 'Pause' : 'Play',
-                            color: Colors.white,
+                            tooltip: audio.playing
+                                ? context.tr('Pause', 'إيقاف مؤقت')
+                                : context.tr('Play', 'تشغيل'),
+                            color: AppColors.cream,
                             iconSize: 30,
                             onPressed: audio.togglePlay,
                             icon: Icon(audio.playing
@@ -81,8 +86,8 @@ class MiniPlayer extends StatelessWidget {
                                 : Icons.play_arrow_rounded),
                           ),
                         IconButton(
-                          tooltip: 'Stop',
-                          color: Colors.white70,
+                          tooltip: context.tr('Stop', 'إيقاف'),
+                          color: AppColors.creamSoft,
                           onPressed: audio.stop,
                           icon: const Icon(Icons.close_rounded),
                         ),
@@ -92,8 +97,8 @@ class MiniPlayer extends StatelessWidget {
                   LinearProgressIndicator(
                     value: progress.clamp(0.0, 1.0),
                     minHeight: 3,
-                    backgroundColor: Colors.white24,
-                    color: Colors.white,
+                    backgroundColor: AppColors.creamFaint,
+                    color: AppColors.cream,
                   ),
                 ],
               ),

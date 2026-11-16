@@ -109,7 +109,7 @@ class _QuranListScreenState extends State<QuranListScreen>
               suffixIcon: _query.isEmpty
                   ? null
                   : IconButton(
-                      tooltip: 'Clear',
+                      tooltip: context.tr('Clear', 'مسح'),
                       icon: const Icon(Icons.close_rounded),
                       onPressed: () {
                         _searchController.clear();
@@ -132,19 +132,19 @@ class _QuranListScreenState extends State<QuranListScreen>
           child: Row(
             children: [
               _FilterChip(
-                label: 'All',
+                label: context.tr('All', 'الكل'),
                 selected: _filter == _Filter.all,
                 onTap: () => setState(() => _filter = _Filter.all),
               ),
               const SizedBox(width: 8),
               _FilterChip(
-                label: 'Meccan',
+                label: context.tr('Meccan', 'مكية'),
                 selected: _filter == _Filter.meccan,
                 onTap: () => setState(() => _filter = _Filter.meccan),
               ),
               const SizedBox(width: 8),
               _FilterChip(
-                label: 'Medinan',
+                label: context.tr('Medinan', 'مدنية'),
                 selected: _filter == _Filter.medinan,
                 onTap: () => setState(() => _filter = _Filter.medinan),
               ),
@@ -162,7 +162,7 @@ class _QuranListScreenState extends State<QuranListScreen>
               }
               if (snapshot.hasError || snapshot.data == null) {
                 return ErrorView(
-                  title: "Couldn't load the surahs",
+                  title: context.tr("Couldn't load the surahs", 'تعذّر تحميل السور'),
                   onRetry: _retry,
                 );
               }
@@ -171,7 +171,7 @@ class _QuranListScreenState extends State<QuranListScreen>
               if (items.isEmpty) {
                 return Center(
                   child: Text(
-                    'No surah found',
+                    context.tr('No surah found', 'لم يتم العثور على سورة'),
                     style: TextStyle(color: p.muted, fontSize: 15),
                   ),
                 );
@@ -303,39 +303,24 @@ class _SurahTile extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        surah.englishName,
+                        context.isArabic ? surah.arabicName : surah.englishName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: context.isArabic
+                            ? AppTheme.arabic(size: 21, height: 1.4, color: primary)
+                            : const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        surah.meta,
+                        surah.metaFor(context.isArabic),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 13, color: p.muted),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 140),
-                  child: Directionality(
-                    textDirection: TextDirection.rtl,
-                    child: Text(
-                      surah.arabicName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTheme.arabic(
-                        size: 22,
-                        height: 1.4,
-                        color: primary,
-                      ),
-                    ),
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -348,7 +333,9 @@ class _SurahTile extends StatelessWidget {
                     final busy = current && audio.loading && !audio.playing;
                     final scheme = Theme.of(context).colorScheme;
                     return IconButton(
-                      tooltip: playing ? 'Pause' : 'Listen',
+                      tooltip: playing
+                          ? context.tr('Pause', 'إيقاف مؤقت')
+                          : context.tr('Listen', 'استماع'),
                       onPressed: onPlay,
                       style: IconButton.styleFrom(
                         backgroundColor:
@@ -408,7 +395,7 @@ class _NumberBadge extends StatelessWidget {
         ),
         child: Center(
           child: Text(
-            '$number',
+            context.n(number),
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w800,

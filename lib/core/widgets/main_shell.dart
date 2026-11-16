@@ -36,8 +36,11 @@ class _MainShellState extends State<MainShell> {
     _audio.clearError();
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(
-        content: Text("Couldn't play the recitation. Check your internet connection and try again."),
+      ..showSnackBar(SnackBar(
+        content: Text(context.tr(
+          "Couldn't play the recitation. Check your internet connection and try again.",
+          'تعذّر تشغيل التلاوة. تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.',
+        )),
       ));
   }
 

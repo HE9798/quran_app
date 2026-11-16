@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_view.dart';
@@ -46,8 +47,8 @@ class _SurahScreenState extends State<SurahScreen> {
   final _repo = QuranRepository();
   late Future<SurahDetail> _future = _repo.getSurahDetail(widget.number);
 
-  /// surah number -> English name, used on the "next surah" page.
-  Map<int, String> _names = const {};
+  /// surah number -> surah, used for the name on the "next surah" page.
+  Map<int, Surah> _names = const {};
 
   @override
   void initState() {
@@ -59,7 +60,7 @@ class _SurahScreenState extends State<SurahScreen> {
     try {
       final surahs = await _repo.getSurahs();
       if (!mounted) return;
-      setState(() => _names = {for (final s in surahs) s.number: s.englishName});
+      setState(() => _names = {for (final s in surahs) s.number: s});
     } catch (_) {
       // names are only a nicety on the transition page
     }
@@ -79,16 +80,16 @@ class _SurahScreenState extends State<SurahScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return _SimpleShell(
-            title: 'Surah ${widget.number}',
+            title: context.tr('Surah ${widget.number}', 'سورة ${context.n(widget.number)}'),
             child: const Center(child: CircularProgressIndicator()),
           );
         }
         final detail = snapshot.data;
         if (snapshot.hasError || detail == null) {
           return _SimpleShell(
-            title: 'Surah ${widget.number}',
+            title: context.tr('Surah ${widget.number}', 'سورة ${context.n(widget.number)}'),
             child: ErrorView(
-              title: "Couldn't load this surah",
+              title: context.tr("Couldn't load this surah", 'تعذّر تحميل هذه السورة'),
               onRetry: _retry,
             ),
           );
@@ -182,7 +183,7 @@ class _SurahReader extends StatefulWidget {
   final SurahDetail detail;
   final int? initialPage;
   final bool startAtEnd;
-  final Map<int, String> names;
+  final Map<int, Surah> names;
   final void Function(int surah, bool atEnd) onGoToSurah;
 
   @override
@@ -281,7 +282,10 @@ class _SurahReaderState extends State<_SurahReader> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: Text(saved ? 'Page ${_current.number} saved' : 'Bookmark removed'),
+        content: Text(saved
+            ? context.tr('Page ${_current.number} saved',
+                'تم حفظ الصفحة ${context.n(_current.number)}')
+            : context.tr('Bookmark removed', 'تمت إزالة الإشارة')),
       ));
   }
 
@@ -361,7 +365,9 @@ class _SurahReaderState extends State<_SurahReader> {
     ));
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Verse copied')));
+      ..showSnackBar(SnackBar(
+        content: Text(context.tr('Verse copied', 'تم نسخ الآية')),
+      ));
   }
 
   void _onPageChanged(int index) {
@@ -417,8 +423,10 @@ class _SurahReaderState extends State<_SurahReader> {
                 BookmarkStore.instance.isSaved(surah.number, current.number);
             final scheme = Theme.of(context).colorScheme;
             return _TopBar(
-              title: surah.englishName,
-              subtitle: 'Page ${current.number} · Juz ${current.juz}',
+              title: context.isArabic ? 'سورة ${surah.arabicName}' : surah.englishName,
+              subtitle: context.isArabic
+                  ? 'صفحة ${context.n(current.number)} · الجزء ${context.n(current.juz)}'
+                  : 'Page ${current.number} · Juz ${current.juz}',
               onBack: () => _goBack(context),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -436,10 +444,11 @@ class _SurahReaderState extends State<_SurahReader> {
                                 ? Icons.pause_rounded
                                 : Icons.play_arrow_rounded,
                         tooltip: _selected != null
-                            ? 'Listen from verse $_selected'
+                            ? context.tr('Listen from verse $_selected',
+                                'استمع من الآية ${context.n(_selected!)}')
                             : playingHere
-                                ? 'Pause'
-                                : 'Listen',
+                                ? context.tr('Pause', 'إيقاف مؤقت')
+                                : context.tr('Listen', 'استماع'),
                         color: playingHere ? scheme.primary : null,
                         onPressed: _onPlayPressed,
                       );
@@ -450,7 +459,9 @@ class _SurahReaderState extends State<_SurahReader> {
                     icon: saved
                         ? Icons.bookmark_rounded
                         : Icons.bookmark_border_rounded,
-                    tooltip: saved ? 'Remove bookmark' : 'Save this page',
+                    tooltip: saved
+                        ? context.tr('Remove bookmark', 'إزالة الإشارة')
+                        : context.tr('Save this page', 'احفظ هذه الصفحة'),
                     color: saved ? scheme.primary : null,
                     onPressed: _toggleBookmark,
                   ),
@@ -479,16 +490,20 @@ class _SurahReaderState extends State<_SurahReader> {
                       itemBuilder: (context, i) {
                         if (_hasPrev && i == 0) {
                           return _TransitionPage(
-                            label: 'Previous surah',
-                            name: widget.names[surah.number - 1] ??
-                                'Surah ${surah.number - 1}',
+                            label: context.tr('Previous surah', 'السورة السابقة'),
+                            name: widget.names[surah.number - 1]
+                                    ?.name(context.isArabic) ??
+                                context.tr('Surah ${surah.number - 1}',
+                                    'سورة ${context.n(surah.number - 1)}'),
                           );
                         }
                         if (_hasNext && i == _total - 1) {
                           return _TransitionPage(
-                            label: 'Next surah',
-                            name: widget.names[surah.number + 1] ??
-                                'Surah ${surah.number + 1}',
+                            label: context.tr('Next surah', 'السورة التالية'),
+                            name: widget.names[surah.number + 1]
+                                    ?.name(context.isArabic) ??
+                                context.tr('Surah ${surah.number + 1}',
+                                    'سورة ${context.n(surah.number + 1)}'),
                           );
                         }
                         final contentIndex = i - _offset;
@@ -565,7 +580,7 @@ class _TopBar extends StatelessWidget {
         children: [
           _BarButton(
             icon: Icons.arrow_back_rounded,
-            tooltip: 'Back',
+            tooltip: context.tr('Back', 'رجوع'),
             onPressed: onBack,
           ),
           Expanded(
@@ -664,7 +679,9 @@ class _SurahHeader extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${surah.revelationType} · ${surah.ayahCount} verses',
+                      context.isArabic
+                          ? surah.metaFor(true)
+                          : '${surah.revelationType} · ${surah.ayahCount} verses',
                       style: TextStyle(fontSize: 12, color: p.muted),
                     ),
                   ],
@@ -942,8 +959,10 @@ class _QuarterMark extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final label = quarter > 0
-        ? 'End of quarter ${(quarter - 1) % 4 + 1} of hizb ${(quarter - 1) ~/ 4 + 1}'
-        : 'End of quarter';
+        ? context.tr(
+            'End of quarter ${(quarter - 1) % 4 + 1} of hizb ${(quarter - 1) ~/ 4 + 1}',
+            'نهاية الربع ${context.n((quarter - 1) % 4 + 1)} من الحزب ${context.n((quarter - 1) ~/ 4 + 1)}')
+        : context.tr('End of quarter', 'نهاية الربع');
     return Semantics(
       label: label,
       excludeSemantics: true,
@@ -1015,7 +1034,7 @@ class _VerseMarker extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
-      label: 'Verse $number',
+      label: context.tr('Verse $number', 'الآية ${context.n(number)}'),
       excludeSemantics: true,
       child: GestureDetector(
         onTap: onTap,
@@ -1042,7 +1061,7 @@ class _VerseMarker extends StatelessWidget {
                 // white on the green (dark mode's lighter green needs dark text)
                 color: Theme.of(context).brightness == Brightness.dark
                     ? scheme.onPrimary
-                    : Colors.white,
+                    : AppColors.cream,
               ),
             ),
           ),
@@ -1156,7 +1175,8 @@ class _VersePanel extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Verse ${ayah.numberInSurah}',
+                      context.tr('Verse ${ayah.numberInSurah}',
+                          'الآية ${context.n(ayah.numberInSurah)}'),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -1164,19 +1184,20 @@ class _VersePanel extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      '${surah.englishName} ${surah.number}:${ayah.numberInSurah}',
+                      context.digits(
+                          '${surah.name(context.isArabic)} ${surah.number}:${ayah.numberInSurah}'),
                       style: TextStyle(fontSize: 12, color: p.muted),
                     ),
                   ],
                 ),
               ),
               IconButton(
-                tooltip: 'Copy verse',
+                tooltip: context.tr('Copy verse', 'نسخ الآية'),
                 onPressed: onCopy,
                 icon: const Icon(Icons.copy_rounded),
               ),
               IconButton(
-                tooltip: 'Close',
+                tooltip: context.tr('Close', 'إغلاق'),
                 onPressed: onClose,
                 icon: const Icon(Icons.close_rounded),
               ),
@@ -1192,12 +1213,12 @@ class _VersePanel extends StatelessWidget {
             child: Row(
               children: [
                 _PanelTab(
-                  label: 'Tafseer',
+                  label: context.tr('Tafseer', 'التفسير'),
                   selected: tafseerTab,
                   onTap: () => onTab(true),
                 ),
                 _PanelTab(
-                  label: 'Translation',
+                  label: context.tr('Translation', 'الترجمة'),
                   selected: !tafseerTab,
                   onTap: () => onTab(false),
                 ),
@@ -1215,7 +1236,9 @@ class _VersePanel extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  tafseerTab ? 'Al-Muyassar' : 'Saheeh International',
+                  tafseerTab
+                      ? context.tr('Al-Muyassar', 'التفسير الميسر')
+                      : context.tr('Saheeh International', 'صحيح إنترناشيونال'),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -1232,7 +1255,7 @@ class _VersePanel extends StatelessWidget {
             child: SingleChildScrollView(
               child: SizedBox(
                 width: double.infinity,
-                child: tafseerTab ? _tafseer(p) : _translation(p),
+                child: tafseerTab ? _tafseer(context, p) : _translation(context, p),
               ),
             ),
           ),
@@ -1241,10 +1264,11 @@ class _VersePanel extends StatelessWidget {
     );
   }
 
-  Widget _tafseer(AppPalette p) {
+  Widget _tafseer(BuildContext context, AppPalette p) {
     if (ayah.tafseer.isEmpty) {
       return Text(
-        'Tafseer is not available for this verse right now.',
+        context.tr('Tafseer is not available for this verse right now.',
+            'التفسير غير متاح لهذه الآية حاليًا.'),
         style: TextStyle(fontSize: 14, color: p.muted),
       );
     }
@@ -1254,10 +1278,11 @@ class _VersePanel extends StatelessWidget {
     );
   }
 
-  Widget _translation(AppPalette p) {
+  Widget _translation(BuildContext context, AppPalette p) {
     if (ayah.translation.isEmpty) {
       return Text(
-        'Translation is not available for this verse.',
+        context.tr('Translation is not available for this verse.',
+            'الترجمة غير متاحة لهذه الآية.'),
         style: TextStyle(fontSize: 14, color: p.muted),
       );
     }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import 'data/reciter.dart';
 import 'quran_audio_controller.dart';
@@ -36,10 +37,10 @@ class _ReciterSheet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
                 child: Text(
-                  'Choose a reciter',
+                  context.tr('Choose a reciter', 'اختر القارئ'),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                 ),
               ),
@@ -63,7 +64,7 @@ class _ReciterSheet extends StatelessWidget {
                         foregroundColor:
                             selected ? scheme.onPrimary : scheme.onSurface,
                         child: Text(
-                          r.initials,
+                          r.initialsFor(context.isArabic),
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -71,13 +72,8 @@ class _ReciterSheet extends StatelessWidget {
                         ),
                       ),
                       title: Text(
-                        r.englishName,
+                        r.displayName(context.isArabic),
                         style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      subtitle: Text(
-                        r.name,
-                        textDirection: TextDirection.rtl,
-                        textAlign: TextAlign.start,
                       ),
                       trailing: selected
                           ? Icon(Icons.check_circle_rounded,
@@ -141,7 +137,7 @@ class _ReciterCardState extends State<ReciterCard> {
                     radius: 22,
                     backgroundColor: scheme.primary,
                     foregroundColor: scheme.onPrimary,
-                    child: Text(r.initials,
+                    child: Text(r.initialsFor(context.isArabic),
                         style: const TextStyle(fontWeight: FontWeight.w800)),
                   ),
                   const SizedBox(width: 12),
@@ -149,10 +145,10 @@ class _ReciterCardState extends State<ReciterCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Reciter',
+                        Text(context.tr('Reciter', 'القارئ'),
                             style: TextStyle(fontSize: 12, color: p.muted)),
                         Text(
-                          r.englishName,
+                          r.displayName(context.isArabic),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -161,7 +157,7 @@ class _ReciterCardState extends State<ReciterCard> {
                       ],
                     ),
                   ),
-                  Text('Change',
+                  Text(context.tr('Change', 'تغيير'),
                       style: TextStyle(
                           color: scheme.primary, fontWeight: FontWeight.w700)),
                   Icon(Icons.keyboard_arrow_down_rounded, color: scheme.primary),

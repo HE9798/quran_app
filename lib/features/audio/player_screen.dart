@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import 'quran_audio_controller.dart';
@@ -28,16 +29,16 @@ class PlayerScreen extends StatelessWidget {
               child: Row(
                 children: [
                   IconButton(
-                    tooltip: 'Back',
+                    tooltip: context.tr('Back', 'رجوع'),
                     icon: const Icon(Icons.arrow_back_rounded),
                     onPressed: () =>
                         context.canPop() ? context.pop() : context.go('/quran'),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Now playing',
+                      context.tr('Now playing', 'قيد التشغيل'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                     ),
                   ),
                   const SizedBox(width: 48),
@@ -54,18 +55,19 @@ class PlayerScreen extends StatelessWidget {
                           children: [
                             Icon(Icons.headphones_rounded, size: 48, color: p.muted),
                             const SizedBox(height: 12),
-                            const Text('Nothing is playing',
-                                style: TextStyle(
+                            Text(context.tr('Nothing is playing', 'لا يوجد تشغيل حاليًا'),
+                                style: const TextStyle(
                                     fontSize: 17, fontWeight: FontWeight.w700)),
                             const SizedBox(height: 4),
                             Text(
-                              'Choose a surah in the Listening tab.',
+                              context.tr('Choose a surah and tap play.',
+                                  'اختر سورة واضغط تشغيل.'),
                               style: TextStyle(color: p.muted),
                             ),
                             const SizedBox(height: 16),
                             FilledButton(
                               onPressed: () => context.go('/quran'),
-                              child: const Text('Open Quran'),
+                              child: Text(context.tr('Open Quran', 'افتح القرآن')),
                             ),
                           ],
                         ),
@@ -86,36 +88,48 @@ class PlayerScreen extends StatelessWidget {
                             ),
                             child: Column(
                               children: [
-                                Directionality(
-                                  textDirection: TextDirection.rtl,
-                                  child: Text(
-                                    'سورة ${surah.arabicName}',
-                                    style: AppTheme.arabic(
-                                      size: 38,
-                                      height: 1.5,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${surah.englishName} · ${surah.translation}',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      color: Colors.white70, fontSize: 14),
-                                ),
+                                context.isArabic
+                                    ? Text(
+                                        'سورة ${surah.arabicName}',
+                                        style: AppTheme.arabic(
+                                          size: 38,
+                                          height: 1.5,
+                                          color: AppColors.cream,
+                                        ),
+                                      )
+                                    : Column(
+                                        children: [
+                                          Text(
+                                            surah.englishName,
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              color: AppColors.cream,
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            surah.translation,
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                                color: AppColors.creamSoft,
+                                                fontSize: 14),
+                                          ),
+                                        ],
+                                      ),
                                 const SizedBox(height: 14),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: Colors.white24,
+                                    color: AppColors.creamFaint,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
-                                    audio.reciter.englishName,
+                                    audio.reciter.displayName(context.isArabic),
                                     style: const TextStyle(
-                                        color: Colors.white,
+                                        color: AppColors.cream,
                                         fontWeight: FontWeight.w700),
                                   ),
                                 ),
@@ -134,7 +148,7 @@ class PlayerScreen extends StatelessWidget {
                             value: audio.ayah
                                 .clamp(1, surah.ayahCount < 2 ? 2 : surah.ayahCount)
                                 .toDouble(),
-                            label: '${audio.ayah}',
+                            label: context.n(audio.ayah),
                             onChanged: surah.ayahCount > 1
                                 ? (v) => audio.seekToAyah(v.round())
                                 : null,
@@ -144,9 +158,11 @@ class PlayerScreen extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Verse ${audio.ayah}',
+                                Text(
+                                    context.tr('Verse ${audio.ayah}',
+                                        'الآية ${context.n(audio.ayah)}'),
                                     style: TextStyle(color: p.muted)),
-                                Text('${surah.ayahCount}',
+                                Text(context.n(surah.ayahCount),
                                     style: TextStyle(color: p.muted)),
                               ],
                             ),
@@ -160,13 +176,13 @@ class PlayerScreen extends StatelessWidget {
                               TextButton(
                                 onPressed: audio.cycleSpeed,
                                 child: Text(
-                                  '${audio.speed}x',
+                                  '${context.n(audio.speed)}x',
                                   style: const TextStyle(
                                       fontSize: 16, fontWeight: FontWeight.w800),
                                 ),
                               ),
                               IconButton(
-                                tooltip: 'Previous verse',
+                                tooltip: context.tr('Previous verse', 'الآية السابقة'),
                                 iconSize: 34,
                                 onPressed: audio.previousAyah,
                                 icon: const Icon(Icons.skip_previous_rounded),
@@ -175,7 +191,9 @@ class PlayerScreen extends StatelessWidget {
                                 width: 68,
                                 height: 68,
                                 child: IconButton.filled(
-                                  tooltip: audio.playing ? 'Pause' : 'Play',
+                                  tooltip: audio.playing
+                                      ? context.tr('Pause', 'إيقاف مؤقت')
+                                      : context.tr('Play', 'تشغيل'),
                                   onPressed: audio.togglePlay,
                                   icon: audio.loading && !audio.playing
                                       ? SizedBox(
@@ -195,13 +213,13 @@ class PlayerScreen extends StatelessWidget {
                                 ),
                               ),
                               IconButton(
-                                tooltip: 'Next verse',
+                                tooltip: context.tr('Next verse', 'الآية التالية'),
                                 iconSize: 34,
                                 onPressed: audio.nextAyah,
                                 icon: const Icon(Icons.skip_next_rounded),
                               ),
                               IconButton(
-                                tooltip: 'Repeat verse',
+                                tooltip: context.tr('Repeat verse', 'تكرار الآية'),
                                 onPressed: audio.toggleRepeatAyah,
                                 color: audio.repeatAyah ? scheme.primary : null,
                                 icon: Icon(audio.repeatAyah
@@ -217,13 +235,13 @@ class PlayerScreen extends StatelessWidget {
                               TextButton.icon(
                                 onPressed: surah.number > 1 ? audio.previousSurah : null,
                                 icon: const Icon(Icons.chevron_left_rounded),
-                                label: const Text('Previous surah'),
+                                label: Text(context.tr('Previous surah', 'السورة السابقة')),
                               ),
                               TextButton.icon(
                                 onPressed: surah.number < 114 ? audio.nextSurah : null,
                                 iconAlignment: IconAlignment.end,
                                 icon: const Icon(Icons.chevron_right_rounded),
-                                label: const Text('Next surah'),
+                                label: Text(context.tr('Next surah', 'السورة التالية')),
                               ),
                             ],
                           ),
@@ -231,14 +249,14 @@ class PlayerScreen extends StatelessWidget {
                           OutlinedButton.icon(
                             onPressed: () => showReciterSheet(context),
                             icon: const Icon(Icons.record_voice_over_rounded),
-                            label: const Text('Change reciter'),
+                            label: Text(context.tr('Change reciter', 'تغيير القارئ')),
                           ),
                           const SizedBox(height: 8),
                           TextButton.icon(
                             onPressed: () =>
                                 context.go('/quran/surah/${surah.number}'),
                             icon: const Icon(Icons.menu_book_rounded),
-                            label: const Text('Read along'),
+                            label: Text(context.tr('Read along', 'اقرأ أثناء الاستماع')),
                           ),
                         ],
                       ),

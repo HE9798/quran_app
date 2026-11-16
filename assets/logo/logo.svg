@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <rect width="800" height="800" fill="#F7EBD4" rx="180" />
+  <g fill="#12685E" font-family="Arial Black, Impact, sans-serif" font-weight="900">
+    <text x="400" y="380" font-size="180" text-anchor="middle" letter-spacing="4">WERD</text>
+    <text x="495" y="540" font-size="180" text-anchor="middle" letter-spacing="4">DAY</text>
+  </g>
+  <g fill="#95804A" font-family="Arial Black, Impact, sans-serif" font-weight="900">
+    <text x="230" y="470" font-size="64" text-anchor="middle">OF</text>
+    <text x="230" y="535" font-size="64" text-anchor="middle">THE</text>
+  </g>
+  <text x="400" y="615" fill="#8C763E" font-family="Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="28" text-anchor="middle" letter-spacing="2">YOUR DAILY MUSLIM COMPANION</text>
+</svg>

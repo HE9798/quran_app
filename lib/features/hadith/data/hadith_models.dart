@@ -3,14 +3,22 @@ import 'package:flutter/foundation.dart';
 /// The three books we show. [editionId] is the name of the Arabic edition in
 /// the free hadith API (https://github.com/fawazahmed0/hadith-api).
 enum HadithBook {
-  nawawi('ara-nawawi', 'الأربعون النووية'),
-  bukhari('ara-bukhari', 'صحيح البخاري'),
-  muslim('ara-muslim', 'صحيح مسلم');
+  nawawi('ara-nawawi', 'eng-nawawi', 'الأربعون النووية', "Nawawi's Forty"),
+  bukhari('ara-bukhari', 'eng-bukhari', 'صحيح البخاري', 'Sahih al-Bukhari'),
+  muslim('ara-muslim', 'eng-muslim', 'صحيح مسلم', 'Sahih Muslim');
 
-  const HadithBook(this.editionId, this.title);
+  const HadithBook(this.editionId, this.englishEditionId, this.title, this.titleEn);
 
+  /// Arabic edition / English edition in the API.
   final String editionId;
+  final String englishEditionId;
+
+  /// Arabic and English names of the book.
   final String title;
+  final String titleEn;
+
+  String edition(bool arabic) => arabic ? editionId : englishEditionId;
+  String titleFor(bool arabic) => arabic ? title : titleEn;
 }
 
 /// Makes Arabic text comparable for search: removes the harakat (tashkeel)
@@ -33,6 +41,7 @@ class Hadith {
     required this.section,
     required this.grade,
     required this.searchKey,
+    this.label = '',
   });
 
   final HadithBook book;
@@ -53,8 +62,8 @@ class Hadith {
   /// [text] normalized for searching (computed once when loading).
   final String searchKey;
 
-  /// "صحيح البخاري · 1"
-  String get label => '${book.title} · $number';
+  /// "صحيح البخاري · 1" (or "Sahih al-Bukhari · 1" in English)
+  final String label;
 
   /// Key used to save the bookmark.
   String get id => '${book.name}:$number';

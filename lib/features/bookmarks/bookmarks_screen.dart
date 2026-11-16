@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/settings/tr.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/lang_text.dart';
+import '../hadith/data/hadith_models.dart';
+import '../hadith/data/hadith_repository.dart';
 import '../hadith/data/hadith_bookmark_store.dart';
 import 'data/bookmark_store.dart';
 
@@ -10,19 +14,14 @@ import 'data/bookmark_store.dart';
 class BookmarksScreen extends StatelessWidget {
   const BookmarksScreen({super.key});
 
-  static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
-  static String _dateLabel(DateTime d) {
+  static String _dateLabel(BuildContext context, DateTime d) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(d.year, d.month, d.day);
     final diff = today.difference(day).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Yesterday';
-    return '${_months[d.month - 1]} ${d.day}';
+    if (diff == 0) return context.tr('Today', 'اليوم');
+    if (diff == 1) return context.tr('Yesterday', 'أمس');
+    return context.shortDate(d);
   }
 
   static void _open(BuildContext context, SavedPage page) {
@@ -54,7 +53,7 @@ class BookmarksScreen extends StatelessWidget {
                 children: [
                   if (context.canPop())
                     IconButton(
-                      tooltip: 'Back',
+                      tooltip: context.tr('Back', 'رجوع'),
                       onPressed: () => context.pop(),
                       style: IconButton.styleFrom(
                         backgroundColor: p.surface,
@@ -70,8 +69,8 @@ class BookmarksScreen extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Saved',
+                      Text(
+                        context.tr('Saved', 'المحفوظات'),
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
@@ -79,7 +78,9 @@ class BookmarksScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        total == 1 ? '1 bookmark' : '$total bookmarks',
+                        context.isArabic
+                            ? '${context.n(total)} إشارة'
+                            : (total == 1 ? '1 bookmark' : '$total bookmarks'),
                         style: TextStyle(fontSize: 13, color: p.muted),
                       ),
                     ],
@@ -103,7 +104,7 @@ class BookmarksScreen extends StatelessWidget {
                         for (final b in items) ...[
                           _BookmarkTile(
                             page: b,
-                            dateLabel: _dateLabel(b.savedAt),
+                            dateLabel: _dateLabel(context, b.savedAt),
                             onTap: () => _open(context, b),
                             onRemove: () => store.remove(b),
                           ),
@@ -113,7 +114,7 @@ class BookmarksScreen extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(2, 8, 0, 8),
                             child: Text(
-                              'Ahadeeth',
+                              context.tr('Ahadeeth', 'الأحاديث'),
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -179,7 +180,7 @@ class _LastReadCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Last read',
+                      context.tr('Last read', 'آخر قراءة'),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -188,7 +189,9 @@ class _LastReadCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      '${page.surahName} · Page ${page.page}',
+                      context.isArabic
+                          ? 'سورة ${page.arabicName} · صفحة ${context.n(page.page)}'
+                          : '${page.surahName} · Page ${page.page}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -196,21 +199,12 @@ class _LastReadCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Juz ${page.juz}',
+                      context.isArabic
+                          ? 'الجزء ${context.n(page.juz)}'
+                          : 'Juz ${page.juz}',
                       style: TextStyle(fontSize: 13, color: p.onPrimarySoft),
                     ),
                   ],
-                ),
-              ),
-              Directionality(
-                textDirection: TextDirection.rtl,
-                child: Text(
-                  page.arabicName,
-                  style: AppTheme.arabic(
-                    size: 20,
-                    height: 1.4,
-                    color: p.onPrimarySoft,
-                  ),
                 ),
               ),
             ],
@@ -267,7 +261,9 @@ class _BookmarkTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${page.surahName} · Page ${page.page}',
+                      context.isArabic
+                          ? 'سورة ${page.arabicName} · صفحة ${context.n(page.page)}'
+                          : '${page.surahName} · Page ${page.page}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -277,14 +273,16 @@ class _BookmarkTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Juz ${page.juz} · $dateLabel',
+                      context.isArabic
+                          ? 'الجزء ${context.n(page.juz)} · $dateLabel'
+                          : 'Juz ${page.juz} · $dateLabel',
                       style: TextStyle(fontSize: 13, color: p.muted),
                     ),
                   ],
                 ),
               ),
               IconButton(
-                tooltip: 'Remove bookmark',
+                tooltip: context.tr('Remove bookmark', 'إزالة الإشارة'),
                 onPressed: onRemove,
                 style: IconButton.styleFrom(
                   foregroundColor: scheme.primary,
@@ -313,11 +311,49 @@ class _SavedHadithTile extends StatefulWidget {
 
 class _SavedHadithTileState extends State<_SavedHadithTile> {
   bool _open = false;
+  bool? _arabic;
+  String? _text; //  text in the chosen language (null = use the saved one)
+  String? _label;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final arabic = context.isArabic;
+    if (_arabic == arabic) return;
+    _arabic = arabic;
+    _resolve(arabic);
+  }
+
+  /// The hadith was saved in one language; show it in the current one.
+  Future<void> _resolve(bool arabic) async {
+    _text = null;
+    _label = null;
+    try {
+      final parts = widget.hadith.id.split(':');
+      final book = HadithBook.values.byName(parts[0]);
+      final collection =
+          await HadithRepository.instance.load(book, arabic: arabic);
+      for (final h in collection.hadiths) {
+        if (h.number == parts[1]) {
+          if (!mounted || _arabic != arabic) return;
+          setState(() {
+            _text = h.text;
+            _label = h.label;
+          });
+          return;
+        }
+      }
+    } catch (_) {
+      // keep the saved copy
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final scheme = Theme.of(context).colorScheme;
+    final label = _label ?? widget.hadith.label;
+    final text = _text ?? widget.hadith.text;
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(20),
       side: BorderSide(color: p.border),
@@ -337,19 +373,21 @@ class _SavedHadithTileState extends State<_SavedHadithTile> {
                 children: [
                   Expanded(
                     child: Text(
-                      widget.hadith.label,
-                      textDirection: TextDirection.rtl,
+                      label,
+                      textDirection: dirFor(label),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTheme.arabic(
+                      style: contentStyle(
+                        label,
                         size: 15,
                         height: 1.3,
                         color: p.muted,
-                      ).copyWith(fontWeight: FontWeight.w700),
+                        weight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Remove bookmark',
+                    tooltip: context.tr('Remove bookmark', 'إزالة الإشارة'),
                     onPressed: widget.onRemove,
                     style: IconButton.styleFrom(
                       foregroundColor: scheme.primary,
@@ -362,14 +400,14 @@ class _SavedHadithTileState extends State<_SavedHadithTile> {
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 12, bottom: 10),
+                  padding: const EdgeInsetsDirectional.only(end: 12, bottom: 10),
                   child: Text(
-                    widget.hadith.text,
-                    textDirection: TextDirection.rtl,
+                    text,
+                    textDirection: dirFor(text),
                     maxLines: _open ? null : 3,
                     overflow:
                         _open ? TextOverflow.visible : TextOverflow.ellipsis,
-                    style: AppTheme.arabic(size: 19, height: 1.8),
+                    style: contentStyle(text, size: 19, height: 1.8),
                   ),
                 ),
               ),
@@ -395,13 +433,16 @@ class _EmptyState extends StatelessWidget {
           children: [
             Icon(Icons.bookmark_border_rounded, size: 48, color: p.muted),
             const SizedBox(height: 12),
-            const Text(
-              'Nothing saved yet',
+            Text(
+              context.tr('Nothing saved yet', 'لا يوجد شيء محفوظ بعد'),
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Text(
-              'Tap the bookmark icon while reading the Quran or the ahadeeth to save it here.',
+              context.tr(
+                'Tap the bookmark icon while reading the Quran or the ahadeeth to save it here.',
+                'اضغط على أيقونة الإشارة أثناء قراءة القرآن أو الأحاديث لحفظها هنا.',
+              ),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: p.muted),
             ),
