@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/settings/app_settings.dart';
 import '../../../core/settings/tr.dart' show toArabicDigits;
+import 'adhan_voices.dart';
 import 'prayer_models.dart';
 
 /// Schedules one phone notification per switched-on prayer for every day we
@@ -37,6 +38,75 @@ class PrayerNotifications {
     await init();
     final granted = await _android?.requestNotificationsPermission();
     return granted ?? true;
+  }
+
+  /// Notification settings for a prayer, using the chosen adhan voice
+  /// (or no sound when the adhan is muted). A channel's sound can't change
+  /// after it is created, so every voice has its own channel.
+  NotificationDetails _adhanDetails({
+    required bool fajr,
+    String? voiceId,
+    bool? forceSound,
+  }) {
+    final s = AppSettings.instance;
+    final arabic = s.isArabic;
+    final vibrate = s.vibration;
+    final sound = forceSound ?? s.adhanSound;
+    final v = vibrate ? 'v' : 's';
+
+    if (!sound) {
+      return NotificationDetails(
+        android: AndroidNotificationDetails(
+          'prayer_mute_$v',
+          arabic ? 'الصلاة (بدون صوت)' : 'Prayer (silent)',
+          channelDescription: arabic
+              ? 'تنبيه الصلاة بدون صوت الأذان'
+              : 'Prayer reminders without the adhan sound',
+          importance: Importance.high,
+          priority: Priority.high,
+          playSound: false,
+          enableVibration: vibrate,
+        ),
+      );
+    }
+
+    final voice = AdhanVoice.byId(voiceId ?? s.adhanVoice);
+    final res = fajr ? voice.fajrRes : voice.regularRes;
+    return NotificationDetails(
+      android: AndroidNotificationDetails(
+        'adhan2_${res}_$v',
+        arabic ? 'الأذان · ${voice.arabic}' : 'Adhan · ${voice.english}',
+        channelDescription: arabic
+            ? 'أذان عند دخول وقت الصلاة'
+            : 'The adhan when it is time to pray',
+        importance: Importance.max,
+        priority: Priority.max,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound(res),
+        // plays at the ALARM volume (usually louder than notification volume)
+        audioAttributesUsage: AudioAttributesUsage.alarm,
+        enableVibration: vibrate,
+      ),
+    );
+  }
+
+  /// Shows a notification now so the user can hear [voiceId] exactly as it
+  /// will sound at prayer time.
+  Future<bool> testAdhan(String voiceId, {required bool fajr}) async {
+    if (!await requestPermission()) return false;
+    final arabic = AppSettings.instance.isArabic;
+    final voice = AdhanVoice.byId(voiceId);
+    await _plugin.show(
+      id: 99999,
+      title: arabic ? 'تجربة الأذان' : 'Adhan test',
+      body: voice.label(arabic),
+      notificationDetails: _adhanDetails(
+        fajr: fajr,
+        voiceId: voiceId,
+        forceSound: true,
+      ),
+    );
+    return true;
   }
 
   /// Replaces all reminders with the ones for [enabled] prayers.
@@ -82,6 +152,10 @@ class PrayerNotifications {
         enableVibration: vibrate,
       ),
     );
+    // Fajr has its own adhan; sunrise is not a prayer, so it keeps the
+    // normal phone sound.
+    final regularDetails = _adhanDetails(fajr: false);
+    final fajrDetails = _adhanDetails(fajr: true);
     final azkarDetails = NotificationDetails(
       android: AndroidNotificationDetails(
         vibrate ? 'azkar_vibrate' : 'azkar_silent',
@@ -120,7 +194,9 @@ class PrayerNotifications {
                   ? 'حان وقت صلاة ${prayer.arabic}'
                   : "It's time for ${prayer.english} prayer"),
           scheduledDate: time,
-          notificationDetails: details,
+          notificationDetails: prayer == Prayer.sunrise
+              ? details
+              : (prayer == Prayer.fajr ? fajrDetails : regularDetails),
           androidScheduleMode: mode,
         );
         count++;

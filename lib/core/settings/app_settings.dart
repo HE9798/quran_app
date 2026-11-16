@@ -15,6 +15,8 @@ class AppSettings extends ChangeNotifier {
   static const _kVibrate = 'set_vibration_v1';
   static const _kMorning = 'set_azkar_morning_v1';
   static const _kEvening = 'set_azkar_evening_v1';
+  static const _kAdhanSound = 'set_adhan_sound_v1';
+  static const _kAdhanVoice = 'set_adhan_voice_v1';
 
   static const minFontScale = 0.85;
   static const maxFontScale = 1.4;
@@ -30,6 +32,8 @@ class AppSettings extends ChangeNotifier {
   bool vibration = true;
   bool azkarMorning = false;
   bool azkarEvening = false;
+  bool adhanSound = true; //      false = prayer notifications are silent
+  String adhanVoice = 'makkah'; // chosen adhan, independent of the Quran reciter
 
   ThemeMode get themeMode => followDevice
       ? ThemeMode.system
@@ -50,6 +54,8 @@ class AppSettings extends ChangeNotifier {
       vibration = p.getBool(_kVibrate) ?? vibration;
       azkarMorning = p.getBool(_kMorning) ?? azkarMorning;
       azkarEvening = p.getBool(_kEvening) ?? azkarEvening;
+      adhanSound = p.getBool(_kAdhanSound) ?? adhanSound;
+      adhanVoice = p.getString(_kAdhanVoice) ?? adhanVoice;
     } catch (_) {
       // defaults are fine
     }
@@ -113,6 +119,18 @@ class AppSettings extends ChangeNotifier {
     _saveBool(_kEvening, v);
   }
 
+  void setAdhanSound(bool v) {
+    adhanSound = v;
+    _changed();
+    _saveBool(_kAdhanSound, v);
+  }
+
+  void setAdhanVoice(String id) {
+    adhanVoice = id;
+    _changed();
+    _prefsSafe((p) => p.setString(_kAdhanVoice, id));
+  }
+
   Future<void> _prefsSafe(Future<bool> Function(SharedPreferences p) op) async {
     try {
       await op(_prefs ??= await SharedPreferences.getInstance());
@@ -121,5 +139,6 @@ class AppSettings extends ChangeNotifier {
 
   /// Changes that need the phone's reminders to be created again.
   String get reminderSignature =>
-      '$notifications|$vibration|$azkarMorning|$azkarEvening|$languageCode';
+      '$notifications|$vibration|$azkarMorning|$azkarEvening|$languageCode|'
+      '$adhanSound|$adhanVoice';
 }

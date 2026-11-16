@@ -211,13 +211,13 @@ class _SahihTabState extends State<_SahihTab>
           child: Row(
             children: [
               _BookChip(
-                label: HadithBook.bukhari.title,
+                label: HadithBook.bukhari.titleFor(context.isArabic),
                 selected: _book == HadithBook.bukhari,
                 onTap: () => setState(() => _book = HadithBook.bukhari),
               ),
               const SizedBox(width: 8),
               _BookChip(
-                label: HadithBook.muslim.title,
+                label: HadithBook.muslim.titleFor(context.isArabic),
                 selected: _book == HadithBook.muslim,
                 onTap: () => setState(() => _book = HadithBook.muslim),
               ),
@@ -575,7 +575,7 @@ class _CollectionLoaderState extends State<_CollectionLoader> {
                 widget.book == HadithBook.nawawi
                     ? context.tr('Loading…', 'جارٍ التحميل…')
                     : context.tr(
-                        'Downloading ${widget.book.title}…\nOnly the first time.',
+                        'Downloading ${widget.book.titleEn}…\nOnly the first time.',
                         'جارٍ تحميل ${widget.book.title}…\nفي المرة الأولى فقط.'),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: p.muted, height: 1.4),
