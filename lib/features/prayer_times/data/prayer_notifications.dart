@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/settings/app_settings.dart';
 import '../../../core/settings/tr.dart' show toArabicDigits;
+import '../../athkar/data/athkar_models.dart';
+import '../../athkar/data/athkar_progress_store.dart';
 import 'adhan_voices.dart';
 import 'prayer_models.dart';
 
@@ -109,13 +111,25 @@ class PrayerNotifications {
     return true;
   }
 
+  static int _missedMorningId(DateTime date) =>
+      60000000 +
+      ((date.year % 100) * 10000 + date.month * 100 + date.day) * 10 +
+      3;
+
+  /// The morning azkar were finished: remove today's "unfinished" reminder.
+  Future<void> cancelMorningMissedToday() async {
+    await init();
+    await _plugin.cancel(id: _missedMorningId(DateTime.now()));
+  }
+
   /// Replaces all reminders with the ones for [enabled] prayers.
   Future<void> reschedule(PrayerSchedule schedule, Set<Prayer> enabled) async {
     await init();
     await _plugin.cancelAll();
     final settings = AppSettings.instance;
     if (!settings.notifications) return; // master switch is off
-    final wantAzkar = settings.azkarMorning || settings.azkarEvening;
+    final wantAzkar =
+        settings.azkarMorning || settings.azkarEvening || settings.morningMissed;
     if (enabled.isEmpty && !wantAzkar) return;
     final arabic = settings.isArabic;
     final vibrate = settings.vibration;
@@ -235,6 +249,34 @@ class PrayerNotifications {
         );
         count++;
       }
+
+      // ---- unfinished morning azkar: 30 minutes before the evening azkar
+      // (which open at Asr). Skipped for today when they are already done.
+      Future<void> missedMorning() async {
+        final asr = day.times[Prayer.asr];
+        if (asr == null) return;
+        final at = asr.subtract(const Duration(minutes: 30));
+        if (!at.isAfter(now) || count >= _maxScheduled) return;
+        final isToday = day.date.year == now.year &&
+            day.date.month == now.month &&
+            day.date.day == now.day;
+        if (isToday && AthkarProgressStore.instance.isDoneToday(AthkarSet.morning)) {
+          return;
+        }
+        await _plugin.zonedSchedule(
+          id: _missedMorningId(day.date),
+          title: arabic ? 'أذكار الصباح لم تكتمل' : 'Morning azkar not finished',
+          body: arabic
+              ? 'تبقّى ٣٠ دقيقة على أذكار المساء. أكمل أذكار الصباح الآن.'
+              : 'Evening azkar start in 30 minutes. Finish your morning azkar now.',
+          scheduledDate: at,
+          notificationDetails: azkarDetails,
+          androidScheduleMode: mode,
+        );
+        count++;
+      }
+
+      if (settings.morningMissed) await missedMorning();
 
       if (settings.azkarMorning) {
         await azkar(1, Prayer.fajr, Prayer.sunrise, true);

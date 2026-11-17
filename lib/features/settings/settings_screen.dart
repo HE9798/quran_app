@@ -259,6 +259,18 @@ class SettingsScreen extends StatelessWidget {
                           ? (v) => _setAzkar(context, false, v)
                           : null,
                     ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(context.tr('Unfinished morning azkar',
+                          'أذكار الصباح غير المكتملة')),
+                      subtitle: Text(context.tr(
+                          'A reminder 30 minutes before the evening azkar if you have not finished the morning ones',
+                          'تذكير قبل أذكار المساء بـ ٣٠ دقيقة إن لم تُكمل أذكار الصباح')),
+                      value: settings.morningMissed,
+                      onChanged: settings.notifications
+                          ? settings.setMorningMissed
+                          : null,
+                    ),
                   ]),
                   const SizedBox(height: 12),
                   Text(

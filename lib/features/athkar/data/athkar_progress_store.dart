@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../prayer_times/data/prayer_notifications.dart';
+
 import 'athkar_models.dart';
 
 /// How many times you said each dhikr today. Starts again every new day.
@@ -11,12 +13,36 @@ class AthkarProgressStore extends ChangeNotifier {
   static final instance = AthkarProgressStore._();
 
   static const _key = 'athkar_progress_v1';
+  static const _doneKey = 'athkar_done_v1'; // {"morning": "2026-11-17", ...}
 
   SharedPreferences? _prefs;
   String _date = '';
   final Map<AthkarSet, List<int>> _counts = {
     for (final set in AthkarSet.values) set: <int>[],
   };
+
+  /// The day each list was last finished: {"morning": "2026-11-17"}.
+  final Map<String, String> _doneOn = {};
+
+  /// True when every dhikr of [set] was finished today.
+  bool isDoneToday(AthkarSet set) => _doneOn[set.name] == _today();
+
+  /// Called when the last dhikr of [set] is finished.
+  void markDone(AthkarSet set) {
+    _doneOn[set.name] = _today();
+    _saveDone();
+    if (set == AthkarSet.morning) {
+      // no need to remind about the morning azkar any more today
+      PrayerNotifications.instance.cancelMorningMissedToday().catchError((_) {});
+    }
+  }
+
+  Future<void> _saveDone() async {
+    try {
+      _prefs ??= await SharedPreferences.getInstance();
+      await _prefs!.setString(_doneKey, jsonEncode(_doneOn));
+    } catch (_) {}
+  }
 
   static String _today() {
     final now = DateTime.now();
@@ -28,6 +54,11 @@ class AthkarProgressStore extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _prefs = prefs;
+      final doneRaw = prefs.getString(_doneKey);
+      if (doneRaw != null) {
+        final done = jsonDecode(doneRaw) as Map<String, dynamic>;
+        _doneOn.addAll(done.map((k, v) => MapEntry(k, v as String)));
+      }
       final raw = prefs.getString(_key);
       if (raw == null) return;
       final json = jsonDecode(raw) as Map<String, dynamic>;
@@ -74,6 +105,7 @@ class AthkarProgressStore extends ChangeNotifier {
 
   void reset(AthkarSet set) {
     _newDayIfNeeded();
+    if (_doneOn.remove(set.name) != null) _saveDone();
     _counts[set] = <int>[];
     notifyListeners();
     _persist();

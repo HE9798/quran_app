@@ -317,6 +317,7 @@ class _SetViewState extends State<_SetView>
     if (count >= _items[index].repeat) {
       HapticFeedback.mediumImpact();
       final counts = _progress.countsFor(widget.set, _items.length);
+      if (_nextUnfinished(counts) == null) _progress.markDone(widget.set);
       setState(() => _focus = _nextUnfinished(counts, after: index));
     } else {
       HapticFeedback.selectionClick();
