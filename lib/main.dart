@@ -6,6 +6,7 @@ import 'core/router/app_router.dart';
 import 'core/settings/app_settings.dart';
 import 'core/theme/app_theme.dart';
 import 'features/audio/quran_audio_controller.dart';
+import 'features/audio/quran_audio_handler.dart';
 import 'features/khatma/data/khatma_store.dart';
 import 'features/bookmarks/data/bookmark_store.dart';
 import 'features/hadith/data/hadith_bookmark_store.dart';
@@ -19,6 +20,10 @@ Future<void> main() async {
   await HadithBookmarkStore.instance.load(); // saved ahadeeth
   try {
     await QuranAudioController.instance.init(); // saved reciter + player
+  } catch (_) {}
+  try {
+    // the player in the phone's notification bar and lock screen
+    await initQuranMediaNotification();
   } catch (_) {}
   tz_data.initializeTimeZones(); // time zone database for prayer reminders
   try {

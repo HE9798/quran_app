@@ -875,8 +875,7 @@ class _HadithOfTheDayState extends State<_HadithOfTheDay> {
                         child: Text(
                           hadith.text,
                           textDirection: dirFor(hadith.text),
-                          maxLines: 5,
-                          overflow: TextOverflow.ellipsis,
+                          // no line limit: the card grows to fit the whole hadith
                           style: contentStyle(hadith.text, size: 21, height: 1.9),
                         ),
                       ),
