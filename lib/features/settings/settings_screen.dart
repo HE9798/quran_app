@@ -202,6 +202,18 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
+                      title: Text(context.tr('Prayer countdown in the status bar',
+                          'العد التنازلي للصلاة في شريط الإشعارات')),
+                      subtitle: Text(context.tr(
+                          'A fixed notification with the time left for the next prayer',
+                          'إشعار ثابت بالوقت المتبقي للصلاة القادمة')),
+                      value: settings.statusCountdown,
+                      onChanged: settings.notifications
+                          ? settings.setStatusCountdown
+                          : null,
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
                       title: Text(context.tr('Adhan sound', 'صوت الأذان')),
                       subtitle: Text(context.tr(
                           'Turn off to mute prayer notifications',

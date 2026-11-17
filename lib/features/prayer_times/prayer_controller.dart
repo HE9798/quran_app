@@ -7,6 +7,7 @@ import '../../core/settings/app_settings.dart';
 import 'data/location_service.dart';
 import 'data/prayer_alert_store.dart';
 import 'data/prayer_models.dart';
+import 'data/prayer_countdown_service.dart';
 import 'data/prayer_notifications.dart';
 import 'data/prayer_repository.dart';
 
@@ -120,6 +121,7 @@ class PrayerController extends ChangeNotifier {
     PrayerNotifications.instance
         .reschedule(current, _alerts.enabled)
         .catchError((_) {}); // reminders are a bonus, never break the screen
+    PrayerCountdownService.instance.sync(current).catchError((_) {});
   }
 
   // -------------------------------------------------------------- alerts

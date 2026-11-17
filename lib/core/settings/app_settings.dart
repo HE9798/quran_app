@@ -15,6 +15,7 @@ class AppSettings extends ChangeNotifier {
   static const _kVibrate = 'set_vibration_v1';
   static const _kMorning = 'set_azkar_morning_v1';
   static const _kEvening = 'set_azkar_evening_v1';
+  static const _kStatusCountdown = 'set_status_countdown_v1';
   static const _kAdhanSound = 'set_adhan_sound_v1';
   static const _kAdhanVoice = 'set_adhan_voice_v1';
 
@@ -32,6 +33,7 @@ class AppSettings extends ChangeNotifier {
   bool vibration = true;
   bool azkarMorning = false;
   bool azkarEvening = false;
+  bool statusCountdown = true; // next-prayer countdown in the notification bar
   bool adhanSound = true; //      false = prayer notifications are silent
   String adhanVoice = 'makkah'; // chosen adhan, independent of the Quran reciter
 
@@ -54,6 +56,7 @@ class AppSettings extends ChangeNotifier {
       vibration = p.getBool(_kVibrate) ?? vibration;
       azkarMorning = p.getBool(_kMorning) ?? azkarMorning;
       azkarEvening = p.getBool(_kEvening) ?? azkarEvening;
+      statusCountdown = p.getBool(_kStatusCountdown) ?? statusCountdown;
       adhanSound = p.getBool(_kAdhanSound) ?? adhanSound;
       adhanVoice = p.getString(_kAdhanVoice) ?? adhanVoice;
     } catch (_) {
@@ -119,6 +122,12 @@ class AppSettings extends ChangeNotifier {
     _saveBool(_kEvening, v);
   }
 
+  void setStatusCountdown(bool v) {
+    statusCountdown = v;
+    _changed();
+    _saveBool(_kStatusCountdown, v);
+  }
+
   void setAdhanSound(bool v) {
     adhanSound = v;
     _changed();
@@ -140,5 +149,5 @@ class AppSettings extends ChangeNotifier {
   /// Changes that need the phone's reminders to be created again.
   String get reminderSignature =>
       '$notifications|$vibration|$azkarMorning|$azkarEvening|$languageCode|'
-      '$adhanSound|$adhanVoice';
+      '$adhanSound|$adhanVoice|$statusCountdown|$followDevice|$darkMode';
 }
