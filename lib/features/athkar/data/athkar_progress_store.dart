@@ -31,10 +31,8 @@ class AthkarProgressStore extends ChangeNotifier {
   void markDone(AthkarSet set) {
     _doneOn[set.name] = _today();
     _saveDone();
-    if (set == AthkarSet.morning) {
-      // no need to remind about the morning azkar any more today
-      PrayerNotifications.instance.cancelMorningMissedToday().catchError((_) {});
-    }
+    // no need to remind about this list any more
+    PrayerNotifications.instance.cancelMissedReminder(set).catchError((_) {});
   }
 
   Future<void> _saveDone() async {
