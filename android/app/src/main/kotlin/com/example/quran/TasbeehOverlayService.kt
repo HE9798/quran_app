@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.animation.ValueAnimator
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -14,7 +15,9 @@ import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.provider.Settings
 import android.util.TypedValue
 import android.view.Gravity
@@ -45,7 +48,11 @@ class TasbeehOverlayService : Service() {
     private var countView: TextView? = null
     private var comboView: TextView? = null
     private var trash: FrameLayout? = null      // the fire's window
-    private var fire: FrameLayout? = null       // the glowing circle inside it
+    private var glowBackground: GradientDrawable? = null // the orange circle
+    private var fireIcon: View? = null                   // the flame
+    private val handler = Handler(Looper.getMainLooper())
+    private var flip: Runnable? = null
+    private var pulse: ValueAnimator? = null
     private lateinit var params: WindowManager.LayoutParams
     private var showingCombo = false
 
@@ -64,6 +71,7 @@ class TasbeehOverlayService : Service() {
     }
 
     override fun onDestroy() {
+        stopEffects()
         TasbeehStore.prefs(this).unregisterOnSharedPreferenceChangeListener(listener)
         root?.let { runCatching { windowManager.removeView(it) } }
         trash?.let { runCatching { windowManager.removeView(it) } }
@@ -126,9 +134,9 @@ class TasbeehOverlayService : Service() {
                 gradientRadius = dp(56f).toFloat()
                 setGradientCenter(0.5f, 0.5f)
                 colors = intArrayOf(
-                    Color.parseColor("#FFFB7604"),
-                    Color.parseColor("#FFFB7604"),
-                    Color.parseColor("#00FB7604")
+                    Color.parseColor("#FFFB3E04"),
+                    Color.parseColor("#FFFB3E04"),
+                    Color.parseColor("#00FB3E04")
                 )
             }
         }
@@ -152,7 +160,8 @@ class TasbeehOverlayService : Service() {
             addView(glow, FrameLayout.LayoutParams(dp(112f), dp(112f), Gravity.CENTER))
             visibility = View.GONE
         }
-        fire = glow
+        glowBackground = glow.background as GradientDrawable
+        fireIcon = icon
         val binParams = WindowManager.LayoutParams(
             dp(140f), dp(140f),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
@@ -235,6 +244,58 @@ class TasbeehOverlayService : Service() {
         }
     }
 
+    // ------------------------------------------------------------- the fire
+    // Static (button not over it): the flame flips left/right, like it is
+    // flickering. Hovering (button over it): the orange glow pulses.
+    // Opacity can not go above 100%, so the glow pulses between 33% and 100%
+    // and rests at 66%: the same 1 : 2 : 3 steps as 50% / 100% / 150%.
+    private val restAlpha = 168   // 66%
+    private val dimAlpha = 84     // 33%
+    private val fullAlpha = 255   // 100%
+
+    private fun setHover(on: Boolean) {
+        pulse?.cancel()
+        pulse = null
+        if (on) {
+            if (flip == null) startFlip() // keep flipping while hovering
+            pulse = ValueAnimator.ofInt(dimAlpha, fullAlpha).apply {
+                duration = 450
+                repeatMode = ValueAnimator.REVERSE
+                repeatCount = ValueAnimator.INFINITE
+                addUpdateListener { glowBackground?.alpha = it.animatedValue as Int }
+                start()
+            }
+        } else {
+            glowBackground?.alpha = restAlpha
+            if (flip == null) startFlip()
+        }
+    }
+
+    private fun startFlip() {
+        stopFlip()
+        val r = object : Runnable {
+            override fun run() {
+                fireIcon?.scaleX = -(fireIcon?.scaleX ?: 1f)
+                handler.postDelayed(this, 350)
+            }
+        }
+        flip = r
+        handler.postDelayed(r, 350)
+    }
+
+    private fun stopFlip() {
+        flip?.let { handler.removeCallbacks(it) }
+        flip = null
+        fireIcon?.scaleX = 1f
+    }
+
+    private fun stopEffects() {
+        pulse?.cancel()
+        pulse = null
+        stopFlip()
+        glowBackground?.alpha = restAlpha
+    }
+
     // ------------------------------------------------------------- touching
     /** Tap = +1, drag = move, let go over the fire = close. */
     private fun touchListener(view: LinearLayout): View.OnTouchListener {
@@ -281,6 +342,7 @@ class TasbeehOverlayService : Service() {
                     if (!dragging && (abs(dx) > slop || abs(dy) > slop)) {
                         dragging = true
                         trash?.visibility = View.VISIBLE
+                        setHover(false) // static: the flame flips
                     }
                     if (dragging) {
                         val m = resources.displayMetrics
@@ -292,8 +354,7 @@ class TasbeehOverlayService : Service() {
                         val now = checkBin()
                         if (now != overBin) {
                             overBin = now
-                            // the only animation: the whole fire grows by 25%
-                            fire?.animate()?.scaleX(if (now) 1.25f else 1f)?.scaleY(if (now) 1.25f else 1f)?.setDuration(120)?.start()
+                            setHover(now)
                             if (now) view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                         }
                     }
@@ -301,9 +362,7 @@ class TasbeehOverlayService : Service() {
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     trash?.visibility = View.GONE
-                    fire?.animate()?.cancel()
-                    fire?.scaleX = 1f
-                    fire?.scaleY = 1f
+                    stopEffects()
                     if (!dragging) {
                         if (e.action == MotionEvent.ACTION_UP) {
                             TasbeehStore.increment(this)
