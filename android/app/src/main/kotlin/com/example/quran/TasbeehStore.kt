@@ -9,6 +9,7 @@ object TasbeehStore {
     private const val KEY_COUNT = "count"
     private const val KEY_COMBO = "combo"
     private const val KEY_OVERLAY = "overlay_enabled"
+    private const val KEY_TARGET = "target"
 
     fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -16,12 +17,23 @@ object TasbeehStore {
     fun count(context: Context): Int = prefs(context).getInt(KEY_COUNT, 0)
     fun combo(context: Context): Int = prefs(context).getInt(KEY_COMBO, 0)
 
-    /** One more tasbeeh. After 999 it starts again from 0 and the combo goes up. */
+    /** The number the slider fills at (10, 33, 100, 1000 ...). */
+    fun target(context: Context): Int = prefs(context).getInt(KEY_TARGET, 100).coerceAtLeast(1)
+
+    fun setTarget(context: Context, target: Int) {
+        val p = prefs(context)
+        val t = target.coerceIn(1, 100000)
+        val edit = p.edit().putInt(KEY_TARGET, t)
+        if (p.getInt(KEY_COUNT, 0) >= t) edit.putInt(KEY_COUNT, 0)
+        edit.apply()
+    }
+
+    /** One more tasbeeh. When the slider is full the combo goes up and the count restarts. */
     fun increment(context: Context) {
         val p = prefs(context)
         var count = p.getInt(KEY_COUNT, 0) + 1
         var combo = p.getInt(KEY_COMBO, 0)
-        if (count >= 1000) {
+        if (count >= target(context)) {
             count = 0
             combo += 1
         }

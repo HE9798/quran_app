@@ -61,9 +61,15 @@ class MainActivity : AudioServiceActivity() {
                     "state" -> result.success(
                         mapOf(
                             "count" to TasbeehStore.count(this),
-                            "combo" to TasbeehStore.combo(this)
+                            "combo" to TasbeehStore.combo(this),
+                            "target" to TasbeehStore.target(this)
                         )
                     )
+                    "getTarget" -> result.success(TasbeehStore.target(this))
+                    "setTarget" -> {
+                        TasbeehStore.setTarget(this, (call.arguments as? Int) ?: 100)
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }

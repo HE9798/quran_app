@@ -7,6 +7,7 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../prayer_times/data/adhan_voices.dart';
 import '../tasbeeh/overlay_tile.dart';
+import '../tasbeeh/target_tile.dart';
 import '../tasbeeh/tasbeeh_widget.dart';
 import '../prayer_times/data/prayer_notifications.dart';
 
@@ -277,6 +278,7 @@ class SettingsScreen extends StatelessWidget {
                   _Section(context.tr('Tasbeeh button', 'زر التسبيح')),
                   _Card(children: [
                     const OverlayTile(),
+                    const TargetTile(),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(context.tr('Reset the counter', 'تصفير العداد')),

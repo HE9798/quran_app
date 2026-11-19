@@ -14,6 +14,21 @@ class TasbeehWidget {
     } catch (_) {}
   }
 
+  /// How many taps fill the slider (then the "x" goes up by one).
+  static Future<int> target() async {
+    try {
+      return await _channel.invokeMethod<int>('getTarget') ?? 100;
+    } catch (_) {
+      return 100;
+    }
+  }
+
+  static Future<void> setTarget(int value) async {
+    try {
+      await _channel.invokeMethod<void>('setTarget', value);
+    } catch (_) {}
+  }
+
   static Future<({int count, int combo})?> state() async {
     try {
       final m = await _channel.invokeMapMethod<String, int>('state');

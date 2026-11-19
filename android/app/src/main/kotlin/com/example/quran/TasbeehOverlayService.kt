@@ -10,10 +10,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ServiceInfo
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Shader
 import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -45,8 +51,12 @@ class TasbeehOverlayService : Service() {
 
     private lateinit var windowManager: WindowManager
     private var root: LinearLayout? = null      // bar (optional) + button
-    private var countView: TextView? = null
+    private var countView: View? = null          // the 3D button
     private var comboView: TextView? = null
+    private var slider: SliderView? = null
+    private var sliderLeft = true                // which side of the button the slider is on
+    private var shownCombo = -1
+    private var completing = false
     private var trash: FrameLayout? = null      // the fire's window
     private var glowBackground: GradientDrawable? = null // the orange circle
     private var fireIcon: View? = null                   // the flame
@@ -54,7 +64,6 @@ class TasbeehOverlayService : Service() {
     private var flip: Runnable? = null
     private var pulse: ValueAnimator? = null
     private lateinit var params: WindowManager.LayoutParams
-    private var showingCombo = false
 
     private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> refresh() }
 
@@ -112,13 +121,37 @@ class TasbeehOverlayService : Service() {
     private fun dp(value: Float) =
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, resources.displayMetrics).toInt()
 
-    private val button get() = dp(72f)          // the green square
+    private val button get() = dp(72f)          // the square button
     private val barHeight get() = dp(36f)       // half of the button
     private val gap get() = dp(4f)
+    private val pad get() = dp(6f)              // room for the soft shadows
+    private val sliderW get() = dp(26f)
+    private val sideGap get() = dp(8f)
+    private val extra get() = sliderW + sideGap
+    private val bodyHeight get() = barHeight + gap + button
+
+    /** Where the button sits inside the window, depending on the slider's side. */
+    private fun offX(left: Boolean) = pad + (if (left) extra else 0)
+    private val offY get() = pad + barHeight + gap
 
     private fun rounded(color: String, radius: Float) = GradientDrawable().apply {
         setColor(Color.parseColor(color))
         cornerRadius = radius
+    }
+
+    private fun gradient(from: String, to: String, radius: Float) = GradientDrawable(
+        GradientDrawable.Orientation.TL_BR,
+        intArrayOf(Color.parseColor(from), Color.parseColor(to))
+    ).apply { cornerRadius = radius }
+
+    /** Rounded square, edges slightly raised, middle slightly sunk. Kept subtle. */
+    private fun sunkenButton(): LayerDrawable {
+        val raised = gradient("#1A7C71", "#0E4F47", dp(22f).toFloat())   // light top-left, dark bottom-right
+        val dish = gradient("#0F554C", "#167267", dp(16f).toFloat())     // the other way round = sunk
+        return LayerDrawable(arrayOf(raised, dish)).apply {
+            val i = dp(7f)
+            setLayerInset(1, i, i, i, i)
+        }
     }
 
     private fun createOverlay() {
@@ -176,7 +209,7 @@ class TasbeehOverlayService : Service() {
         windowManager.addView(bin, binParams)
         trash = bin
 
-        // ---- the combo bar (above) and the button
+        // ---- the combo bar (above), the 3D button, and the slider beside them
         val bar = TextView(this).apply {
             gravity = Gravity.CENTER
             setTextColor(Color.parseColor("#12685E"))
@@ -184,64 +217,108 @@ class TasbeehOverlayService : Service() {
             typeface = Typeface.DEFAULT_BOLD
             includeFontPadding = false
             background = rounded("#F7EBD4", dp(14f).toFloat())
-            elevation = dp(6f).toFloat()
-            visibility = View.GONE
+            elevation = dp(5f).toFloat()
         }
-        val count = TextView(this).apply {
-            gravity = Gravity.CENTER
-            setTextColor(Color.parseColor("#F7EBD4"))
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f)
-            typeface = Typeface.DEFAULT_BOLD
-            includeFontPadding = false
-            background = rounded("#12685E", dp(20f).toFloat())
-            elevation = dp(6f).toFloat()
+        val face = View(this).apply {
+            background = sunkenButton()
+            elevation = dp(5f).toFloat()
         }
-        val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        layout.addView(bar, LinearLayout.LayoutParams(button, barHeight).apply { bottomMargin = gap })
-        layout.addView(count, LinearLayout.LayoutParams(button, button))
+        val sl = SliderView(this)
+        val column = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        column.addView(bar, LinearLayout.LayoutParams(button, barHeight).apply { bottomMargin = gap })
+        column.addView(face, LinearLayout.LayoutParams(button, button))
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(pad, pad, pad, pad)
+            clipToPadding = false
+            clipChildren = false
+        }
+        layout.addView(column, LinearLayout.LayoutParams(button, bodyHeight))
+        slider = sl
+        root = layout
+        countView = face
+        comboView = bar
 
         val metrics = resources.displayMetrics
         val saved = TasbeehStore.prefs(this)
+        // the saved place is the BUTTON's place
+        val bx = saved.getInt("overlay_x", metrics.widthPixels - button - dp(16f))
+        val by = saved.getInt("overlay_y", metrics.heightPixels / 3)
+        sliderLeft = bx + button / 2 > metrics.widthPixels / 2   // on the right half: slider goes left
+        placeSlider(sliderLeft)
+
         params = WindowManager.LayoutParams(
-            button, button,
+            pad * 2 + button + extra, pad * 2 + bodyHeight,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = saved.getInt("overlay_x", metrics.widthPixels - button - dp(16f))
-            y = saved.getInt("overlay_y", metrics.heightPixels / 3)
+            x = bx - offX(sliderLeft)
+            y = by - offY
         }
 
         layout.setOnTouchListener(touchListener(layout))
         windowManager.addView(layout, params)
-        root = layout
-        countView = count
-        comboView = bar
         saved.registerOnSharedPreferenceChangeListener(listener)
         refresh()
     }
 
-    /** Updates the number and shows/hides the bar. The button itself never jumps. */
-    private fun refresh() {
+    /** Puts the slider on the left or the right of the button. */
+    private fun placeSlider(left: Boolean) {
         val r = root ?: return
-        val arabic = TasbeehStore.arabicDigits(this)
-        val count = TasbeehStore.count(this)
-        val combo = TasbeehStore.combo(this)
-        countView?.text = TasbeehStore.digits(count.toString().padStart(3, '0'), arabic)
+        val sl = slider ?: return
+        sliderLeft = left
+        r.removeView(sl)
+        val lp = LinearLayout.LayoutParams(sliderW, bodyHeight)
+        if (left) lp.rightMargin = sideGap else lp.leftMargin = sideGap
+        r.addView(sl, if (left) 0 else 1, lp)
+    }
 
-        val wantBar = combo > 0
-        if (wantBar) comboView?.text = TasbeehStore.digits("(x$combo)", arabic)
-        if (wantBar != showingCombo) {
-            showingCombo = wantBar
-            val extra = barHeight + gap
-            comboView?.visibility = if (wantBar) View.VISIBLE else View.GONE
-            params.height = if (wantBar) button + extra else button
-            // the bar grows upwards: move the window so the button stays where it is
-            params.y += if (wantBar) -extra else extra
-            runCatching { windowManager.updateViewLayout(r, params) }
+    private fun fraction(): Float {
+        val target = max(1, TasbeehStore.target(this))
+        return min(1f, TasbeehStore.count(this).toFloat() / target)
+    }
+
+    private fun setBar(combo: Int, pop: Boolean) {
+        val arabic = TasbeehStore.arabicDigits(this)
+        comboView?.text = TasbeehStore.digits("x$combo", arabic)
+        shownCombo = combo
+        if (pop) {
+            comboView?.animate()?.cancel()
+            comboView?.scaleX = 1f
+            comboView?.scaleY = 1f
+            comboView?.animate()?.scaleX(1.18f)?.scaleY(1.18f)?.setDuration(140)?.withEndAction {
+                comboView?.animate()?.scaleX(1f)?.scaleY(1f)?.setDuration(140)?.start()
+            }?.start()
         }
+    }
+
+    /**
+     * Slider follows the count. When the chosen number is reached the slider
+     * is full for a moment, the bar pops to the next "x", and the slider empties.
+     */
+    private fun refresh() {
+        val sl = slider ?: return
+        val combo = TasbeehStore.combo(this)
+        if (shownCombo < 0) {            // first time
+            setBar(combo, false)
+            sl.setNow(fraction())
+            return
+        }
+        if (combo > shownCombo) {        // the target was reached
+            completing = true
+            sl.animateTo(1f)
+            handler.postDelayed({
+                completing = false
+                setBar(TasbeehStore.combo(this), true)
+                sl.animateTo(fraction())
+            }, 350)
+            return
+        }
+        if (combo < shownCombo) setBar(combo, false) // reset from the app
+        if (!completing) sl.animateTo(fraction())
     }
 
     // ------------------------------------------------------------- the fire
@@ -297,7 +374,7 @@ class TasbeehOverlayService : Service() {
     }
 
     // ------------------------------------------------------------- touching
-    /** Tap = +1, drag = move, let go over the fire = close. */
+    /** Tap the button = +1, drag anywhere = move, let go over the fire = close. */
     private fun touchListener(view: LinearLayout): View.OnTouchListener {
         val slop = ViewConfiguration.get(this).scaledTouchSlop
         var downX = 0f
@@ -306,6 +383,7 @@ class TasbeehOverlayService : Service() {
         var startY = 0
         var dragging = false
         var overBin = false
+        var onButton = false
 
         fun center(v: View): Pair<Float, Float> {
             val loc = IntArray(2)
@@ -313,11 +391,17 @@ class TasbeehOverlayService : Service() {
             return Pair(loc[0] + v.width / 2f, loc[1] + v.height / 2f)
         }
 
-        /** The centre of the green button (not the bar). */
         fun buttonCenter(): Pair<Float, Float> {
             val loc = IntArray(2)
             countView?.getLocationOnScreen(loc)
             return Pair(loc[0] + button / 2f, loc[1] + button / 2f)
+        }
+
+        fun touchedButton(x: Float, y: Float): Boolean {
+            val v = countView ?: return false
+            val loc = IntArray(2)
+            v.getLocationOnScreen(loc)
+            return x >= loc[0] && x <= loc[0] + v.width && y >= loc[1] && y <= loc[1] + v.height
         }
 
         fun checkBin(): Boolean {
@@ -327,6 +411,10 @@ class TasbeehOverlayService : Service() {
             return hypot(cx - bx, cy - by) < dp(64f)
         }
 
+        fun release() {
+            countView?.animate()?.scaleX(1f)?.scaleY(1f)?.setDuration(90)?.start()
+        }
+
         return View.OnTouchListener { _, e ->
             when (e.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -334,6 +422,8 @@ class TasbeehOverlayService : Service() {
                     startX = params.x; startY = params.y
                     dragging = false
                     overBin = false
+                    onButton = touchedButton(e.rawX, e.rawY)
+                    if (onButton) countView?.animate()?.scaleX(0.95f)?.scaleY(0.95f)?.setDuration(70)?.start()
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -341,14 +431,25 @@ class TasbeehOverlayService : Service() {
                     val dy = e.rawY - downY
                     if (!dragging && (abs(dx) > slop || abs(dy) > slop)) {
                         dragging = true
+                        release()
                         trash?.visibility = View.VISIBLE
-                        setHover(false) // static: the flame flips
+                        setHover(false)
                     }
                     if (dragging) {
                         val m = resources.displayMetrics
-                        // keep the whole button on the screen
                         params.x = (startX + dx.toInt()).coerceIn(0, max(0, m.widthPixels - params.width))
                         params.y = (startY + dy.toInt()).coerceIn(0, max(0, m.heightPixels - params.height))
+
+                        // button crossed the middle of the screen: flip the design,
+                        // keeping the button exactly where it is
+                        val cx = params.x + offX(sliderLeft) + button / 2
+                        val wantLeft = cx > m.widthPixels / 2
+                        if (wantLeft != sliderLeft) {
+                            val shift = offX(sliderLeft) - offX(wantLeft)
+                            params.x += shift
+                            startX += shift
+                            placeSlider(wantLeft)
+                        }
                         windowManager.updateViewLayout(view, params)
 
                         val now = checkBin()
@@ -363,20 +464,18 @@ class TasbeehOverlayService : Service() {
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     trash?.visibility = View.GONE
                     stopEffects()
+                    release()
                     if (!dragging) {
-                        if (e.action == MotionEvent.ACTION_UP) {
+                        if (e.action == MotionEvent.ACTION_UP && onButton) {
                             TasbeehStore.increment(this)
                         }
                     } else if (overBin) {
-                        // closed with the fire; turn it on again from the app's settings
                         TasbeehStore.setOverlayEnabled(this, false)
                         stopSelf()
                     } else {
-                        // remember the button's place (not counting the bar)
-                        val barExtra = if (showingCombo) barHeight + gap else 0
                         TasbeehStore.prefs(this).edit()
-                            .putInt("overlay_x", params.x)
-                            .putInt("overlay_y", params.y + barExtra)
+                            .putInt("overlay_x", params.x + offX(sliderLeft))
+                            .putInt("overlay_y", params.y + offY)
                             .apply()
                     }
                     true
@@ -384,5 +483,67 @@ class TasbeehOverlayService : Service() {
                 else -> false
             }
         }
+    }
+}
+
+/** The vertical slider: a track, a filled part and a round knob that moves up. */
+private class SliderView(context: Context) : View(context) {
+    private var fraction = 0f
+    private var animator: ValueAnimator? = null
+    private val d = resources.displayMetrics.density
+    private val track = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val channel = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#CBBD9B") }
+    private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#12685E") }
+    private val knob = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#F7EBD4")
+        setShadowLayer(3f * d, 0f, 1.5f * d, Color.parseColor("#55000000"))
+    }
+    private val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#12685E")
+        style = Paint.Style.STROKE
+        strokeWidth = 2f * d
+    }
+    private val rect = RectF()
+
+    init { setLayerType(LAYER_TYPE_SOFTWARE, null) } // needed for the knob's shadow
+
+    fun setNow(f: Float) {
+        animator?.cancel()
+        fraction = f.coerceIn(0f, 1f)
+        invalidate()
+    }
+
+    fun animateTo(f: Float) {
+        val to = f.coerceIn(0f, 1f)
+        animator?.cancel()
+        animator = ValueAnimator.ofFloat(fraction, to).apply {
+            duration = 220
+            addUpdateListener { fraction = it.animatedValue as Float; invalidate() }
+            start()
+        }
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        val w = width.toFloat()
+        val h = height.toFloat()
+        track.shader = LinearGradient(0f, 0f, w, 0f,
+            Color.parseColor("#D9CBA9"), Color.parseColor("#F6ECD6"), Shader.TileMode.CLAMP)
+        rect.set(0f, 0f, w, h)
+        canvas.drawRoundRect(rect, w / 2, w / 2, track)
+
+        val r = w / 2 - 3f * d
+        val top = 3f * d + r
+        val bottom = h - 3f * d - r
+        val cx = w / 2
+        val cy = bottom - fraction * (bottom - top)
+        val cw = w * 0.2f
+        rect.set(cx - cw / 2, top, cx + cw / 2, bottom)
+        canvas.drawRoundRect(rect, cw / 2, cw / 2, channel)
+        rect.set(cx - cw / 2, cy, cx + cw / 2, bottom)
+        canvas.drawRoundRect(rect, cw / 2, cw / 2, fill)
+
+        canvas.drawCircle(cx, cy, r, knob)
+        canvas.drawCircle(cx, cy, r, ring)
+        canvas.drawCircle(cx, cy, 3f * d, fill)
     }
 }
