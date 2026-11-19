@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'dart:ui' show Color;
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,6 +10,7 @@ import '../../athkar/data/athkar_progress_store.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import 'adhan_voices.dart';
+import 'prayer_countdown_service.dart';
 import 'prayer_models.dart';
 
 /// Schedules one phone notification per switched-on prayer for every day we
@@ -71,6 +73,8 @@ class PrayerNotifications {
           priority: Priority.high,
           playSound: false,
           enableVibration: vibrate,
+        color: _accent,
+        largeIcon: _logo,
         ),
       );
     }
@@ -91,6 +95,8 @@ class PrayerNotifications {
         // plays at the ALARM volume (usually louder than notification volume)
         audioAttributesUsage: AudioAttributesUsage.alarm,
         enableVibration: vibrate,
+        color: _accent,
+        largeIcon: _logo,
       ),
     );
   }
@@ -115,6 +121,15 @@ class PrayerNotifications {
   }
 
   /// kind 3 = morning list, 4 = evening list
+  /// The app's colour on every reminder, so it stands out in the shade:
+  /// cream on the light theme, green on the dark one.
+  Color get _accent => PrayerCountdownService.appIsDark()
+      ? const Color(0xFF12685E)
+      : const Color(0xFFF7EBD4);
+
+  /// The app logo shown at the right of each reminder.
+  static const _logo = DrawableResourceAndroidBitmap('@mipmap/ic_launcher');
+
   static int _missedId(DateTime date, AthkarSet set) =>
       60000000 +
       ((date.year % 100) * 10000 + date.month * 100 + date.day) * 10 +
@@ -127,32 +142,6 @@ class PrayerNotifications {
     final now = DateTime.now();
     await _plugin.cancel(id: _missedId(now, set));
     await _plugin.cancel(id: _missedId(now.subtract(const Duration(days: 1)), set));
-  }
-
-  /// Shows an azkar notification right now, to check that notifications work
-  /// on this phone. Also prints how many reminders are waiting.
-  Future<bool> testAzkar() async {
-    if (!await requestPermission()) return false;
-    final s = AppSettings.instance;
-    final arabic = s.isArabic;
-    await _plugin.show(
-      id: 99998,
-      title: arabic ? 'أذكار الصباح' : 'Morning azkar',
-      body: arabic ? 'هذا إشعار تجريبي للأذكار' : 'This is a test of the azkar notification',
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          s.vibration ? 'azkar_vibrate' : 'azkar_silent',
-          arabic ? 'الأذكار' : 'Azkar',
-          importance: Importance.high,
-          priority: Priority.high,
-          enableVibration: s.vibration,
-        ),
-      ),
-    );
-    final pending = await _plugin.pendingNotificationRequests();
-    final azkar = pending.where((p) => p.id >= 50000000 && p.id < 70000000);
-    debugPrint('Reminders waiting: ${pending.length} (azkar: ${azkar.length})');
-    return true;
   }
 
   /// Replaces all reminders with the ones for [enabled] prayers.
@@ -197,6 +186,8 @@ class PrayerNotifications {
         importance: Importance.high,
         priority: Priority.high,
         enableVibration: vibrate,
+        color: _accent,
+        largeIcon: _logo,
       ),
     );
     // Fajr has its own adhan; sunrise is not a prayer, so it keeps the
@@ -213,6 +204,8 @@ class PrayerNotifications {
         importance: Importance.high,
         priority: Priority.high,
         enableVibration: vibrate,
+        color: _accent,
+        largeIcon: _logo,
       ),
     );
 

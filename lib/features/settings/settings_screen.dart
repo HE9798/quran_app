@@ -270,23 +270,6 @@ class SettingsScreen extends StatelessWidget {
                           ? settings.setMorningMissed
                           : null,
                     ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      enabled: settings.notifications,
-                      title: Text(context.tr('Test azkar notification',
-                          'تجربة إشعار الأذكار')),
-                      trailing: const Icon(Icons.notifications_active_outlined),
-                      onTap: () async {
-                        final ok = await PrayerNotifications.instance.testAzkar();
-                        if (!ok && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(context.tr(
-                                'Notifications are blocked. Allow them in the phone settings.',
-                                'الإشعارات محظورة. اسمح بها من إعدادات الهاتف.')),
-                          ));
-                        }
-                      },
-                    ),
                   ]),
                   const SizedBox(height: 12),
                   Text(
