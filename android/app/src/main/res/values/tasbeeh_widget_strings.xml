@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tasbeeh_widget_description">Tasbeeh counter. Tap to count up to 999.</string>
+</resources>

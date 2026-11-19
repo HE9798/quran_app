@@ -6,6 +6,8 @@ import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../prayer_times/data/adhan_voices.dart';
+import '../tasbeeh/overlay_tile.dart';
+import '../tasbeeh/tasbeeh_widget.dart';
 import '../prayer_times/data/prayer_notifications.dart';
 
 /// Settings: language, font size, theme, notifications, vibration, azkar.
@@ -269,6 +271,38 @@ class SettingsScreen extends StatelessWidget {
                       onChanged: settings.notifications
                           ? settings.setMorningMissed
                           : null,
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  _Section(context.tr('Tasbeeh button', 'زر التسبيح')),
+                  _Card(children: [
+                    const OverlayTile(),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(context.tr('Reset the counter', 'تصفير العداد')),
+                      subtitle: Text(context.tr(
+                          'Sets the count and the combo back to zero',
+                          'يعيد العدّ والكومبو إلى الصفر')),
+                      trailing: const Icon(Icons.restart_alt_rounded),
+                      onTap: () async {
+                        final yes = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text(context.tr('Reset the counter?', 'تصفير العداد؟')),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false),
+                                child: Text(context.tr('Cancel', 'إلغاء')),
+                              ),
+                              FilledButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                child: Text(context.tr('Reset', 'تصفير')),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (yes == true) await TasbeehWidget.reset();
+                      },
                     ),
                   ]),
                   const SizedBox(height: 12),
