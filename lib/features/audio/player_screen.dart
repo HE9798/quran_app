@@ -6,6 +6,7 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import 'quran_audio_controller.dart';
 import 'reciter_sheet.dart';
+import 'sleep_timer_sheet.dart';
 
 /// Full player: what is playing, verse slider, controls, reciter.
 class PlayerScreen extends StatelessWidget {
@@ -246,10 +247,28 @@ class PlayerScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          OutlinedButton.icon(
-                            onPressed: () => showReciterSheet(context),
-                            icon: const Icon(Icons.record_voice_over_rounded),
-                            label: Text(context.tr('Change reciter', 'تغيير القارئ')),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: () => showReciterSheet(context),
+                                icon: const Icon(Icons.record_voice_over_rounded),
+                                label: Text(context.tr('Change reciter', 'تغيير القارئ')),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: () => showSleepTimerSheet(context),
+                                style: audio.sleepActive
+                                    ? OutlinedButton.styleFrom(
+                                        foregroundColor: scheme.primary,
+                                        side: BorderSide(color: scheme.primary),
+                                      )
+                                    : null,
+                                icon: const Icon(Icons.bedtime_rounded),
+                                label: Text(sleepLabel(context, audio)),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 8),
                           TextButton.icon(

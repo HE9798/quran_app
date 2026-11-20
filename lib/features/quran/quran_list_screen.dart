@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_view.dart';
+import '../../core/widgets/home_back_button.dart';
 import '../audio/quran_audio_controller.dart';
 import '../audio/reciter_sheet.dart';
 import 'data/quran_repository.dart';
@@ -68,22 +69,30 @@ class _QuranListScreenState extends State<QuranListScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.fromLTRB(8, 12, 20, 8),
+          child: Row(
             children: [
-              Text(
-                context.tr('Quran', 'القرآن'),
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.3,
+              const HomeBackButton(),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.tr('Quran', 'القرآن'),
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      context.tr('114 surahs', '١١٤ سورة'),
+                      style: TextStyle(fontSize: 13, color: p.muted),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                context.tr('114 surahs', '١١٤ سورة'),
-                style: TextStyle(fontSize: 13, color: p.muted),
               ),
             ],
           ),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_view.dart';
+import '../../core/widgets/home_back_button.dart';
 import '../home/home_screen.dart' show StarPatternPainter;
 import '../qibla/qibla_math.dart';
 import 'data/location_service.dart';
@@ -152,9 +153,11 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      padding: const EdgeInsets.fromLTRB(8, 12, 20, 8),
       child: Row(
         children: [
+          const HomeBackButton(),
+          const SizedBox(width: 4),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

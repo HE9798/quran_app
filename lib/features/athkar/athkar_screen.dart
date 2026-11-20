@@ -1,4 +1,5 @@
 import '../../core/settings/tr.dart';
+import '../../core/widgets/home_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -90,9 +91,11 @@ class _Title extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 8, 12),
+      padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
       child: Row(
         children: [
+          const HomeBackButton(),
+          const SizedBox(width: 4),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

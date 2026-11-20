@@ -52,7 +52,15 @@ class _MainShellState extends State<MainShell> {
     final hideMini = location.startsWith('/quran/player') ||
         location.startsWith('/quran/surah/');
 
-    return Scaffold(
+    // Phone's back button / back gesture: inside a page it goes back (handled
+    // by the pages themselves); on another tab it goes to Home; only on Home
+    // does it close the app.
+    return PopScope(
+      canPop: navigationShell.currentIndex == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) navigationShell.goBranch(0, initialLocation: true);
+      },
+      child: Scaffold(
       body: SafeArea(bottom: false, child: navigationShell),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
@@ -60,6 +68,7 @@ class _MainShellState extends State<MainShell> {
           if (!hideMini) const MiniPlayer(),
           _nav(navigationShell),
         ],
+      ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import '../../core/settings/tr.dart';
+import '../../core/widgets/home_back_button.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -40,22 +41,30 @@ class _HadithScreenState extends State<HadithScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.fromLTRB(8, 12, 20, 12),
+          child: Row(
             children: [
-              Text(
-                context.tr('Ahadeeth', 'الأحاديث'),
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.3,
+              const HomeBackButton(),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.tr('Ahadeeth', 'الأحاديث'),
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      context.tr('Authentic collections', 'مجموعات صحيحة'),
+                      style: TextStyle(fontSize: 13, color: p.muted),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                context.tr('Authentic collections', 'مجموعات صحيحة'),
-                style: TextStyle(fontSize: 13, color: p.muted),
               ),
             ],
           ),

@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ServiceInfo
+import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -66,8 +67,17 @@ class TasbeehOverlayService : Service() {
     private lateinit var params: WindowManager.LayoutParams
 
     private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> refresh() }
+    // the app's own settings (theme): recolour when they change
+    private val themeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> applyTheme() }
+    private fun flutterPrefs() = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    // the phone switched between light and dark: matters when the app follows the phone
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyTheme()
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startAsForeground()
@@ -82,6 +92,7 @@ class TasbeehOverlayService : Service() {
     override fun onDestroy() {
         stopEffects()
         TasbeehStore.prefs(this).unregisterOnSharedPreferenceChangeListener(listener)
+        flutterPrefs().unregisterOnSharedPreferenceChangeListener(themeListener)
         root?.let { runCatching { windowManager.removeView(it) } }
         trash?.let { runCatching { windowManager.removeView(it) } }
         root = null
@@ -144,14 +155,39 @@ class TasbeehOverlayService : Service() {
         intArrayOf(Color.parseColor(from), Color.parseColor(to))
     ).apply { cornerRadius = radius }
 
+    /** Follows the app's theme: "follow the phone" or its own light/dark switch. */
+    private fun isDark(): Boolean {
+        val p = flutterPrefs()
+        return if (p.getBoolean("flutter.set_follow_device_v1", true)) {
+            (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+                Configuration.UI_MODE_NIGHT_YES
+        } else {
+            p.getBoolean("flutter.set_dark_v1", false)
+        }
+    }
+
     /** Rounded square, edges slightly raised, middle slightly sunk. Kept subtle. */
-    private fun sunkenButton(): LayerDrawable {
-        val raised = gradient("#1A7C71", "#0E4F47", dp(22f).toFloat())   // light top-left, dark bottom-right
-        val dish = gradient("#0F554C", "#167267", dp(16f).toFloat())     // the other way round = sunk
+    private fun sunkenButton(dark: Boolean): LayerDrawable {
+        // dark theme: green button. light theme: cream button.
+        val raised = if (dark) gradient("#1A7C71", "#0E4F47", dp(22f).toFloat())
+                     else gradient("#FFFAEC", "#E0CFA8", dp(22f).toFloat())
+        val dish = if (dark) gradient("#0F554C", "#167267", dp(16f).toFloat())
+                   else gradient("#E8DABA", "#F8EFD9", dp(16f).toFloat())
         return LayerDrawable(arrayOf(raised, dish)).apply {
             val i = dp(7f)
             setLayerInset(1, i, i, i, i)
         }
+    }
+
+    /** Dark theme: green button, cream bar + slider. Light theme: the opposite. */
+    private fun applyTheme() {
+        val dark = isDark()
+        comboView?.apply {
+            background = rounded(if (dark) "#F7EBD4" else "#12685E", dp(14f).toFloat())
+            setTextColor(Color.parseColor(if (dark) "#12685E" else "#F7EBD4"))
+        }
+        countView?.background = sunkenButton(dark)
+        slider?.setDark(dark)
     }
 
     private fun createOverlay() {
@@ -220,7 +256,7 @@ class TasbeehOverlayService : Service() {
             elevation = dp(5f).toFloat()
         }
         val face = View(this).apply {
-            background = sunkenButton()
+            background = sunkenButton(true)
             elevation = dp(5f).toFloat()
         }
         val sl = SliderView(this)
@@ -262,6 +298,8 @@ class TasbeehOverlayService : Service() {
         layout.setOnTouchListener(touchListener(layout))
         windowManager.addView(layout, params)
         saved.registerOnSharedPreferenceChangeListener(listener)
+        flutterPrefs().registerOnSharedPreferenceChangeListener(themeListener)
+        applyTheme()
         refresh()
     }
 
@@ -492,16 +530,35 @@ private class SliderView(context: Context) : View(context) {
     private var animator: ValueAnimator? = null
     private val d = resources.displayMetrics.density
     private val track = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val channel = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#CBBD9B") }
-    private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#12685E") }
+    private val channel = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
     private val knob = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#F7EBD4")
         setShadowLayer(3f * d, 0f, 1.5f * d, Color.parseColor("#55000000"))
     }
     private val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#12685E")
         style = Paint.Style.STROKE
         strokeWidth = 2f * d
+    }
+    private val dot = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var trackA = 0
+    private var trackB = 0
+
+    init { setDark(true) }
+
+    /** Dark theme: cream slider with a green fill. Light theme: green slider with a cream fill. */
+    fun setDark(dark: Boolean) {
+        val cream = Color.parseColor("#F7EBD4")
+        val teal = Color.parseColor("#12685E")
+        if (dark) {
+            trackA = Color.parseColor("#D9CBA9"); trackB = Color.parseColor("#F6ECD6")
+            channel.color = Color.parseColor("#CBBD9B")
+            fill.color = teal; knob.color = cream; ring.color = teal; dot.color = teal
+        } else {
+            trackA = Color.parseColor("#0C4A43"); trackB = Color.parseColor("#1A7C71")
+            channel.color = Color.parseColor("#0A3D37")
+            fill.color = cream; knob.color = teal; ring.color = cream; dot.color = cream
+        }
+        invalidate()
     }
     private val rect = RectF()
 
@@ -527,7 +584,7 @@ private class SliderView(context: Context) : View(context) {
         val w = width.toFloat()
         val h = height.toFloat()
         track.shader = LinearGradient(0f, 0f, w, 0f,
-            Color.parseColor("#D9CBA9"), Color.parseColor("#F6ECD6"), Shader.TileMode.CLAMP)
+            trackA, trackB, Shader.TileMode.CLAMP)
         rect.set(0f, 0f, w, h)
         canvas.drawRoundRect(rect, w / 2, w / 2, track)
 
@@ -544,6 +601,6 @@ private class SliderView(context: Context) : View(context) {
 
         canvas.drawCircle(cx, cy, r, knob)
         canvas.drawCircle(cx, cy, r, ring)
-        canvas.drawCircle(cx, cy, 3f * d, fill)
+        canvas.drawCircle(cx, cy, 3f * d, dot)
     }
 }

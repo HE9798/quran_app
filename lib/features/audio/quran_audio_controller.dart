@@ -51,6 +51,59 @@ class QuranAudioController extends ChangeNotifier {
   /// Set when something failed. Screens show a message, then call [clearError].
   Object? error;
 
+  // ------------------------------------------------------- sleep timer
+
+  /// Time left before the player stops by itself. Null = no timer.
+  Duration? sleepRemaining;
+
+  /// Stop when the surah that is playing ends (instead of going on).
+  bool sleepAtSurahEnd = false;
+
+  Timer? _sleepTimer;
+
+  bool get sleepActive => sleepRemaining != null || sleepAtSurahEnd;
+
+  /// Stops the playback after [after] (cuts the audio, no fade).
+  void setSleepTimer(Duration after) {
+    cancelSleep();
+    sleepRemaining = after;
+    _sleepTimer = Timer.periodic(const Duration(seconds: 1), (_) => _sleepTick());
+    notifyListeners();
+  }
+
+  /// Stops when the current surah finishes.
+  void setSleepAtSurahEnd() {
+    cancelSleep();
+    sleepAtSurahEnd = true;
+    notifyListeners();
+  }
+
+  void cancelSleep() {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    final had = sleepActive;
+    sleepRemaining = null;
+    sleepAtSurahEnd = false;
+    _player.setVolume(1.0);
+    if (had) notifyListeners();
+  }
+
+  void _sleepTick() {
+    final left = sleepRemaining;
+    if (left == null) return;
+    final next = left - const Duration(seconds: 1);
+    if (next <= Duration.zero) {
+      _sleepTimer?.cancel();
+      _sleepTimer = null;
+      sleepRemaining = null;
+      _player.pause();
+      notifyListeners();
+      return;
+    }
+    sleepRemaining = next;
+    notifyListeners();
+  }
+
   bool get isActive => surah != null;
   bool isPlayingSurah(int number) => surah?.number == number && playing;
 
@@ -188,6 +241,7 @@ class QuranAudioController extends ChangeNotifier {
 
   Future<void> stop() async {
     _token++;
+    cancelSleep();
     await _player.stop();
     surah = null;
     playing = false;
@@ -236,6 +290,14 @@ class QuranAudioController extends ChangeNotifier {
   void _onFinished() {
     if (_completionHandled) return;
     _completionHandled = true;
+    if (sleepAtSurahEnd) {
+      // sleep timer "end of surah": stay here instead of going on
+      cancelSleep();
+      _player.pause();
+      playing = false;
+      notifyListeners();
+      return;
+    }
     final current = surah;
     if (current != null && current.number < 114) {
       _goToSurah(current.number + 1);
