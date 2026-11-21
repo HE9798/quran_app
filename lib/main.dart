@@ -9,6 +9,7 @@ import 'features/audio/quran_audio_controller.dart';
 import 'features/audio/quran_audio_handler.dart';
 import 'features/hifz/data/hifz_store.dart';
 import 'features/khatma/data/khatma_store.dart';
+import 'features/companion/companion_widget.dart';
 import 'features/tasbeeh/tasbeeh_widget.dart';
 import 'features/bookmarks/data/bookmark_store.dart';
 import 'features/hadith/data/hadith_bookmark_store.dart';
@@ -19,6 +20,7 @@ Future<void> main() async {
   await KhatmaStore.instance.load();
   await HifzStore.instance.load();
   TasbeehWidget.restoreOverlay(); // brings the floating button back
+  CompanionWidget.restore(); //      brings the companion back
   await AppSettings.instance.load(); // theme, language, font size, ...
   await BookmarkStore.instance.load(); // saved pages + last read position
   await HadithBookmarkStore.instance.load(); // saved ahadeeth

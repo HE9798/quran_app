@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../hifz/data/hifz_store.dart';
 import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
@@ -370,6 +371,29 @@ class _SurahReaderState extends State<_SurahReader> {
       ));
   }
 
+  /// "Memorise this": add the verse (and a few after it) to Hifz and open it.
+  Future<void> _memorise(Ayah ayah) async {
+    final surah = widget.detail.surah;
+    final start = ayah.numberInSurah;
+    final end = await showDialog<int>(
+      context: context,
+      builder: (_) => _MemoriseDialog(start: start, last: surah.ayahCount),
+    );
+    if (end == null || !mounted) return;
+    // let the dialog finish closing before the page changes
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    if (!mounted) return;
+    final item = await HifzStore.instance.add(
+      surah: surah.number,
+      surahEn: surah.englishName,
+      surahAr: surah.arabicName,
+      from: start,
+      to: end,
+    );
+    if (!mounted) return;
+    context.go('/hifz/${item.id}');
+  }
+
   void _onPageChanged(int index) {
     setState(() {
       _index = index;
@@ -543,6 +567,7 @@ class _SurahReaderState extends State<_SurahReader> {
                         onTab: (tafseer) =>
                             setState(() => _tafseerTab = tafseer),
                         onCopy: () => _copy(panelAyah!),
+                        onMemorise: () => _memorise(panelAyah!),
                         onClose: _closePanel,
                       ),
                     ),
@@ -1114,6 +1139,7 @@ class _VersePanel extends StatelessWidget {
     required this.tafseerTab,
     required this.onTab,
     required this.onCopy,
+    required this.onMemorise,
     required this.onClose,
   });
 
@@ -1122,6 +1148,7 @@ class _VersePanel extends StatelessWidget {
   final bool tafseerTab;
   final void Function(bool tafseer) onTab;
   final VoidCallback onCopy;
+  final VoidCallback onMemorise;
   final VoidCallback onClose;
 
   @override
@@ -1190,6 +1217,11 @@ class _VersePanel extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+              IconButton(
+                tooltip: context.tr('Memorise this', 'احفظ هذه الآية'),
+                onPressed: onMemorise,
+                icon: const Icon(Icons.school_outlined),
               ),
               IconButton(
                 tooltip: context.tr('Copy verse', 'نسخ الآية'),
@@ -1334,6 +1366,78 @@ class _PanelTab extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+
+/// Asks until which verse to memorise. Owns its text field, so nothing is
+/// disposed while the dialog is still closing.
+class _MemoriseDialog extends StatefulWidget {
+  const _MemoriseDialog({required this.start, required this.last});
+
+  final int start;
+  final int last;
+
+  @override
+  State<_MemoriseDialog> createState() => _MemoriseDialogState();
+}
+
+class _MemoriseDialogState extends State<_MemoriseDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    final suggested = widget.start + 4;
+    _controller = TextEditingController(
+        text: '${suggested > widget.last ? widget.last : suggested}');
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.tr('Memorise from verse ${widget.start}',
+          'احفظ من الآية ${context.n(widget.start)}')),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.tr('Until which verse?', 'إلى أي آية؟')),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _controller,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            decoration: InputDecoration(
+              helperText: context.tr(
+                  'From ${widget.start} to ${widget.last}',
+                  'من ${context.n(widget.start)} إلى ${context.n(widget.last)}'),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(context.tr('Cancel', 'إلغاء')),
+        ),
+        FilledButton(
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            final n = int.tryParse(_controller.text.trim());
+            Navigator.of(context).pop(
+                n != null && n >= widget.start && n <= widget.last ? n : null);
+          },
+          child: Text(context.tr('Start', 'ابدأ')),
+        ),
+      ],
     );
   }
 }

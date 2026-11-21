@@ -6,6 +6,7 @@ import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../prayer_times/data/adhan_voices.dart';
+import '../companion/companion_tile.dart';
 import '../tasbeeh/overlay_tile.dart';
 import '../tasbeeh/target_tile.dart';
 import '../tasbeeh/tasbeeh_widget.dart';
@@ -307,6 +308,9 @@ class SettingsScreen extends StatelessWidget {
                       },
                     ),
                   ]),
+                  const SizedBox(height: 20),
+                  _Section(context.tr('Companion mode', 'وضع الرفيق')),
+                  const _Card(children: [CompanionTile()]),
                   const SizedBox(height: 12),
                   Text(
                     context.tr(
