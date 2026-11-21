@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/athkar/athkar_screen.dart';
 import '../../features/bookmarks/bookmarks_screen.dart';
 import '../../features/hadith/hadith_screen.dart';
+import '../../features/hifz/hifz_screen.dart';
+import '../../features/hifz/hifz_session_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/khatma/khatma_screen.dart';
 import '../../features/prayer_times/prayer_screen.dart';
@@ -39,6 +41,19 @@ final appRouter = GoRouter(
               GoRoute(
                 path: 'khatma',
                 builder: (context, state) => const KhatmaScreen(),
+              ),
+              GoRoute(
+                path: 'hifz',
+                builder: (context, state) => const HifzScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => HifzSessionScreen(
+                      key: ValueKey(state.pathParameters['id']),
+                      id: state.pathParameters['id'] ?? '',
+                    ),
+                  ),
+                ],
               ),
               GoRoute(
                 path: 'settings',

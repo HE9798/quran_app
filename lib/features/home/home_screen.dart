@@ -6,6 +6,7 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/lang_text.dart';
 import '../audio/quran_audio_controller.dart';
+import '../hifz/data/hifz_store.dart';
 import '../khatma/data/khatma_store.dart';
 import '../bookmarks/data/bookmark_store.dart';
 import '../hadith/data/hadith_models.dart';
@@ -31,6 +32,8 @@ class HomeScreen extends StatelessWidget {
         _ContinueReadingCard(),
         SizedBox(height: 12),
         _KhatmaCard(),
+        SizedBox(height: 12),
+        _HifzCard(),
         SizedBox(height: 20),
         _QuickActions(),
         SizedBox(height: 20),
@@ -638,6 +641,74 @@ class _KhatmaCard extends StatelessWidget {
                       style: TextStyle(fontSize: 12, color: p.muted),
                     ),
                   ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Memorisation (hifz): repeat, hide the text, revise on schedule.
+class _HifzCard extends StatelessWidget {
+  const _HifzCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+
+    return ListenableBuilder(
+      listenable: HifzStore.instance,
+      builder: (context, _) {
+        final h = HifzStore.instance;
+        final String subtitle;
+        if (h.isEmpty) {
+          subtitle = context.tr('Repeat, hide the text and test yourself',
+              'كرّر، أخفِ النص، واختبر نفسك');
+        } else if (h.dueCount > 0) {
+          subtitle = context.tr('${h.dueCount} due for revision today',
+              '${context.n(h.dueCount)} للمراجعة اليوم');
+        } else {
+          subtitle = context.tr('All revised for today', 'راجعت كل شيء اليوم');
+        }
+
+        return Material(
+          color: p.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: p.border),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => context.go('/hifz'),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  const _IconTile(icon: Icons.school_outlined, size: 48),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          context.tr('Memorisation (Hifz)', 'حفظ القرآن'),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          subtitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 13, color: p.muted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded, color: p.muted),
                 ],
               ),
             ),
