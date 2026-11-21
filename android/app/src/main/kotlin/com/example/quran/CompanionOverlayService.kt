@@ -99,19 +99,20 @@ class CompanionOverlayService : Service() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
         val type = CompanionStore.type(this)                       // "sheikh" or "sister"
-        val id = resources.getIdentifier("companion_$type", "drawable", packageName)
+        val id = resources.getIdentifier("companion_${type}_body", "drawable", packageName)
         if (id == 0) { stopSelf(); return }
         val opts = BitmapFactory.Options().apply { inScaled = false }
-        val bitmap = BitmapFactory.decodeResource(resources, id, opts)
+        val bitmap = BitmapFactory.decodeResource(resources, id, opts)   // the body, without the head
         if (bitmap == null) { stopSelf(); return }
 
-        // where the head ends and the body starts (share of the picture's height)
-        val split = if (type == "sister") 0.50f else 0.55f
+        // the head on its own (cut along the real outline of the head)
+        val headId = resources.getIdentifier("companion_${type}_head", "drawable", packageName)
+        val head = if (headId != 0) BitmapFactory.decodeResource(resources, headId, opts) else null
         val heightPx = dp(130f)
         val widthPx = (bitmap.width * heightPx.toFloat() / bitmap.height).toInt()
         val bob = dp(3f)
 
-        val v = CompanionView(this, bitmap, split, widthPx, heightPx, bob)
+        val v = CompanionView(this, bitmap, head, widthPx, heightPx, bob)
         view = v
 
         val m = resources.displayMetrics
@@ -133,7 +134,7 @@ class CompanionOverlayService : Service() {
         startBobbing(v)
     }
 
-    /** Idle animation: the head goes up a little and comes back, like breathing. */
+    /** Idle animation: the head goes down a little and comes back, like breathing. */
     private fun startBobbing(v: CompanionView) {
         val r = object : Runnable {
             override fun run() {
@@ -188,41 +189,37 @@ class CompanionOverlayService : Service() {
 }
 
 /**
- * Draws the pixel character. The whole picture is drawn still, then the head
- * (everything above [split]) is drawn again a little higher when the head is
- * "up", so only the head bobs. No smoothing: the pixels stay sharp.
+ * Draws the pixel character in two pieces: the body (without the head) and the
+ * head (cut along its exact outline). At rest the head sits in its place;
+ * when the head is "down" it is drawn [bobPx] lower, so only the head bobs.
+ * No smoothing: the pixels stay sharp.
  */
 private class CompanionView(
     context: Context,
-    private val bitmap: Bitmap,
-    split: Float,
+    private val body: Bitmap,
+    private val head: Bitmap?,
     private val w: Int,
     private val h: Int,
     private val bobPx: Int,
 ) : View(context) {
 
     private val paint = Paint().apply { isFilterBitmap = false; isAntiAlias = false; isDither = false }
-    private val splitSrc = (bitmap.height * split).toInt()
-    private val splitDst = (h * split).toInt()
-    private var up = false
-    private val whole = Rect(0, bobPx, w, bobPx + h)
-    private val srcHead = Rect(0, 0, bitmap.width, splitSrc)
-    private val dstHead = Rect()
+    private var down = false
+    private val bodyRect = Rect(0, 0, w, h)
+    private val headUp = Rect(0, 0, w, h)
+    private val headDown = Rect(0, bobPx, w, h + bobPx)
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         setMeasuredDimension(w, h + bobPx)
     }
 
     fun toggleBob() {
-        up = !up
+        down = !down
         invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawBitmap(bitmap, null, whole, paint)
-        if (up) {
-            dstHead.set(0, 0, w, splitDst)          // the head, shifted up by bobPx
-            canvas.drawBitmap(bitmap, srcHead, dstHead, paint)
-        }
+        canvas.drawBitmap(body, null, bodyRect, paint)
+        if (head != null) canvas.drawBitmap(head, null, if (down) headDown else headUp, paint)
     }
 }
