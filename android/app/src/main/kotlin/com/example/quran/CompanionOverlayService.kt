@@ -72,7 +72,7 @@ class CompanionOverlayService : Service() {
         instance = this
         if (view == null) createOverlay()
         if (intent?.action == ACTION_SAY) {
-            intent.getStringExtra("text")?.let { say(it, 25000) }
+            intent.getStringExtra("text")?.let { say(it, 8000) }
         }
         return START_STICKY
     }
@@ -159,7 +159,7 @@ class CompanionOverlayService : Service() {
 
     // ----------------------------------------------------------- speech bubble
     /** Shows [text] in a speech bubble above the companion for [ms] milliseconds. */
-    fun say(text: String, ms: Long = 5000) {
+    fun say(text: String, ms: Long = 1000) {
         handler.post {
             val companion = view ?: return@post
             if (!CompanionStore.bubbles(this)) return@post
@@ -195,14 +195,16 @@ class CompanionOverlayService : Service() {
         val cx = params.x + params.width / 2
         val x = (cx - bw / 2).coerceIn(margin, max(margin, m.widthPixels - bw - margin))
         lp.x = x
-        lp.y = max(0, params.y - bh + dp(4f))
+        lp.y = max(0, params.y - bh + dp(4f) + b.edgePad)
         b.pointTailAt(cx - (x + bw / 2))
     }
 
+    /** Removes the bubble at once. */
     private fun hideBubbleNow() {
         hideBubble?.let { handler.removeCallbacks(it) }
         hideBubble = null
-        bubble?.let { b -> if (b.parent != null) runCatching { windowManager.removeView(b) } }
+        val b = bubble ?: return
+        if (b.parent != null) runCatching { windowManager.removeView(b) }
     }
 
     /** Idle animation: the head goes down a little and comes back, like breathing. */
@@ -308,9 +310,13 @@ private class BubbleView(context: Context, onTap: () -> Unit) : LinearLayout(con
     private val text = TextView(context)
     private val tail = TailView(context)
 
+    /** Empty room around the bubble so the pop animation is not cut off by the window. */
+    val edgePad = (16 * d).toInt()
+
     init {
         orientation = VERTICAL
         gravity = Gravity.CENTER_HORIZONTAL
+        setPadding(edgePad, edgePad, edgePad, edgePad)
         text.apply {
             setTextColor(Color.parseColor("#0E4F47"))
             textSize = 15f
@@ -324,7 +330,6 @@ private class BubbleView(context: Context, onTap: () -> Unit) : LinearLayout(con
                 cornerRadius = 16 * d
                 setStroke((2 * d).toInt(), Color.parseColor("#12685E"))
             }
-            elevation = 4 * d
         }
         addView(text, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
         addView(tail, LayoutParams((18 * d).toInt(), (10 * d).toInt()).apply { topMargin = (-2 * d).toInt() })

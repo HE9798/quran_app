@@ -33,12 +33,7 @@ class HomeScreen extends StatelessWidget {
         SizedBox(height: 20),
         _ContinueReadingCard(),
         SizedBox(height: 12),
-        _KhatmaCard(),
-        SizedBox(height: 12),
-        _HifzCard(),
-        _CompanionCard(), // only appears when Companion mode is on
-        SizedBox(height: 20),
-        _QuickActions(),
+        _CardsRow(), // Khatma · Hifz · (Companion, only when it is on)
         SizedBox(height: 20),
         _HadithOfTheDay(),
       ],
@@ -93,6 +88,12 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
+        _SquareIconButton(
+          icon: Icons.explore_outlined,
+          label: context.tr('Qibla', 'القبلة'),
+          onTap: () => context.go('/prayer/qibla'),
+        ),
+        const SizedBox(width: 8),
         _SquareIconButton(
           icon: Icons.bookmark_border_rounded,
           label: context.tr('Saved', 'المحفوظات'),
@@ -558,179 +559,15 @@ class _ContinueReadingCard extends StatelessWidget {
   }
 }
 
-/// "ختم القرآن": its own progress, separate from "Continue reading".
-class _KhatmaCard extends StatelessWidget {
-  const _KhatmaCard();
+/// Khatma · Hifz · Companion (only when Companion mode is on), side by side.
+class _CardsRow extends StatefulWidget {
+  const _CardsRow();
 
   @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    final scheme = Theme.of(context).colorScheme;
-
-    return ListenableBuilder(
-      listenable: KhatmaStore.instance,
-      builder: (context, _) {
-        final k = KhatmaStore.instance;
-        final String subtitle;
-        if (!k.active) {
-          subtitle = context.tr('Set a timeline and finish the Quran',
-              'حدد مدة لختم القرآن الكريم');
-        } else if (k.todayDone) {
-          subtitle = context.tr("Today's goal is done", 'أنجزت ورد اليوم');
-        } else {
-          subtitle = context.tr(
-            'Today: pages ${k.todayStart}–${k.todayEnd} · ${k.daysLeft} days left',
-            'اليوم: صفحات ${context.n(k.todayStart)}–${context.n(k.todayEnd)} · متبقٍ ${context.n(k.daysLeft)} يوم',
-          );
-        }
-
-        return Material(
-          color: p.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: p.border),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () => context.go('/khatma'),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const _IconTile(icon: Icons.auto_stories_outlined, size: 48),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              context.tr('Quran Khatma', 'ختم القرآن'),
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w800),
-                            ),
-                            const SizedBox(height: 1),
-                            Text(
-                              subtitle,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 13, color: p.muted),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(Icons.chevron_right_rounded, color: p.muted),
-                    ],
-                  ),
-                  if (k.active) ...[
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: k.progress,
-                        minHeight: 8,
-                        backgroundColor: p.surfaceAlt,
-                        valueColor: AlwaysStoppedAnimation(scheme.primary),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      context.tr(
-                        '${k.currentPage} / ${KhatmaStore.totalPages} pages',
-                        '${context.n(k.currentPage)} / ${context.n(KhatmaStore.totalPages)} صفحة',
-                      ),
-                      style: TextStyle(fontSize: 12, color: p.muted),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  State<_CardsRow> createState() => _CardsRowState();
 }
 
-/// Memorisation (hifz): repeat, hide the text, revise on schedule.
-class _HifzCard extends StatelessWidget {
-  const _HifzCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-
-    return ListenableBuilder(
-      listenable: HifzStore.instance,
-      builder: (context, _) {
-        final h = HifzStore.instance;
-        final String subtitle;
-        if (h.isEmpty) {
-          subtitle = context.tr('Repeat, hide the text and test yourself',
-              'كرّر، أخفِ النص، واختبر نفسك');
-        } else if (h.dueCount > 0) {
-          subtitle = context.tr('${h.dueCount} due for revision today',
-              '${context.n(h.dueCount)} للمراجعة اليوم');
-        } else {
-          subtitle = context.tr('All revised for today', 'راجعت كل شيء اليوم');
-        }
-
-        return Material(
-          color: p.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: p.border),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () => context.go('/hifz'),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  const _IconTile(icon: Icons.school_outlined, size: 48),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          context.tr('Memorisation (Hifz)', 'حفظ القرآن'),
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w800),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          subtitle,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13, color: p.muted),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right_rounded, color: p.muted),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// Companion mode: only shown when the companion is turned on in the settings.
-class _CompanionCard extends StatefulWidget {
-  const _CompanionCard();
-
-  @override
-  State<_CompanionCard> createState() => _CompanionCardState();
-}
-
-class _CompanionCardState extends State<_CompanionCard> with WidgetsBindingObserver {
+class _CardsRowState extends State<_CardsRow> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
@@ -751,52 +588,175 @@ class _CompanionCardState extends State<_CompanionCard> with WidgetsBindingObser
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: CompanionStore.instance,
+      builder: (context, _) {
+        final withCompanion = CompanionStore.instance.active;
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Expanded(child: _KhatmaCard()),
+              const SizedBox(width: 10),
+              const Expanded(child: _HifzCard()),
+              if (withCompanion) ...[
+                const SizedBox(width: 10),
+                const Expanded(child: _CompanionCard()),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// A small vertical card: picture on top, title, a short line, optional extra.
+class _HomeTile extends StatelessWidget {
+  const _HomeTile({
+    required this.leading,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.extra,
+  });
+
+  final Widget leading;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final Widget? extra;
+
+  @override
+  Widget build(BuildContext context) {
     final p = context.palette;
+    return Material(
+      color: p.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: p.border),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 48, child: Align(alignment: AlignmentDirectional.centerStart, child: leading)),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: p.muted, height: 1.3),
+              ),
+              if (extra != null) ...[const Spacer(), const SizedBox(height: 8), extra!],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _KhatmaCard extends StatelessWidget {
+  const _KhatmaCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+
+    return ListenableBuilder(
+      listenable: KhatmaStore.instance,
+      builder: (context, _) {
+        final k = KhatmaStore.instance;
+        final String subtitle;
+        if (!k.active) {
+          subtitle = context.tr('Finish the Quran', 'اختم القرآن الكريم');
+        } else if (k.todayDone) {
+          subtitle = context.tr("Today's goal is done", 'أنجزت ورد اليوم');
+        } else {
+          subtitle = context.tr(
+            'Today: pages ${k.todayStart}–${k.todayEnd}',
+            'اليوم: صفحات ${context.n(k.todayStart)}–${context.n(k.todayEnd)}',
+          );
+        }
+        return _HomeTile(
+          leading: const _IconTile(icon: Icons.auto_stories_outlined, size: 48),
+          title: context.tr('Khatma', 'الختمة'),
+          subtitle: subtitle,
+          onTap: () => context.go('/khatma'),
+          extra: k.active
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: k.progress,
+                    minHeight: 6,
+                    backgroundColor: p.surfaceAlt,
+                    valueColor: AlwaysStoppedAnimation(scheme.primary),
+                  ),
+                )
+              : null,
+        );
+      },
+    );
+  }
+}
+
+/// Memorisation (hifz): repeat, hide the text, revise on schedule.
+class _HifzCard extends StatelessWidget {
+  const _HifzCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: HifzStore.instance,
+      builder: (context, _) {
+        final h = HifzStore.instance;
+        final String subtitle;
+        if (h.isEmpty) {
+          subtitle = context.tr('Start memorising', 'ابدأ الحفظ');
+        } else if (h.dueCount > 0) {
+          subtitle = context.tr('${h.dueCount} due today', '${context.n(h.dueCount)} للمراجعة اليوم');
+        } else {
+          subtitle = context.tr('All revised today', 'راجعت كل شيء اليوم');
+        }
+        return _HomeTile(
+          leading: const _IconTile(icon: Icons.school_outlined, size: 48),
+          title: context.tr('Hifz', 'الحفظ'),
+          subtitle: subtitle,
+          onTap: () => context.go('/hifz'),
+        );
+      },
+    );
+  }
+}
+
+/// Companion mode: only shown when the companion is turned on in the settings.
+class _CompanionCard extends StatelessWidget {
+  const _CompanionCard();
+
+  @override
+  Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: CompanionStore.instance,
       builder: (context, _) {
         final c = CompanionStore.instance;
-        if (!c.active) return const SizedBox.shrink();
-        return Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: Material(
-            color: p.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: p.border),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: () => context.go('/companion'),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-                child: Row(
-                  children: [
-                    SizedBox(width: 48, child: Center(child: CompanionSprite(type: c.type, height: 64))),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            c.displayName(context.isArabic),
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                          ),
-                          const SizedBox(height: 1),
-                          Text(
-                            context.tr('${c.coins} coins · ${c.streak} day streak',
-                                '${context.n(c.coins)} عملة · ${context.n(c.streak)} يوم متتالي'),
-                            style: TextStyle(fontSize: 13, color: p.muted),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(Icons.chevron_right_rounded, color: p.muted),
-                  ],
-                ),
-              ),
-            ),
-          ),
+        return _HomeTile(
+          leading: CompanionSprite(type: c.type, height: 46),
+          title: c.displayName(context.isArabic),
+          subtitle: context.tr('${c.coins} coins', '${context.n(c.coins)} عملة'),
+          onTap: () => context.go('/companion'),
         );
       },
     );
@@ -820,101 +780,6 @@ class _IconTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: Icon(icon, color: p.onPrimarySoft, size: 24),
-    );
-  }
-}
-
-// ----------------------------------------------------------- quick actions
-
-class _QuickActions extends StatelessWidget {
-  const _QuickActions();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _QuickAction(
-            icon: Icons.explore_outlined,
-            label: context.tr('Qibla', 'القبلة'),
-            onTap: () => context.go('/prayer/qibla'),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _QuickAction(
-            icon: Icons.wb_sunny_outlined,
-            label: context.tr('Athkar', 'الأذكار'),
-            onTap: () => context.go('/athkar'),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _QuickAction(
-            icon: Icons.article_outlined,
-            label: context.tr('Hadith', 'الحديث'),
-            onTap: () => context.go('/hadith'),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _QuickAction(
-            icon: Icons.bookmark_border_rounded,
-            label: context.tr('Saved', 'المحفوظات'),
-            onTap: () => context.go('/bookmarks'),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  const _QuickAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(18),
-      side: BorderSide(color: p.border),
-    );
-    return Material(
-      color: p.surface,
-      shape: shape,
-      child: InkWell(
-        customBorder: shape,
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(4, 14, 4, 12),
-          child: Column(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: p.primarySoft,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, size: 22, color: p.onPrimarySoft),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

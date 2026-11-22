@@ -138,11 +138,21 @@ class CompanionStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Settings > reset: forget the choice and the name (coins and streak stay).
+  /// Settings > reset: forget the choice, the name and ALL progress
+  /// (coins, streak, days together).
   Future<void> resetIdentity() async {
+    await CompanionWidget.claimTasbeehCoins(); // throw away coins waiting from the Tasbeeh button
     chosen = false;
     name = '';
     active = false;
+    coins = 0;
+    lifetime = 0;
+    streak = 0;
+    bestStreak = 0;
+    _lastActive = null;
+    since = null;
+    _milestones.clear();
+    _daily.clear();
     await _save();
     notifyListeners();
     await CompanionBubbles.resync();
@@ -156,8 +166,7 @@ class CompanionStore extends ChangeNotifier {
 
   /// Phrases for the bubbles the phone side makes by itself.
   Future<void> pushStrings() => CompanionWidget.setStrings({
-        'tasbeeh': _ar ? 'ما شاء الله +%d' : 'Mashaa Allah +%d',
-        'arabicDigits': _ar ? '1' : '0',
+        'tasbeeh': _ar ? 'ما شاء الله' : 'Mashaa Allah',
       });
 
   // ----------------------------------------------------------- daily counts
@@ -178,7 +187,7 @@ class CompanionStore extends ChangeNotifier {
   // ------------------------------------------------------------- earning
 
   /// Gives [amount] coins, updates the streak and says [line] in a bubble.
-  Future<void> _grant(int amount, String line, {int bubbleMs = 5000, bool speak = true}) async {
+  Future<void> _grant(int amount, String line, {int bubbleMs = 1000, bool speak = true}) async {
     var bonus = 0;
     var bonusDays = 0;
 
@@ -214,12 +223,11 @@ class CompanionStore extends ChangeNotifier {
     notifyListeners();
 
     if (!speak && bonus == 0) return;
-    final streakLine = _ar
-        ? '${_n(bonusDays)} أيام متتالية  +${_n(bonus)}'
-        : '${_n(bonusDays)}-day streak  +${_n(bonus)}';
-    var text = speak ? (amount > 0 ? '$line  +${_n(amount)}' : line) : '';
+    // only words in the bubble: the coins are listed on the Companion page
+    final streakLine = _ar ? '${_n(bonusDays)} أيام متتالية' : '${_n(bonusDays)}-day streak';
+    var text = speak ? line : '';
     if (bonus > 0) text = text.isEmpty ? streakLine : '$text\n$streakLine';
-    await CompanionWidget.say(text, ms: bonus > 0 ? 8000 : bubbleMs);
+    await CompanionWidget.say(text, ms: bonus > 0 ? 1500 : bubbleMs);
   }
 
   /// "I prayed" on the Companion page. [adhan] is the prayer's time.

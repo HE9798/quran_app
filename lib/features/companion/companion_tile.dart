@@ -139,8 +139,8 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
       builder: (context) => AlertDialog(
         title: Text(context.tr('Reset companion?', 'إعادة ضبط الرفيق؟')),
         content: Text(context.tr(
-          'Your companion will be turned off. Next time you turn it on, you will choose male or female and a name again. Your coins and streak stay.',
-          'سيتم إيقاف الرفيق. وعند تفعيله مرة أخرى ستختار ذكر أو أنثى والاسم من جديد. عملاتك وأيامك المتتالية تبقى كما هي.',
+          'Your companion will be turned off and everything is cleared: coins, streak and days together. Next time you turn it on, you will choose male or female and a name again.',
+          'سيتم إيقاف الرفيق ومسح كل شيء: العملات والأيام المتتالية وأيام الرفقة. وعند تفعيله مرة أخرى ستختار ذكر أو أنثى والاسم من جديد.',
         )),
         actions: [
           TextButton(
@@ -183,8 +183,8 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.restart_alt_rounded),
               title: Text(context.tr('Reset companion', 'إعادة ضبط الرفيق')),
-              subtitle: Text(context.tr('Choose male or female and the name again',
-                  'اختيار ذكر أو أنثى والاسم من جديد')),
+              subtitle: Text(context.tr('Start over: choice, name and progress',
+                  'البدء من جديد: الاختيار والاسم والتقدم')),
               onTap: _reset,
             ),
         ],

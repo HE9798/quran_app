@@ -483,8 +483,9 @@ class TasbeehOverlayService : Service() {
                     if (dragging) {
                         val m = resources.displayMetrics
                         val size = params.width
-                        // the button itself may touch the screen edges (the rings may go past)
-                        val ext = size / 2 - button / 2
+                        // the whole widget (button + both rings) stays on screen: only the
+                        // empty margin around the drawing may go past the edges
+                        val ext = view.padPx
                         tx = (startX + dx).coerceIn(-ext.toFloat(), (m.widthPixels - size + ext).toFloat())
                         ty = (startY + dy).coerceIn(-ext.toFloat(), (m.heightPixels - size + ext).toFloat())
                         startFollow()
@@ -538,6 +539,7 @@ private class RingView(context: Context) : View(context) {
     private val sliderT = comboT        // the slider is as thick as the combo
     private val pad = 6f * d
     val sizePx = ((buttonR + gap + comboT + pad) * 2).toInt()
+    val padPx = pad.toInt()          // empty margin around the drawing inside the window
 
     private var left = true            // slider on the left (widget on the right half)
     private var dark = true

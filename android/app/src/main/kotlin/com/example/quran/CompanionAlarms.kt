@@ -57,7 +57,7 @@ class CompanionAlarmReceiver : BroadcastReceiver() {
         if (!CompanionStore.enabled(context)) return
         val running = CompanionOverlayService.instance
         if (running != null) {
-            running.say(text, 25000)
+            running.say(text, 8000)
         } else if (Settings.canDrawOverlays(context)) {
             // the companion service was stopped by the phone: bring it back with the bubble
             runCatching {

@@ -33,12 +33,9 @@ object TasbeehStore {
         if (!CompanionStore.enabled(context)) return
         val coins = maxOf(1, target(context) / 10)
         CompanionStore.addPending(context, coins)
-        var amount = coins.toString()
-        if (CompanionStore.string(context, "arabicDigits", "0") == "1") {
-            amount = amount.map { ('\u0660' + (it - '0')) }.joinToString("")
-        }
-        val text = CompanionStore.string(context, "tasbeeh", "Mashaa Allah +%d").replace("%d", amount)
-        CompanionOverlayService.instance?.say(text, 4500)
+        // just the praise: the coins are listed on the Companion page
+        val text = CompanionStore.string(context, "tasbeeh", "Mashaa Allah")
+        CompanionOverlayService.instance?.say(text, 1000)
     }
 
     /** One more tasbeeh. When the slider is full the combo goes up and the count restarts. */
