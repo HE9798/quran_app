@@ -31,7 +31,8 @@ class MainActivity : AudioServiceActivity() {
                         mapOf(
                             "permission" to Settings.canDrawOverlays(this),
                             "enabled" to CompanionStore.enabled(this),
-                            "type" to CompanionStore.type(this)
+                            "type" to CompanionStore.type(this),
+                            "bubbles" to CompanionStore.bubbles(this)
                         )
                     )
                     // start (or restart with another companion): arg = "sheikh" / "sister"
@@ -45,6 +46,37 @@ class MainActivity : AudioServiceActivity() {
                         } else {
                             result.success(false)
                         }
+                    }
+                    "say" -> {
+                        val a = call.arguments as? Map<*, *>
+                        val text = a?.get("text") as? String
+                        val ms = (a?.get("ms") as? Number)?.toLong() ?: 5000L
+                        if (text != null) CompanionOverlayService.instance?.say(text, ms)
+                        result.success(null)
+                    }
+                    // list of {id, at (ms since 1970), text}
+                    "scheduleBubbles" -> {
+                        val list = (call.arguments as? List<*>) ?: emptyList<Any>()
+                        val events = list.mapNotNull { e ->
+                            val x = e as? Map<*, *> ?: return@mapNotNull null
+                            val id = (x["id"] as? Number)?.toInt() ?: return@mapNotNull null
+                            val at = (x["at"] as? Number)?.toLong() ?: return@mapNotNull null
+                            val text = x["text"] as? String ?: return@mapNotNull null
+                            Triple(id, at, text)
+                        }
+                        CompanionAlarms.replaceAll(this, events)
+                        result.success(null)
+                    }
+                    "claimPending" -> result.success(CompanionStore.claimPending(this))
+                    "setStrings" -> {
+                        (call.arguments as? Map<*, *>)?.forEach { (k, v) ->
+                            if (k is String && v is String) CompanionStore.setString(this, k, v)
+                        }
+                        result.success(null)
+                    }
+                    "setBubbles" -> {
+                        CompanionStore.setBubbles(this, (call.arguments as? Boolean) ?: true)
+                        result.success(null)
                     }
                     "stop" -> {
                         CompanionStore.setEnabled(this, false)

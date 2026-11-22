@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../companion/data/companion_store.dart';
 import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import 'data/khatma_repository.dart';
@@ -38,6 +39,7 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
 
   Future<void> _setPage(int page) async {
     final finished = await _store.setPage(page);
+    if (finished || _store.todayDone) CompanionStore.instance.khatmaDayDone(); // coins + bubble (only if Companion mode is on)
     if (finished && mounted) {
       await showDialog<void>(
         context: context,

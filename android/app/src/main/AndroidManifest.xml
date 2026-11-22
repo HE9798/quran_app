@@ -69,6 +69,11 @@
                 android:value="Floating companion character" />
         </service>
 
+        <!-- Companion speech bubbles at planned times -->
+        <receiver
+            android:name=".CompanionAlarmReceiver"
+            android:exported="false" />
+
         <!-- Prayer countdown in the status bar -->
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"

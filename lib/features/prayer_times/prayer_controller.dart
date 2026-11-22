@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../core/settings/app_settings.dart';
+import '../companion/companion_bubbles.dart';
 import 'data/location_service.dart';
 import 'data/prayer_alert_store.dart';
 import 'data/prayer_models.dart';
@@ -122,6 +123,7 @@ class PrayerController extends ChangeNotifier {
         .reschedule(current, _alerts.enabled)
         .catchError((_) {}); // reminders are a bonus, never break the screen
     PrayerCountdownService.instance.sync(current).catchError((_) {});
+    CompanionBubbles.sync(current).catchError((_) {}); // speech bubbles (only if Companion mode is on)
   }
 
   // -------------------------------------------------------------- alerts

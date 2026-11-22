@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../prayer_times/data/prayer_notifications.dart';
 
+import '../../companion/companion_bubbles.dart';
+import '../../companion/data/companion_store.dart';
 import 'athkar_models.dart';
 
 /// How many times you said each dhikr today. Starts again every new day.
@@ -33,6 +35,9 @@ class AthkarProgressStore extends ChangeNotifier {
     _saveDone();
     // no need to remind about this list any more
     PrayerNotifications.instance.cancelMissedReminder(set).catchError((_) {});
+    // Companion mode: coins + a bubble, and no "unfinished" bubble any more
+    CompanionStore.instance.azkarDone(set == AthkarSet.morning);
+    CompanionBubbles.resync().catchError((_) {});
   }
 
   Future<void> _saveDone() async {

@@ -6,6 +6,8 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/lang_text.dart';
 import '../audio/quran_audio_controller.dart';
+import '../companion/companion_sprite.dart';
+import '../companion/data/companion_store.dart';
 import '../hifz/data/hifz_store.dart';
 import '../khatma/data/khatma_store.dart';
 import '../bookmarks/data/bookmark_store.dart';
@@ -34,6 +36,7 @@ class HomeScreen extends StatelessWidget {
         _KhatmaCard(),
         SizedBox(height: 12),
         _HifzCard(),
+        _CompanionCard(), // only appears when Companion mode is on
         SizedBox(height: 20),
         _QuickActions(),
         SizedBox(height: 20),
@@ -710,6 +713,87 @@ class _HifzCard extends StatelessWidget {
                   ),
                   Icon(Icons.chevron_right_rounded, color: p.muted),
                 ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Companion mode: only shown when the companion is turned on in the settings.
+class _CompanionCard extends StatefulWidget {
+  const _CompanionCard();
+
+  @override
+  State<_CompanionCard> createState() => _CompanionCardState();
+}
+
+class _CompanionCardState extends State<_CompanionCard> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    CompanionStore.instance.refreshState(); // also collects Tasbeeh coins
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) CompanionStore.instance.refreshState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return ListenableBuilder(
+      listenable: CompanionStore.instance,
+      builder: (context, _) {
+        final c = CompanionStore.instance;
+        if (!c.active) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: Material(
+            color: p.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: p.border),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => context.go('/companion'),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+                child: Row(
+                  children: [
+                    SizedBox(width: 48, child: Center(child: CompanionSprite(type: c.type, height: 64))),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            c.displayName(context.isArabic),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            context.tr('${c.coins} coins · ${c.streak} day streak',
+                                '${context.n(c.coins)} عملة · ${context.n(c.streak)} يوم متتالي'),
+                            style: TextStyle(fontSize: 13, color: p.muted),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded, color: p.muted),
+                  ],
+                ),
               ),
             ),
           ),

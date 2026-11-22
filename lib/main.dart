@@ -10,6 +10,7 @@ import 'features/audio/quran_audio_handler.dart';
 import 'features/hifz/data/hifz_store.dart';
 import 'features/khatma/data/khatma_store.dart';
 import 'features/companion/companion_widget.dart';
+import 'features/companion/data/companion_store.dart';
 import 'features/tasbeeh/tasbeeh_widget.dart';
 import 'features/bookmarks/data/bookmark_store.dart';
 import 'features/hadith/data/hadith_bookmark_store.dart';
@@ -22,6 +23,7 @@ Future<void> main() async {
   TasbeehWidget.restoreOverlay(); // brings the floating button back
   CompanionWidget.restore(); //      brings the companion back
   await AppSettings.instance.load(); // theme, language, font size, ...
+  await CompanionStore.instance.load(); // coins and streak (does nothing if Companion mode is off)
   await BookmarkStore.instance.load(); // saved pages + last read position
   await HadithBookmarkStore.instance.load(); // saved ahadeeth
   try {

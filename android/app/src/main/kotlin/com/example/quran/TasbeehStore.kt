@@ -28,6 +28,19 @@ object TasbeehStore {
         edit.apply()
     }
 
+    /** Companion mode: a full slider earns coins (1 coin per 10 of the slider) and a bubble. */
+    private fun rewardCompanion(context: Context) {
+        if (!CompanionStore.enabled(context)) return
+        val coins = maxOf(1, target(context) / 10)
+        CompanionStore.addPending(context, coins)
+        var amount = coins.toString()
+        if (CompanionStore.string(context, "arabicDigits", "0") == "1") {
+            amount = amount.map { ('\u0660' + (it - '0')) }.joinToString("")
+        }
+        val text = CompanionStore.string(context, "tasbeeh", "Mashaa Allah +%d").replace("%d", amount)
+        CompanionOverlayService.instance?.say(text, 4500)
+    }
+
     /** One more tasbeeh. When the slider is full the combo goes up and the count restarts. */
     fun increment(context: Context) {
         val p = prefs(context)
@@ -36,6 +49,7 @@ object TasbeehStore {
         if (count >= target(context)) {
             count = 0
             combo += 1
+            rewardCompanion(context)
         }
         p.edit().putInt(KEY_COUNT, count).putInt(KEY_COMBO, combo).apply()
     }

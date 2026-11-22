@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../companion/data/companion_store.dart';
 import '../hifz/data/hifz_store.dart';
 import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
@@ -203,6 +204,7 @@ class _SurahReaderState extends State<_SurahReader> {
 
   final _recognizers = <int, TapGestureRecognizer>{};
   final _fitCache = <String, double>{}; // font size found for each page
+  final _visited = <int>{}; // content pages the reader has been on (for "finished the surah")
   int? _selected; //      verse that is highlighted (panel open)
   int? _lastSelected; //   keeps the panel content while it slides away
   bool _tafseerTab = true;
@@ -233,7 +235,9 @@ class _SurahReaderState extends State<_SurahReader> {
       if (found != -1) content = found;
     }
     _index = content + _offset;
+    _visited.add(_index);
     _controller = PageController(initialPage: _index);
+    _checkFinished(_index); // a one-page surah is finished as soon as it is open
 
     _lastAudioAyah = _playingVerse;
     _audio.addListener(_onAudio);
@@ -399,7 +403,22 @@ class _SurahReaderState extends State<_SurahReader> {
       _index = index;
       _selected = null;
     });
-    if (_isContent(index)) _saveLastRead();
+    if (_isContent(index)) {
+      _visited.add(index);
+      _saveLastRead();
+      _checkFinished(index);
+    }
+  }
+
+  /// Reached the last page of the surah after reading most of it: that is a
+  /// finished surah (coins + a bubble, only when Companion mode is on).
+  void _checkFinished(int index) {
+    final last = _offset + _pages.length - 1;
+    if (index != last) return;
+    final need = (_pages.length * 0.6).ceil().clamp(1, _pages.length);
+    if (_visited.length >= need) {
+      CompanionStore.instance.surahFinished(widget.detail.surah.number);
+    }
   }
 
   /// When a swipe ends on the "next/previous surah" page, open that surah.

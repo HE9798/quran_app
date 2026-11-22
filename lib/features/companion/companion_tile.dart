@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/settings/tr.dart';
 import '../tasbeeh/tasbeeh_widget.dart';
 import 'companion_widget.dart';
+import 'data/companion_store.dart';
 
 /// Settings: switch Companion mode on or off. Turning it on asks male / female.
 class CompanionTile extends StatefulWidget {
@@ -54,7 +55,6 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.man_rounded, size: 32),
               title: Text(context.tr('Male', 'ذكر')),
-              subtitle: Text(context.tr('The Sheikh', 'الشيخ')),
             ),
           ),
           SimpleDialogOption(
@@ -63,7 +63,6 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.woman_rounded, size: 32),
               title: Text(context.tr('Female', 'أنثى')),
-              subtitle: Text(context.tr('The Sister', 'الأخت')),
             ),
           ),
         ],
@@ -74,6 +73,7 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
   Future<void> _toggle(bool on) async {
     if (!on) {
       await CompanionWidget.stop();
+      await CompanionStore.instance.setActive(false);
       if (mounted) setState(() => _on = false);
       return;
     }
@@ -106,31 +106,134 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
       return;
     }
 
-    final type = await _askGender();
-    if (type == null) return;
-    if (await CompanionWidget.start(type) && mounted) {
-      setState(() {
-        _on = true;
-        _type = type;
-      });
+    final store = CompanionStore.instance;
+    String? type;
+    String? newName;
+    if (!store.chosen) {
+      // asked only the first time, and again after a reset
+      type = await _askGender();
+      if (type == null || !mounted) return;
+      newName = await _askName();
+      if (newName == null) return;
     }
+    final useType = type ?? store.type;
+    if (await CompanionWidget.start(useType)) {
+      if (type != null) await store.setIdentity(type, newName ?? '');
+      await store.setActive(true, companion: useType);
+      if (mounted) {
+        setState(() {
+          _on = true;
+          _type = useType;
+        });
+      }
+    }
+  }
+
+  Future<String?> _askName() {
+    return showDialog<String>(context: context, builder: (_) => const _NameDialog());
+  }
+
+  Future<void> _reset() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.tr('Reset companion?', 'إعادة ضبط الرفيق؟')),
+        content: Text(context.tr(
+          'Your companion will be turned off. Next time you turn it on, you will choose male or female and a name again. Your coins and streak stay.',
+          'سيتم إيقاف الرفيق. وعند تفعيله مرة أخرى ستختار ذكر أو أنثى والاسم من جديد. عملاتك وأيامك المتتالية تبقى كما هي.',
+        )),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(context.tr('Cancel', 'إلغاء')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(context.tr('Reset', 'إعادة ضبط')),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await CompanionWidget.stop();
+    await CompanionStore.instance.resetIdentity();
+    if (mounted) setState(() => _on = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final who = _type == 'sister'
-        ? context.tr('The Sister', 'الأخت')
-        : context.tr('The Sheikh', 'الشيخ');
-    return SwitchListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(context.tr('Companion', 'الرفيق')),
-      subtitle: Text(_on
-          ? context.tr('$who is on your screen. Drag to move.',
-              '$who على شاشتك. اسحب لتحريكه.')
-          : context.tr('A little friend that floats on your screen',
-              'رفيق صغير يظهر على شاشتك')),
-      value: _on,
-      onChanged: _toggle,
+    final store = CompanionStore.instance;
+    return ListenableBuilder(
+      listenable: store,
+      builder: (context, _) => Column(
+        children: [
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(context.tr('Companion', 'الرفيق')),
+            subtitle: Text(_on
+                ? context.tr('${store.displayName(false)} is on your screen. Drag to move.',
+                    '${store.displayName(true)} على شاشتك. اسحب لتحريكه.')
+                : context.tr('A little friend that floats on your screen',
+                    'رفيق صغير يظهر على شاشتك')),
+            value: _on,
+            onChanged: _toggle,
+          ),
+          if (store.chosen)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.restart_alt_rounded),
+              title: Text(context.tr('Reset companion', 'إعادة ضبط الرفيق')),
+              subtitle: Text(context.tr('Choose male or female and the name again',
+                  'اختيار ذكر أو أنثى والاسم من جديد')),
+              onTap: _reset,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NameDialog extends StatefulWidget {
+  const _NameDialog();
+
+  @override
+  State<_NameDialog> createState() => _NameDialogState();
+}
+
+class _NameDialogState extends State<_NameDialog> {
+  final _c = TextEditingController();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.tr('Name your companion', 'سمِّ رفيقك')),
+      content: TextField(
+        controller: _c,
+        autofocus: true,
+        maxLength: 20,
+        textInputAction: TextInputAction.done,
+        decoration: InputDecoration(hintText: context.tr('Any name you like', 'أي اسم تحبه')),
+        onChanged: (_) => setState(() {}),
+        onSubmitted: (v) {
+          if (v.trim().isNotEmpty) Navigator.of(context).pop(v.trim());
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(context.tr('Cancel', 'إلغاء')),
+        ),
+        FilledButton(
+          onPressed: _c.text.trim().isEmpty ? null : () => Navigator.of(context).pop(_c.text.trim()),
+          child: Text(context.tr('Start', 'ابدأ')),
+        ),
+      ],
     );
   }
 }

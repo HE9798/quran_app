@@ -11,6 +11,12 @@ import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Path
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.Rect
@@ -38,11 +44,22 @@ import kotlin.math.max
  */
 class CompanionOverlayService : Service() {
 
+    companion object {
+        const val ACTION_SAY = "werd.companion.say"
+
+        /** The running service (null when the companion is off). */
+        @Volatile
+        var instance: CompanionOverlayService? = null
+    }
+
     private lateinit var windowManager: WindowManager
     private var view: CompanionView? = null
     private lateinit var params: WindowManager.LayoutParams
     private val handler = Handler(Looper.getMainLooper())
     private var bobbing: Runnable? = null
+    private var bubble: BubbleView? = null
+    private var bubbleParams: WindowManager.LayoutParams? = null
+    private var hideBubble: Runnable? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -52,11 +69,17 @@ class CompanionOverlayService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
+        instance = this
         if (view == null) createOverlay()
+        if (intent?.action == ACTION_SAY) {
+            intent.getStringExtra("text")?.let { say(it, 25000) }
+        }
         return START_STICKY
     }
 
     override fun onDestroy() {
+        instance = null
+        hideBubbleNow()
         bobbing?.let { handler.removeCallbacks(it) }
         view?.let { runCatching { windowManager.removeView(it) } }
         view = null
@@ -134,6 +157,54 @@ class CompanionOverlayService : Service() {
         startBobbing(v)
     }
 
+    // ----------------------------------------------------------- speech bubble
+    /** Shows [text] in a speech bubble above the companion for [ms] milliseconds. */
+    fun say(text: String, ms: Long = 5000) {
+        handler.post {
+            val companion = view ?: return@post
+            if (!CompanionStore.bubbles(this)) return@post
+            val b = bubble ?: BubbleView(this) { hideBubbleNow() }.also { bubble = it }
+            b.setContent(text)
+            val m = resources.displayMetrics
+            b.measure(
+                View.MeasureSpec.makeMeasureSpec(m.widthPixels - dp(24f), View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            val lp = bubbleParams ?: WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT
+            ).apply { gravity = Gravity.TOP or Gravity.START }.also { bubbleParams = it }
+            placeBubble(b, lp)
+            if (b.parent == null) windowManager.addView(b, lp) else windowManager.updateViewLayout(b, lp)
+            hideBubble?.let { handler.removeCallbacks(it) }
+            val r = Runnable { hideBubbleNow() }
+            hideBubble = r
+            handler.postDelayed(r, ms)
+        }
+    }
+
+    /** Keeps the bubble above the companion's head, inside the screen. */
+    private fun placeBubble(b: BubbleView, lp: WindowManager.LayoutParams) {
+        val m = resources.displayMetrics
+        val margin = dp(8f)
+        val bw = b.measuredWidth
+        val bh = b.measuredHeight
+        val cx = params.x + params.width / 2
+        val x = (cx - bw / 2).coerceIn(margin, max(margin, m.widthPixels - bw - margin))
+        lp.x = x
+        lp.y = max(0, params.y - bh + dp(4f))
+        b.pointTailAt(cx - (x + bw / 2))
+    }
+
+    private fun hideBubbleNow() {
+        hideBubble?.let { handler.removeCallbacks(it) }
+        hideBubble = null
+        bubble?.let { b -> if (b.parent != null) runCatching { windowManager.removeView(b) } }
+    }
+
     /** Idle animation: the head goes down a little and comes back, like breathing. */
     private fun startBobbing(v: CompanionView) {
         val r = object : Runnable {
@@ -172,6 +243,13 @@ class CompanionOverlayService : Service() {
                         // left half: looks right (as drawn). right half: flipped, looks left.
                         v.scaleX = if (params.x + params.width / 2 > m.widthPixels / 2) -1f else 1f
                         windowManager.updateViewLayout(v, params)
+                        bubble?.let { b ->
+                            val lp = bubbleParams
+                            if (b.parent != null && lp != null) {
+                                placeBubble(b, lp)
+                                windowManager.updateViewLayout(b, lp)
+                            }
+                        }
                     }
                     true
                 }
@@ -221,5 +299,70 @@ private class CompanionView(
     override fun onDraw(canvas: Canvas) {
         canvas.drawBitmap(body, null, bodyRect, paint)
         if (head != null) canvas.drawBitmap(head, null, if (down) headDown else headUp, paint)
+    }
+}
+
+/** The speech bubble: rounded box with a little tail that points at the companion. */
+private class BubbleView(context: Context, onTap: () -> Unit) : LinearLayout(context) {
+    private val d = resources.displayMetrics.density
+    private val text = TextView(context)
+    private val tail = TailView(context)
+
+    init {
+        orientation = VERTICAL
+        gravity = Gravity.CENTER_HORIZONTAL
+        text.apply {
+            setTextColor(Color.parseColor("#0E4F47"))
+            textSize = 15f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            textDirection = View.TEXT_DIRECTION_FIRST_STRONG
+            maxWidth = (240 * d).toInt()
+            setPadding((14 * d).toInt(), (9 * d).toInt(), (14 * d).toInt(), (9 * d).toInt())
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#F7EBD4"))
+                cornerRadius = 16 * d
+                setStroke((2 * d).toInt(), Color.parseColor("#12685E"))
+            }
+            elevation = 4 * d
+        }
+        addView(text, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
+        addView(tail, LayoutParams((18 * d).toInt(), (10 * d).toInt()).apply { topMargin = (-2 * d).toInt() })
+        setOnClickListener { onTap() }
+    }
+
+    fun setContent(t: String) {
+        text.text = t
+    }
+
+    /** [dx] = how far (px) the companion's middle is from the middle of the bubble. */
+    fun pointTailAt(dx: Int) {
+        val limit = (text.measuredWidth / 2 - 22 * d).coerceAtLeast(0f)
+        tail.translationX = dx.toFloat().coerceIn(-limit, limit)
+    }
+}
+
+private class TailView(context: Context) : View(context) {
+    private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#F7EBD4") }
+    private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#12685E")
+        style = Paint.Style.STROKE
+        strokeWidth = 2f * resources.displayMetrics.density
+        strokeJoin = Paint.Join.ROUND
+    }
+    private val path = Path()
+
+    override fun onDraw(canvas: Canvas) {
+        val w = width.toFloat()
+        val h = height.toFloat()
+        val sw = linePaint.strokeWidth / 2f
+        path.reset()
+        path.moveTo(sw, 0f)
+        path.lineTo(w / 2f, h - sw)
+        path.lineTo(w - sw, 0f)
+        canvas.drawRect(sw, 0f, w - sw, 3f, fillPaint)   // hides the bubble's border above the tail
+        val fill = Path(path).apply { close() }
+        canvas.drawPath(fill, fillPaint)
+        canvas.drawPath(path, linePaint)
     }
 }

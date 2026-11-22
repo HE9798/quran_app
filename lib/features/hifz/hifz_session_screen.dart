@@ -9,6 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_view.dart';
 import '../quran/data/quran_repository.dart';
 import '../quran/data/surah_detail.dart';
+import '../companion/data/companion_store.dart';
 import 'data/hifz_store.dart';
 import 'hifz_player.dart';
 
@@ -87,6 +88,7 @@ class _HifzSessionScreenState extends State<HifzSessionScreen> {
   Future<void> _finish(HifzItem item, bool remembered) async {
     await _player.stop();
     final days = await _store.markRevised(item.id, remembered: remembered);
+    CompanionStore.instance.hifzSession(remembered); // coins + bubble (only if Companion mode is on)
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
