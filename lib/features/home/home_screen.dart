@@ -89,9 +89,9 @@ class _Header extends StatelessWidget {
           ),
         ),
         _SquareIconButton(
-          icon: Icons.explore_outlined,
-          label: context.tr('Qibla', 'القبلة'),
-          onTap: () => context.go('/prayer/qibla'),
+          icon: Icons.grid_view_rounded,
+          label: context.tr('Tools', 'الأدوات'),
+          onTap: () => context.go('/tools'),
         ),
         const SizedBox(width: 8),
         _SquareIconButton(

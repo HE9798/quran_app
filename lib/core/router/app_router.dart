@@ -11,6 +11,8 @@ import '../../features/home/home_screen.dart';
 import '../../features/khatma/khatma_screen.dart';
 import '../../features/prayer_times/prayer_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/tools/tools_screen.dart';
+import '../../features/tools/zakat_screen.dart';
 import '../../features/qibla/qibla_screen.dart';
 import '../../features/audio/player_screen.dart';
 import '../../features/quran/quran_list_screen.dart';
@@ -57,6 +59,20 @@ final appRouter = GoRouter(
                       key: ValueKey(state.pathParameters['id']),
                       id: state.pathParameters['id'] ?? '',
                     ),
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'tools',
+                builder: (context, state) => const ToolsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'qibla',
+                    builder: (context, state) => const QiblaScreen(),
+                  ),
+                  GoRoute(
+                    path: 'zakat',
+                    builder: (context, state) => const ZakatScreen(),
                   ),
                 ],
               ),
