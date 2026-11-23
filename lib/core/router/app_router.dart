@@ -11,6 +11,7 @@ import '../../features/home/home_screen.dart';
 import '../../features/khatma/khatma_screen.dart';
 import '../../features/prayer_times/prayer_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/tools/calendar_screen.dart';
 import '../../features/tools/tools_screen.dart';
 import '../../features/tools/zakat_screen.dart';
 import '../../features/qibla/qibla_screen.dart';
@@ -71,6 +72,10 @@ final appRouter = GoRouter(
                     builder: (context, state) => const QiblaScreen(),
                   ),
                   GoRoute(
+                    path: 'calendar',
+                    builder: (context, state) => const CalendarScreen(),
+                  ),
+                  GoRoute(
                     path: 'zakat',
                     builder: (context, state) => const ZakatScreen(),
                   ),
@@ -102,11 +107,14 @@ final appRouter = GoRouter(
                   final page =
                       int.tryParse(state.uri.queryParameters['page'] ?? '');
                   final end = state.uri.queryParameters['end'] == '1';
+                  // ?khatma=1: opened from the Khatma (keeps "Continue reading" untouched)
+                  final fromKhatma = state.uri.queryParameters['khatma'] == '1';
                   return SurahScreen(
-                    key: ValueKey('$number-$page-$end'),
+                    key: ValueKey('$number-$page-$end-$fromKhatma'),
                     number: number,
                     initialPage: page,
                     startAtEnd: end,
+                    fromKhatma: fromKhatma,
                   );
                 },
               ),

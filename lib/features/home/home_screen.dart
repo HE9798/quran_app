@@ -77,11 +77,16 @@ class _Header extends StatelessWidget {
                         c.today!.hijriFor(context.isArabic).isNotEmpty)
                       context.digits(c.today!.hijriFor(context.isArabic)),
                   ];
-                  return Text(
-                    parts.join(' · '),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 13, color: p.muted),
+                  // tapping the date opens the Hijri calendar
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => context.push('/tools/calendar'),
+                    child: Text(
+                      parts.join(' · '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 13, color: p.muted),
+                    ),
                   );
                 },
               ),

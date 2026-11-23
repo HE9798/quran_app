@@ -31,7 +31,7 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
       final page = _store.nextPage;
       final surah = await _repo.surahForPage(page);
       if (!mounted) return;
-      context.go('/quran/surah/$surah?page=$page');
+      context.go('/quran/surah/$surah?page=$page&khatma=1');
     } finally {
       if (mounted) setState(() => _opening = false);
     }

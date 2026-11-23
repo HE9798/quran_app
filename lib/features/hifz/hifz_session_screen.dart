@@ -11,6 +11,8 @@ import '../quran/data/quran_repository.dart';
 import '../quran/data/surah_detail.dart';
 import '../companion/data/companion_store.dart';
 import 'data/hifz_store.dart';
+import '../audio/data/activity_reciters.dart';
+import '../audio/reciter_sheet.dart';
 import 'hifz_player.dart';
 
 /// Practice one range: listen on repeat, hide the text, test yourself, then
@@ -47,6 +49,7 @@ class _HifzSessionScreenState extends State<HifzSessionScreen> {
       _mode = item.revisions > 0 ? 2 : 0;
     }
     _player.addListener(_onPlayer);
+    ActivityReciters.instance.load();
   }
 
   @override
@@ -217,6 +220,8 @@ class _HifzSessionScreenState extends State<HifzSessionScreen> {
       ),
       child: Column(
         children: [
+          _reciterRow(context, p),
+          const SizedBox(height: 8),
           chips(context.tr('Repeat range', 'تكرار المقطع'), _roundChoices, _rounds,
               (v) => _rounds = v),
           const SizedBox(height: 4),
@@ -241,6 +246,51 @@ class _HifzSessionScreenState extends State<HifzSessionScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// The reciter used here only (the Quran player keeps its own).
+  Widget _reciterRow(BuildContext context, AppPalette p) {
+    final scheme = Theme.of(context).colorScheme;
+    return ListenableBuilder(
+      listenable: ActivityReciters.instance,
+      builder: (context, _) {
+        final r = ActivityReciters.instance.hifz;
+        return InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => showReciterSheet(
+            context,
+            current: r,
+            onPick: (picked) {
+              _player.stop(); // the next play uses the new voice
+              ActivityReciters.instance.set(ActivityReciters.hifzKey, picked);
+            },
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 96,
+                  child: Text(context.tr('Reciter', 'القارئ'),
+                      style: TextStyle(fontSize: 13, color: p.muted)),
+                ),
+                Expanded(
+                  child: Text(
+                    r.displayName(context.isArabic),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                Text(context.tr('Change', 'تغيير'),
+                    style: TextStyle(fontSize: 13, color: scheme.primary, fontWeight: FontWeight.w700)),
+                Icon(Icons.keyboard_arrow_down_rounded, color: scheme.primary),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

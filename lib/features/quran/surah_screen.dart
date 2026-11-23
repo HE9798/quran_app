@@ -30,9 +30,14 @@ class SurahScreen extends StatefulWidget {
     required this.number,
     this.initialPage,
     this.startAtEnd = false,
+    this.fromKhatma = false,
   });
 
   final int number;
+
+  /// Opened from the Khatma: reading here does NOT change "Continue reading"
+  /// (the Khatma and the normal reading each keep their own place).
+  final bool fromKhatma;
 
   /// Mushaf page to open (route: ?page=42). null = first page of the surah.
   final int? initialPage;
@@ -72,7 +77,11 @@ class _SurahScreenState extends State<SurahScreen> {
       setState(() => _future = _repo.getSurahDetail(widget.number));
 
   void _goToSurah(int number, bool atEnd) {
-    context.go(atEnd ? '/quran/surah/$number?end=1' : '/quran/surah/$number');
+    final query = [
+      if (atEnd) 'end=1',
+      if (widget.fromKhatma) 'khatma=1',
+    ].join('&');
+    context.go('/quran/surah/$number${query.isEmpty ? '' : '?$query'}');
   }
 
   @override
@@ -100,6 +109,7 @@ class _SurahScreenState extends State<SurahScreen> {
           detail: detail,
           initialPage: widget.initialPage,
           startAtEnd: widget.startAtEnd,
+          fromKhatma: widget.fromKhatma,
           names: _names,
           onGoToSurah: _goToSurah,
         );
@@ -108,11 +118,11 @@ class _SurahScreenState extends State<SurahScreen> {
   }
 }
 
-void _goBack(BuildContext context) {
+void _goBack(BuildContext context, {bool fromKhatma = false}) {
   if (context.canPop()) {
     context.pop();
   } else {
-    context.go('/quran');
+    context.go(fromKhatma ? '/khatma' : '/quran');
   }
 }
 
@@ -178,6 +188,7 @@ class _SurahReader extends StatefulWidget {
     required this.detail,
     required this.initialPage,
     required this.startAtEnd,
+    required this.fromKhatma,
     required this.names,
     required this.onGoToSurah,
   });
@@ -185,6 +196,7 @@ class _SurahReader extends StatefulWidget {
   final SurahDetail detail;
   final int? initialPage;
   final bool startAtEnd;
+  final bool fromKhatma;
   final Map<int, Surah> names;
   final void Function(int surah, bool atEnd) onGoToSurah;
 
@@ -278,6 +290,7 @@ class _SurahReaderState extends State<_SurahReader> {
 
   void _saveLastRead() {
     if (!mounted) return;
+    if (widget.fromKhatma) return; // the Khatma has its own place
     BookmarkStore.instance.setLastRead(_savedPage());
   }
 
@@ -470,7 +483,7 @@ class _SurahReaderState extends State<_SurahReader> {
               subtitle: context.isArabic
                   ? 'صفحة ${context.n(current.number)} · الجزء ${context.n(current.juz)}'
                   : 'Page ${current.number} · Juz ${current.juz}',
-              onBack: () => _goBack(context),
+              onBack: () => _goBack(context, fromKhatma: widget.fromKhatma),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

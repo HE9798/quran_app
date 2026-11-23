@@ -40,6 +40,13 @@ class ToolsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         _ToolTile(
+          icon: Icons.calendar_month_outlined,
+          title: context.tr('Hijri calendar', 'التقويم الهجري'),
+          subtitle: context.tr('Dates and Islamic occasions', 'التواريخ والمناسبات الإسلامية'),
+          onTap: () => context.go('/tools/calendar'),
+        ),
+        const SizedBox(height: 12),
+        _ToolTile(
           icon: Icons.calculate_outlined,
           title: context.tr('Zakat calculator', 'حاسبة الزكاة'),
           subtitle: context.tr('Work out the zakat on your wealth', 'احسب زكاة مالك'),

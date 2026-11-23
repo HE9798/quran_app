@@ -8,17 +8,29 @@ import 'quran_audio_controller.dart';
 /// Bottom sheet to choose the reciter. Used by the Listening tab and the
 /// full player. Choosing a reciter while listening continues from the same
 /// verse in the new voice.
-Future<void> showReciterSheet(BuildContext context) {
+///
+/// By default it changes the Quran player's reciter. To choose a reciter for
+/// something else (the Hifz, say) pass [current] and [onPick].
+Future<void> showReciterSheet(
+  BuildContext context, {
+  Reciter? current,
+  void Function(Reciter)? onPick,
+}) async {
+  final audio = QuranAudioController.instance;
+  audio.loadReciters(); // the list fills in when it arrives
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
-    builder: (_) => const _ReciterSheet(),
+    builder: (_) => _ReciterSheet(current: current, onPick: onPick),
   );
 }
 
 class _ReciterSheet extends StatelessWidget {
-  const _ReciterSheet();
+  const _ReciterSheet({this.current, this.onPick});
+
+  final Reciter? current;
+  final void Function(Reciter)? onPick;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +63,7 @@ class _ReciterSheet extends StatelessWidget {
                   itemCount: audio.reciters.length,
                   itemBuilder: (context, i) {
                     final r = audio.reciters[i];
-                    final selected = r == audio.reciter;
+                    final selected = r == (current ?? audio.reciter);
                     return ListTile(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -80,7 +92,11 @@ class _ReciterSheet extends StatelessWidget {
                               color: scheme.primary)
                           : null,
                       onTap: () {
-                        audio.setReciter(r);
+                        if (onPick != null) {
+                          onPick!(r);
+                        } else {
+                          audio.setReciter(r);
+                        }
                         Navigator.of(context).pop();
                       },
                     );

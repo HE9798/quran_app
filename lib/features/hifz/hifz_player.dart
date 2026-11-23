@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../audio/data/activity_reciters.dart';
 import '../audio/data/audio_repository.dart';
 import '../audio/quran_audio_controller.dart';
 
 /// Plays one range of verses again and again for memorising. It has its own
 /// player (so the normal Quran player is not touched) and uses the reciter
-/// chosen for the app.
+/// chosen for the Hifz (it follows the Quran player's until one is picked).
 ///
 /// [rounds] = how many times the whole range is played.
 /// [verseRepeats] = how many times each verse is played before the next one.
@@ -85,7 +86,8 @@ class HifzPlayer extends ChangeNotifier {
       final global = QuranAudioController.instance;
       if (global.playing) await global.togglePlay();
 
-      final urls = await _audio.getSurahUrls(surah, global.reciter.id);
+      await ActivityReciters.instance.load();
+      final urls = await _audio.getSurahUrls(surah, ActivityReciters.instance.hifz.id);
       if (token != _token) return;
       final slice = urls.sublist(from - 1, to.clamp(from, urls.length));
       final sources = [

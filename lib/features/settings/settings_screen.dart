@@ -6,6 +6,7 @@ import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../prayer_times/data/adhan_voices.dart';
+import '../audio/reciters_tile.dart';
 import '../companion/companion_tile.dart';
 import '../tasbeeh/overlay_tile.dart';
 import '../tasbeeh/target_tile.dart';
@@ -275,6 +276,9 @@ class SettingsScreen extends StatelessWidget {
                           : null,
                     ),
                   ]),
+                  const SizedBox(height: 20),
+                  _Section(context.tr('Reciters', 'القرّاء')),
+                  const _Card(children: [RecitersTile()]),
                   const SizedBox(height: 20),
                   _Section(context.tr('Tasbeeh button', 'زر التسبيح')),
                   _Card(children: [
