@@ -15,6 +15,7 @@ import android.graphics.Color
 import android.graphics.Path
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.graphics.Paint
@@ -26,12 +27,15 @@ import android.os.IBinder
 import android.os.Looper
 import android.provider.Settings
 import android.util.TypedValue
+import android.view.Choreographer
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.WindowManager
 import kotlin.math.abs
+import kotlin.math.hypot
 import kotlin.math.max
 
 /**
@@ -40,6 +44,8 @@ import kotlin.math.max
  *    dragged to the right half it flips and looks to the LEFT
  *  - it bobs its head (idle animation)
  *  - drag it anywhere; it remembers its place
+ *  - while dragging, an X appears at the bottom of the screen: let go over it
+ *    to turn the companion off (like the floating Tasbeeh)
  * It is turned on and off from the app's settings.
  */
 class CompanionOverlayService : Service() {
@@ -60,6 +66,9 @@ class CompanionOverlayService : Service() {
     private var bubble: BubbleView? = null
     private var bubbleParams: WindowManager.LayoutParams? = null
     private var hideBubble: Runnable? = null
+    private var trash: FrameLayout? = null      // the close target's window
+    private var closeView: CloseView? = null
+    private var overBin = false                 // the companion is over the X
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -81,8 +90,12 @@ class CompanionOverlayService : Service() {
         instance = null
         hideBubbleNow()
         bobbing?.let { handler.removeCallbacks(it) }
+        Choreographer.getInstance().removeFrameCallback(frame)
+        settled = null
         view?.let { runCatching { windowManager.removeView(it) } }
         view = null
+        trash?.let { runCatching { windowManager.removeView(it) } }
+        trash = null
         super.onDestroy()
     }
 
@@ -106,7 +119,7 @@ class CompanionOverlayService : Service() {
         val notification = builder
             .setSmallIcon(applicationInfo.icon)
             .setContentTitle("Your companion is on")
-            .setContentText("Turn it off from the app's settings")
+            .setContentText("Drag it to the X to close it")
             .setContentIntent(open)
             .setOngoing(true)
             .build()
@@ -139,6 +152,27 @@ class CompanionOverlayService : Service() {
         val heightPx = dp(130f)
         val widthPx = (bitmap.width * heightPx.toFloat() / bitmap.height).toInt()
         val bob = dp(3f)
+
+        // the close target (added first so the companion is drawn above it),
+        // shown only while dragging; same as the floating Tasbeeh's
+        val close = CloseView(this)
+        val bin = FrameLayout(this).apply {
+            addView(close, FrameLayout.LayoutParams(dp(140f), dp(140f), Gravity.CENTER))
+            visibility = View.GONE
+        }
+        closeView = close
+        windowManager.addView(bin, WindowManager.LayoutParams(
+            dp(140f), dp(140f),
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            y = dp(26f)
+        })
+        trash = bin
 
         val v = CompanionView(this, bitmap, head, widthPx, heightPx, bob)
         view = v
@@ -224,6 +258,112 @@ class CompanionOverlayService : Service() {
         handler.postDelayed(r, 550)
     }
 
+    // ------------------------------------------------------------- lagging drag
+    // Same feel as the floating Tasbeeh: the companion does not jump to the
+    // finger, it glides after it (each frame it covers a fraction of the
+    // remaining distance). FOLLOW: 0.10 = very lazy, 0.35 = almost instant.
+    private val follow = 0.18f
+    private var tx = 0f                 // where the finger wants the companion
+    private var ty = 0f
+    private var px = 0f                 // where the companion really is
+    private var py = 0f
+    private var following = false
+    private var settled: (() -> Unit)? = null
+
+    // The X's "gravity" (same numbers as the Tasbeeh): near the X the companion
+    // is pulled in and eased into its middle; drag it further away to free it.
+    private val catchDp = 95f           // centre-to-centre distance that catches it
+    private val freeDp = 125f           // distance at which it lets go
+    private val softDp = 60f            // how far outside the catch zone it starts to lean in
+    private val pullSpeed = 0.10f       // smaller = slower, more gradual absorption
+
+    /** The X's middle in the companion window's own coordinates, or null while it is hidden. */
+    private fun binCentre(v: CompanionView): Pair<Float, Float>? {
+        val bin = trash ?: return null
+        if (bin.visibility != View.VISIBLE || bin.width == 0) return null
+        // window position and screen position can differ (status bar, notch...)
+        val loc = IntArray(2)
+        v.getLocationOnScreen(loc)
+        // on the right half the picture is mirrored (scaleX = -1), and Android
+        // then reports its right edge as the left one: undo that
+        val left = if (v.scaleX < 0f) loc[0] - v.width else loc[0]
+        val offX = left - params.x
+        val offY = loc[1] - params.y
+        val b = IntArray(2)
+        bin.getLocationOnScreen(b)
+        return Pair(b[0] + bin.width / 2f - offX, b[1] + bin.height / 2f - offY)
+    }
+
+    private val frame = object : Choreographer.FrameCallback {
+        override fun doFrame(frameTimeNanos: Long) {
+            val v = view
+            if (v == null) { following = false; return }
+            val halfW = params.width / 2f
+            val halfH = params.height / 2f
+
+            // goal: the finger, or the middle of the X when caught
+            var gx = tx
+            var gy = ty
+            var speed = follow
+            val bin = binCentre(v)
+            if (bin != null) {
+                val (fx, fy) = bin
+                // gravity is judged by where the FINGER wants the companion
+                val dist = hypot(tx + halfW - fx, ty + halfH - fy)
+                val now = if (overBin) dist < dp(freeDp) else dist < dp(catchDp)
+                if (now != overBin) {
+                    overBin = now
+                    closeView?.hover = now
+                    if (now) v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                }
+                if (overBin) {
+                    // caught: drift slowly into the middle of the X
+                    gx = fx - halfW
+                    gy = fy - halfH
+                    speed = pullSpeed
+                } else if (dist < dp(catchDp + softDp)) {
+                    // just outside: a gentle lean towards the X that grows as you get closer
+                    val w = 0.4f * (1f - (dist - dp(catchDp)) / dp(softDp))
+                    gx = tx + (fx - halfW - tx) * w
+                    gy = ty + (fy - halfH - ty) * w
+                }
+            }
+
+            val dx = gx - px
+            val dy = gy - py
+            val arrived = abs(dx) < 1f && abs(dy) < 1f
+            if (arrived) { px = gx; py = gy } else { px += dx * speed; py += dy * speed }
+            params.x = px.toInt()
+            params.y = py.toInt()
+
+            // left half: looks right (as drawn). right half: flipped, looks left.
+            val m = resources.displayMetrics
+            v.scaleX = if (params.x + params.width / 2 > m.widthPixels / 2) -1f else 1f
+            runCatching { windowManager.updateViewLayout(v, params) }
+            bubble?.let { b ->
+                val lp = bubbleParams
+                if (b.parent != null && lp != null) {
+                    placeBubble(b, lp)
+                    runCatching { windowManager.updateViewLayout(b, lp) }
+                }
+            }
+
+            if (arrived) {
+                following = false
+                settled?.let { settled = null; it() }
+            } else {
+                Choreographer.getInstance().postFrameCallback(this)
+            }
+        }
+    }
+
+    private fun startFollow() {
+        if (following) return
+        following = true
+        Choreographer.getInstance().postFrameCallback(frame)
+    }
+
+    /** Drag = move (gliding after the finger); let go over the X = turn the companion off. */
     private fun touchListener(v: CompanionView): View.OnTouchListener {
         val slop = ViewConfiguration.get(this).scaledTouchSlop
         var downX = 0f
@@ -234,36 +374,50 @@ class CompanionOverlayService : Service() {
         return View.OnTouchListener { _, e ->
             when (e.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    // a drag that is still gliding to a stop ends right now
+                    settled?.let { settled = null; it() }
                     downX = e.rawX; downY = e.rawY
                     startX = params.x; startY = params.y
+                    px = params.x.toFloat(); py = params.y.toFloat()
+                    tx = px; ty = py
                     dragging = false
+                    overBin = false
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = e.rawX - downX
                     val dy = e.rawY - downY
-                    if (!dragging && (abs(dx) > slop || abs(dy) > slop)) dragging = true
+                    if (!dragging && (abs(dx) > slop || abs(dy) > slop)) {
+                        dragging = true
+                        trash?.visibility = View.VISIBLE
+                        closeView?.hover = false
+                    }
                     if (dragging) {
                         val m = resources.displayMetrics
-                        params.x = (startX + dx.toInt()).coerceIn(0, max(0, m.widthPixels - params.width))
-                        params.y = (startY + dy.toInt()).coerceIn(0, max(0, m.heightPixels - params.height))
-                        // left half: looks right (as drawn). right half: flipped, looks left.
-                        v.scaleX = if (params.x + params.width / 2 > m.widthPixels / 2) -1f else 1f
-                        windowManager.updateViewLayout(v, params)
-                        bubble?.let { b ->
-                            val lp = bubbleParams
-                            if (b.parent != null && lp != null) {
-                                placeBubble(b, lp)
-                                windowManager.updateViewLayout(b, lp)
-                            }
-                        }
+                        tx = (startX + dx).coerceIn(0f, max(0, m.widthPixels - params.width).toFloat())
+                        ty = (startY + dy).coerceIn(0f, max(0, m.heightPixels - params.height).toFloat())
+                        startFollow()
                     }
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     if (dragging) {
-                        CompanionStore.prefs(this).edit()
-                            .putInt("x", params.x).putInt("y", params.y).apply()
+                        // let the companion finish gliding, then decide
+                        settled = {
+                            trash?.visibility = View.GONE
+                            closeView?.hover = false
+                            if (overBin) {
+                                // let go over the X: the companion is turned off
+                                // (turn it on again from the app's settings)
+                                overBin = false
+                                CompanionStore.setEnabled(this, false)
+                                stopSelf()
+                            } else {
+                                CompanionStore.prefs(this).edit()
+                                    .putInt("x", params.x).putInt("y", params.y).apply()
+                            }
+                        }
+                        startFollow()
                     }
                     true
                 }

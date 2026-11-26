@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/tr.dart';
@@ -18,15 +20,22 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
   bool _lock = true; //     companion on the lock screen
   bool _lockAllowed = true; // Android 14+: full-screen notifications allowed
 
+  Timer? _poll;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _refresh();
+    // The companion can be closed from outside the app (dragged onto the X)
+    // while this page is open: check often so the switch follows at once,
+    // like the floating Tasbeeh's.
+    _poll = Timer.periodic(const Duration(milliseconds: 700), (_) => _refresh());
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -39,13 +48,17 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
   Future<void> _refresh() async {
     final s = await CompanionWidget.state();
     final lock = await CompanionWidget.lockState();
-    if (mounted) {
-      setState(() {
-        _on = s.enabled && s.permission;
-        _lock = lock.enabled;
-        _lockAllowed = lock.allowed;
-      });
-    }
+    if (!mounted) return;
+    final on = s.enabled && s.permission;
+    if (on == _on && lock.enabled == _lock && lock.allowed == _lockAllowed) return;
+    final closedOutside = _on && !on;
+    setState(() {
+      _on = on;
+      _lock = lock.enabled;
+      _lockAllowed = lock.allowed;
+    });
+    // closed from the X: the rest of the app learns it too
+    if (closedOutside) await CompanionStore.instance.refreshState();
   }
 
   Future<void> _setLock(bool on) async {
@@ -179,8 +192,8 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
             contentPadding: EdgeInsets.zero,
             title: Text(context.tr('Companion', 'الرفيق')),
             subtitle: Text(_on
-                ? context.tr('${store.displayName(false)} is on your screen. Drag to move.',
-                    '${store.displayName(true)} على شاشتك. اسحب لتحريكه.')
+                ? context.tr('${store.displayName(false)} is on your screen. Drag to move, or onto the X to close.',
+                    '${store.displayName(true)} على شاشتك. اسحبه لتحريكه، أو إلى علامة X لإغلاقه.')
                 : context.tr('A little friend that floats on your screen',
                     'رفيق صغير يظهر على شاشتك')),
             value: _on,

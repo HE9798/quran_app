@@ -46,7 +46,7 @@ import kotlin.math.min
 
 /**
  * The Tasbeeh button that floats on top of other apps.
- * Tap = +1. Drag to move it. While dragging, a red X appears at the bottom of
+ * Tap = +1. Drag to move it. While dragging, an X appears at the bottom of
  * the screen: let go over it to close the button (turn it on again from the
  * app's settings). Round design: the button is a circle, a half ring around it
  * is the slider, and a quarter ring (top corner) shows the "x" combo.
@@ -59,7 +59,7 @@ class TasbeehOverlayService : Service() {
     private var shownCombo = -1
     private var completing = false
     private var trash: FrameLayout? = null      // the close button's window
-    private var closeView: CloseView? = null            // the red circle with the X
+    private var closeView: CloseView? = null            // the circle with the X
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var params: WindowManager.LayoutParams
 
@@ -153,7 +153,7 @@ class TasbeehOverlayService : Service() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
         // ---- the close button (created first so the widget is drawn above it):
-        // a red circle with a white X. It grows 25% when the widget is over it.
+        // a circle with a white X. It grows 25% when the widget is over it.
         // The window is bigger than the circle, and it is where the absorption pulls.
         val close = CloseView(this)
         val bin = FrameLayout(this).apply {
@@ -247,7 +247,7 @@ class TasbeehOverlayService : Service() {
     }
 
     // ------------------------------------------------------------- the close button
-    // Plain: a red circle with a white X, no glow and no animation. When the
+    // Plain: a circle with a white X, no glow and no animation. When the
     // widget is over it (hover) it is 25% bigger.
     private fun setHover(on: Boolean) {
         closeView?.hover = on
@@ -649,10 +649,20 @@ private class RingView(context: Context) : View(context) {
 }
 
 
-/** The close button: a red circle with a white X. 25% bigger while the widget is over it. */
-private class CloseView(context: Context) : View(context) {
+/**
+ * The close target for the floating Tasbeeh and the Companion: a circle with a
+ * white X, in Android's own colours (like the system's bubble dismiss target:
+ * the phone's dark neutral on Android 12+, dark grey before). 25% bigger while
+ * the widget is over it.
+ */
+internal class CloseView(context: Context) : View(context) {
     private val d = resources.displayMetrics.density
-    private val circle = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#FFE53935") }
+    private val circle = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = if (Build.VERSION.SDK_INT >= 31)
+            context.getColor(android.R.color.system_neutral1_800)
+        else Color.parseColor("#FF3C4043")
+        alpha = 235
+    }
     private val cross = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
         style = Paint.Style.STROKE
