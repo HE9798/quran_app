@@ -48,15 +48,6 @@ object CompanionAlarms {
         }
         prefs.edit().putString(KEY_IDS, ids.joinToString(",")).apply()
     }
-
-    /** One extra bubble at [at], outside the planned list (used by "Try it"). */
-    fun once(context: Context, id: Int, at: Long, text: String) {
-        val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pi = intentFor(context, id, text)
-        val exact = Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()
-        if (exact) manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
-        else manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
-    }
 }
 
 /** Rings when a planned bubble is due: shows it above the companion. */

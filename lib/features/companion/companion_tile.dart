@@ -54,22 +54,6 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
     if (mounted) setState(() => _lock = on);
   }
 
-  Future<void> _tryLock() async {
-    final text = context.tr('Assalamu alaykum! I am here on your lock screen.',
-        'السلام عليكم! أنا هنا على شاشة القفل.');
-    await CompanionStore.instance.pushStrings();
-    await CompanionWidget.testLockScreen(text);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(context.tr(
-          'Lock your phone now: your companion appears in 10 seconds.',
-          'اقفل هاتفك الآن: سيظهر رفيقك خلال ١٠ ثوانٍ.',
-        )),
-      ));
-  }
-
   Future<String?> _askGender() {
     return showDialog<String>(
       context: context,
@@ -225,15 +209,6 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
                   'مطلوب للظهور فوق شاشة القفل. بدونه يصلك إشعار عادي.',
                 )),
                 onTap: CompanionWidget.openLockPermission,
-              ),
-            if (_lock)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.lock_clock_rounded),
-                title: Text(context.tr('Try it', 'جرّبه')),
-                subtitle: Text(context.tr('Then lock your phone',
-                    'ثم اقفل هاتفك')),
-                onTap: _tryLock,
               ),
           ],
           if (store.chosen)

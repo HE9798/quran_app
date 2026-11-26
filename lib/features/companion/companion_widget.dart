@@ -134,10 +134,4 @@ class CompanionWidget {
     } catch (_) {}
   }
 
-  /// A bubble in [seconds] seconds, so the user can lock the phone and see it.
-  static Future<void> testLockScreen(String text, {int seconds = 10}) async {
-    try {
-      await _channel.invokeMethod<void>('lockTest', {'text': text, 'seconds': seconds});
-    } catch (_) {}
-  }
 }
