@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 /// The companion drawn in the app: body + head, and the head bobs down a
 /// little and back (the same idle animation as on the phone screen).
 ///
-/// Needs these pictures (copies of the ones in the Android res folder):
+/// The pictures live here only (the floating companion gets copies of them
+/// from the app by itself, see CompanionWidget.syncImages):
 ///   assets/companion/sheikh_body.png, sheikh_head.png,
 ///   assets/companion/sister_body.png, sister_head.png
 class CompanionSprite extends StatefulWidget {

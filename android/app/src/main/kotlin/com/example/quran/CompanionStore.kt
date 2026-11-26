@@ -2,10 +2,35 @@ package com.example.quran
 
 import android.content.Context
 import android.content.SharedPreferences
+import java.io.File
 
 /** Companion mode: on/off, which companion, where it was left, and small notes for the app. */
 object CompanionStore {
     private const val PREFS = "werd_companion"
+
+    // ---- the pictures: the app (Flutter) is the only place that holds them. It
+    // copies them here at start-up, and the floating companion reads them from here.
+    private fun imageDir(context: Context) = File(context.filesDir, "companion")
+
+    /** name = "sheikh_body", "sheikh_head", "sister_body", "sister_head" ... */
+    fun imageFile(context: Context, name: String) = File(imageDir(context), "$name.png")
+
+    /** Saves the pictures the app sends. A picture that did not change is not rewritten. True = something changed. */
+    fun saveImages(context: Context, images: Map<String, ByteArray>): Boolean {
+        val dir = imageDir(context)
+        dir.mkdirs()
+        var changed = false
+        for ((name, bytes) in images) {
+            val file = File(dir, "$name.png")
+            val same = file.exists() && file.length() == bytes.size.toLong() &&
+                runCatching { file.readBytes().contentEquals(bytes) }.getOrDefault(false)
+            if (!same) {
+                file.writeBytes(bytes)
+                changed = true
+            }
+        }
+        return changed
+    }
 
     fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

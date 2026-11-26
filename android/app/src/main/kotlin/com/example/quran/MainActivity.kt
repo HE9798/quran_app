@@ -67,6 +67,14 @@ class MainActivity : AudioServiceActivity() {
                         CompanionAlarms.replaceAll(this, events)
                         result.success(null)
                     }
+                    // the pictures, sent by the app from its assets: name -> png bytes
+                    "syncImages" -> {
+                        val images = mutableMapOf<String, ByteArray>()
+                        (call.arguments as? Map<*, *>)?.forEach { (k, v) ->
+                            if (k is String && v is ByteArray) images[k] = v
+                        }
+                        result.success(CompanionStore.saveImages(this, images))
+                    }
                     "claimPending" -> result.success(CompanionStore.claimPending(this))
                     "setStrings" -> {
                         (call.arguments as? Map<*, *>)?.forEach { (k, v) ->
@@ -83,8 +91,14 @@ class MainActivity : AudioServiceActivity() {
                         stopService(Intent(this, CompanionOverlayService::class.java))
                         result.success(null)
                     }
+                    // arg true = the pictures changed: show the new ones
                     "restore" -> {
-                        if (CompanionStore.enabled(this) && Settings.canDrawOverlays(this)) startCompanion()
+                        if (CompanionStore.enabled(this) && Settings.canDrawOverlays(this)) {
+                            if (call.arguments == true) {
+                                stopService(Intent(this, CompanionOverlayService::class.java))
+                            }
+                            startCompanion()
+                        }
                         result.success(null)
                     }
                     else -> result.notImplemented()

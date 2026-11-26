@@ -118,19 +118,31 @@ class CompanionOverlayService : Service() {
     }
 
     // --------------------------------------------------------------- overlay
+    /**
+     * A picture of the companion. It comes from the app's own files (the app
+     * copies them there from its assets, so they are changed in one place only).
+     * An old copy in the Android res folder is used only if that is missing.
+     */
+    private fun loadPicture(name: String, opts: BitmapFactory.Options): Bitmap? {
+        val file = CompanionStore.imageFile(this, name)
+        if (file.exists()) {
+            val bitmap = BitmapFactory.decodeFile(file.absolutePath, opts)
+            if (bitmap != null) return bitmap
+        }
+        val id = resources.getIdentifier("companion_$name", "drawable", packageName)
+        return if (id != 0) BitmapFactory.decodeResource(resources, id, opts) else null
+    }
+
     private fun createOverlay() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
         val type = CompanionStore.type(this)                       // "sheikh" or "sister"
-        val id = resources.getIdentifier("companion_${type}_body", "drawable", packageName)
-        if (id == 0) { stopSelf(); return }
         val opts = BitmapFactory.Options().apply { inScaled = false }
-        val bitmap = BitmapFactory.decodeResource(resources, id, opts)   // the body, without the head
+        val bitmap = loadPicture("${type}_body", opts)   // the body, without the head
         if (bitmap == null) { stopSelf(); return }
 
         // the head on its own (cut along the real outline of the head)
-        val headId = resources.getIdentifier("companion_${type}_head", "drawable", packageName)
-        val head = if (headId != 0) BitmapFactory.decodeResource(resources, headId, opts) else null
+        val head = loadPicture("${type}_head", opts)
         val heightPx = dp(130f)
         val widthPx = (bitmap.width * heightPx.toFloat() / bitmap.height).toInt()
         val bob = dp(3f)

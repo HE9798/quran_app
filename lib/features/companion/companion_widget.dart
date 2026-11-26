@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/services.dart';
 
 /// Companion mode (Android): a little character floating over other apps.
@@ -22,9 +24,28 @@ class CompanionWidget {
     }
   }
 
+  /// The pictures live in assets/companion/ only. This copies them to the
+  /// phone side, which draws the floating companion from them. It is done
+  /// before the companion starts, so replacing a picture in the assets is all
+  /// that is needed. (Later, the outfit the user chose will be sent here too.)
+  /// Returns true when a picture on the phone side was changed.
+  static Future<bool> syncImages() async {
+    try {
+      final images = <String, Uint8List>{};
+      for (final name in const ['sheikh_body', 'sheikh_head', 'sister_body', 'sister_head']) {
+        final data = await rootBundle.load('assets/companion/$name.png');
+        images[name] = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      }
+      return await _channel.invokeMethod<bool>('syncImages', images) ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Shows the companion ("sheikh" or "sister"). False = permission missing.
   static Future<bool> start(String type) async {
     try {
+      await syncImages();
       return await _channel.invokeMethod<bool>('start', type) ?? false;
     } catch (_) {
       return false;
@@ -40,7 +61,8 @@ class CompanionWidget {
   /// Call when the app starts: brings the companion back if it was on.
   static Future<void> restore() async {
     try {
-      await _channel.invokeMethod<void>('restore');
+      final changed = await syncImages();
+      await _channel.invokeMethod<void>('restore', changed);
     } catch (_) {}
   }
 

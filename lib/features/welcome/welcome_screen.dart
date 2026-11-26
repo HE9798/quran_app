@@ -11,10 +11,9 @@ class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   static const _arabic =
-      'هذا التطبيق صدقة جارية عن روح والدة المطورين، نسألكم الدعاء لها بالرحمة والمغفرة';
+      'هذا التطبيق صدقة جارية، لا تنسونا من صالح دعائكم';
   static const _english =
-      "This app is an ongoing charity (sadaqah jariyah) for the soul of the developers' mother. "
-      'We ask you to pray for her mercy and forgiveness.';
+      'This app is an ongoing charity (sadaqah jariyah). Please keep us in your prayers.';
 
   @override
   Widget build(BuildContext context) {

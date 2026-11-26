@@ -46,7 +46,7 @@ import kotlin.math.min
 
 /**
  * The Tasbeeh button that floats on top of other apps.
- * Tap = +1. Drag to move it. While dragging, a fire appears at the bottom of
+ * Tap = +1. Drag to move it. While dragging, a red X appears at the bottom of
  * the screen: let go over it to close the button (turn it on again from the
  * app's settings). Round design: the button is a circle, a half ring around it
  * is the slider, and a quarter ring (top corner) shows the "x" combo.
@@ -58,12 +58,9 @@ class TasbeehOverlayService : Service() {
     private var sliderLeft = true                // which side of the button the slider is on
     private var shownCombo = -1
     private var completing = false
-    private var trash: FrameLayout? = null      // the fire's window
-    private var glowBackground: GradientDrawable? = null // the orange circle
-    private var fireIcon: View? = null                   // the flame
+    private var trash: FrameLayout? = null      // the close button's window
+    private var closeView: CloseView? = null            // the red circle with the X
     private val handler = Handler(Looper.getMainLooper())
-    private var flip: Runnable? = null
-    private var pulse: ValueAnimator? = null
     private lateinit var params: WindowManager.LayoutParams
 
     private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> refresh() }
@@ -119,7 +116,7 @@ class TasbeehOverlayService : Service() {
         val notification = builder
             .setSmallIcon(applicationInfo.icon)
             .setContentTitle("Tasbeeh button is on")
-            .setContentText("Drag it to the fire to close it")
+            .setContentText("Drag it to the X to close it")
             .setContentIntent(open)
             .setOngoing(true)
             .build()
@@ -155,44 +152,15 @@ class TasbeehOverlayService : Service() {
     private fun createOverlay() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-        // ---- the fire (created first so the button is drawn above it).
-        // A reddish-orange circle whose edge fades out, so there is no border.
-        // The window is bigger than the circle so it can grow by 25%.
-        val glow = FrameLayout(this).apply {
-            background = GradientDrawable().apply {
-                shape = GradientDrawable.OVAL
-                gradientType = GradientDrawable.RADIAL_GRADIENT
-                gradientRadius = dp(56f).toFloat()
-                setGradientCenter(0.5f, 0.5f)
-                colors = intArrayOf(
-                    Color.parseColor("#FFFB3E04"),
-                    Color.parseColor("#FFFB3E04"),
-                    Color.parseColor("#00FB3E04")
-                )
-            }
-        }
-        // Your own icon: put it in res/drawable/fire_icon.png. Without it the
-        // fire emoji is used.
-        val iconId = resources.getIdentifier("fire_icon", "drawable", packageName)
-        val icon: View = if (iconId != 0) {
-            ImageView(this).apply {
-                setImageResource(iconId)
-                scaleType = ImageView.ScaleType.FIT_CENTER
-            }
-        } else {
-            TextView(this).apply {
-                text = "\uD83D\uDD25" // fire
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 34f)
-                gravity = Gravity.CENTER
-            }
-        }
-        glow.addView(icon, FrameLayout.LayoutParams(dp(48f), dp(48f), Gravity.CENTER))
+        // ---- the close button (created first so the widget is drawn above it):
+        // a red circle with a white X. It grows 25% when the widget is over it.
+        // The window is bigger than the circle, and it is where the absorption pulls.
+        val close = CloseView(this)
         val bin = FrameLayout(this).apply {
-            addView(glow, FrameLayout.LayoutParams(dp(112f), dp(112f), Gravity.CENTER))
+            addView(close, FrameLayout.LayoutParams(dp(140f), dp(140f), Gravity.CENTER))
             visibility = View.GONE
         }
-        glowBackground = glow.background as GradientDrawable
-        fireIcon = icon
+        closeView = close
         val binParams = WindowManager.LayoutParams(
             dp(140f), dp(140f),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
@@ -278,56 +246,15 @@ class TasbeehOverlayService : Service() {
         if (!completing) v.animateTo(fraction())
     }
 
-    // ------------------------------------------------------------- the fire
-    // Static (button not over it): the flame flips left/right, like it is
-    // flickering. Hovering (button over it): the orange glow pulses.
-    // Opacity can not go above 100%, so the glow pulses between 33% and 100%
-    // and rests at 66%: the same 1 : 2 : 3 steps as 50% / 100% / 150%.
-    private val restAlpha = 168   // 66%
-    private val dimAlpha = 84     // 33%
-    private val fullAlpha = 255   // 100%
-
+    // ------------------------------------------------------------- the close button
+    // Plain: a red circle with a white X, no glow and no animation. When the
+    // widget is over it (hover) it is 25% bigger.
     private fun setHover(on: Boolean) {
-        pulse?.cancel()
-        pulse = null
-        if (on) {
-            if (flip == null) startFlip() // keep flipping while hovering
-            pulse = ValueAnimator.ofInt(dimAlpha, fullAlpha).apply {
-                duration = 450
-                repeatMode = ValueAnimator.REVERSE
-                repeatCount = ValueAnimator.INFINITE
-                addUpdateListener { glowBackground?.alpha = it.animatedValue as Int }
-                start()
-            }
-        } else {
-            glowBackground?.alpha = restAlpha
-            if (flip == null) startFlip()
-        }
-    }
-
-    private fun startFlip() {
-        stopFlip()
-        val r = object : Runnable {
-            override fun run() {
-                fireIcon?.scaleX = -(fireIcon?.scaleX ?: 1f)
-                handler.postDelayed(this, 350)
-            }
-        }
-        flip = r
-        handler.postDelayed(r, 350)
-    }
-
-    private fun stopFlip() {
-        flip?.let { handler.removeCallbacks(it) }
-        flip = null
-        fireIcon?.scaleX = 1f
+        closeView?.hover = on
     }
 
     private fun stopEffects() {
-        pulse?.cancel()
-        pulse = null
-        stopFlip()
-        glowBackground?.alpha = restAlpha
+        closeView?.hover = false
     }
 
     // ------------------------------------------------------------- lagging drag
@@ -718,5 +645,36 @@ private class RingView(context: Context) : View(context) {
             Color.parseColor(d1), Color.parseColor(d2), Shader.TileMode.CLAMP)
         canvas.drawCircle(cx, cy, r2, dish)
         canvas.restore()
+    }
+}
+
+
+/** The close button: a red circle with a white X. 25% bigger while the widget is over it. */
+private class CloseView(context: Context) : View(context) {
+    private val d = resources.displayMetrics.density
+    private val circle = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#FFE53935") }
+    private val cross = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+    }
+
+    var hover = false
+        set(value) {
+            if (field != value) {
+                field = value
+                invalidate()
+            }
+        }
+
+    override fun onDraw(canvas: Canvas) {
+        val cx = width / 2f
+        val cy = height / 2f
+        val k = if (hover) 1.25f else 1f
+        canvas.drawCircle(cx, cy, 32f * d * k, circle)
+        cross.strokeWidth = 3.4f * d * k
+        val a = 11f * d * k
+        canvas.drawLine(cx - a, cy - a, cx + a, cy + a, cross)
+        canvas.drawLine(cx + a, cy - a, cx - a, cy + a, cross)
     }
 }
