@@ -48,6 +48,15 @@ object CompanionAlarms {
         }
         prefs.edit().putString(KEY_IDS, ids.joinToString(",")).apply()
     }
+
+    /** One extra bubble at [at], outside the planned list (used by "Try it"). */
+    fun once(context: Context, id: Int, at: Long, text: String) {
+        val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val pi = intentFor(context, id, text)
+        val exact = Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()
+        if (exact) manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+        else manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+    }
 }
 
 /** Rings when a planned bubble is due: shows it above the companion. */
@@ -55,6 +64,11 @@ class CompanionAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val text = intent.getStringExtra("text") ?: return
         if (!CompanionStore.enabled(context)) return
+        // the floating companion can't be seen on the lock screen: show it full screen there
+        if (CompanionStore.lockScreen(context) && CompanionLockScreen.phoneLocked(context)) {
+            if (CompanionStore.bubbles(context)) CompanionLockScreen.show(context, text)
+            return
+        }
         val running = CompanionOverlayService.instance
         if (running != null) {
             running.say(text, 8000)

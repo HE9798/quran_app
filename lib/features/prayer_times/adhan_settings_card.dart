@@ -27,43 +27,47 @@ class AdhanSettingsCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: p.border),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                secondary: Icon(Icons.volume_up_rounded, color: p.onPrimarySoft),
-                title: Text(context.tr('Adhan sound', 'صوت الأذان')),
-                subtitle: Text(context.tr(
-                    'Turn off to mute prayer notifications',
-                    'أوقفه لكتم إشعارات الصلاة')),
-                value: settings.adhanSound,
-                onChanged: on ? settings.setAdhanSound : null,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                enabled: on && settings.adhanSound,
-                leading: Icon(Icons.record_voice_over_rounded,
-                    color: p.onPrimarySoft),
-                title: Text(context.tr('Adhan voice', 'صوت المؤذن')),
-                subtitle: Text(
-                  AdhanVoice.byId(settings.adhanVoice).label(context.isArabic),
+          // list tiles draw their tap ripple on this, above the card's colour
+          child: Material(
+            type: MaterialType.transparency,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: Icon(Icons.volume_up_rounded, color: p.onPrimarySoft),
+                  title: Text(context.tr('Adhan sound', 'صوت الأذان')),
+                  subtitle: Text(context.tr(
+                      'Turn off to mute prayer notifications',
+                      'أوقفه لكتم إشعارات الصلاة')),
+                  value: settings.adhanSound,
+                  onChanged: on ? settings.setAdhanSound : null,
                 ),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => showAdhanVoiceSheet(context),
-              ),
-              if (!on)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    context.tr(
-                      'Notifications are off in Settings.',
-                      'الإشعارات متوقفة من الإعدادات.',
-                    ),
-                    style: TextStyle(fontSize: 12, color: p.muted),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  enabled: on && settings.adhanSound,
+                  leading: Icon(Icons.record_voice_over_rounded,
+                      color: p.onPrimarySoft),
+                  title: Text(context.tr('Adhan voice', 'صوت المؤذن')),
+                  subtitle: Text(
+                    AdhanVoice.byId(settings.adhanVoice).label(context.isArabic),
                   ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => showAdhanVoiceSheet(context),
                 ),
-            ],
+                if (!on)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      context.tr(
+                        'Notifications are off in Settings.',
+                        'الإشعارات متوقفة من الإعدادات.',
+                      ),
+                      style: TextStyle(fontSize: 12, color: p.muted),
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },

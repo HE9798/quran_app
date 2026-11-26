@@ -167,6 +167,10 @@ class CompanionStore extends ChangeNotifier {
   /// Phrases for the bubbles the phone side makes by itself.
   Future<void> pushStrings() => CompanionWidget.setStrings({
         'tasbeeh': _ar ? 'ما شاء الله' : 'Mashaa Allah',
+        // the companion full screen over the lock screen
+        'lock_title': displayName(_ar),
+        'lock_dismiss': _ar ? 'إغلاق' : 'Dismiss',
+        'lock_open': _ar ? 'فتح التطبيق' : 'Open app',
       });
 
   // ----------------------------------------------------------- daily counts

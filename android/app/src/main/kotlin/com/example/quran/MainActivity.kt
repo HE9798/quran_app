@@ -82,6 +82,37 @@ class MainActivity : AudioServiceActivity() {
                         }
                         result.success(null)
                     }
+                    // the companion full screen over the lock screen
+                    "lockState" -> result.success(
+                        mapOf(
+                            "enabled" to CompanionStore.lockScreen(this),
+                            "allowed" to CompanionLockScreen.allowed(this)
+                        )
+                    )
+                    "setLockScreen" -> {
+                        CompanionStore.setLockScreen(this, (call.arguments as? Boolean) ?: true)
+                        result.success(null)
+                    }
+                    // Android 14+: the page where full-screen notifications are allowed
+                    "lockPermission" -> {
+                        if (Build.VERSION.SDK_INT >= 34) {
+                            runCatching {
+                                startActivity(Intent(
+                                    Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                                    Uri.parse("package:$packageName")
+                                ))
+                            }
+                        }
+                        result.success(null)
+                    }
+                    // "Try it": a bubble in a few seconds, so the user can lock the phone
+                    "lockTest" -> {
+                        val a = call.arguments as? Map<*, *>
+                        val text = (a?.get("text") as? String) ?: "Assalamu alaykum"
+                        val seconds = (a?.get("seconds") as? Number)?.toLong() ?: 10L
+                        CompanionAlarms.once(this, 990001, System.currentTimeMillis() + seconds * 1000, text)
+                        result.success(null)
+                    }
                     "setBubbles" -> {
                         CompanionStore.setBubbles(this, (call.arguments as? Boolean) ?: true)
                         result.success(null)

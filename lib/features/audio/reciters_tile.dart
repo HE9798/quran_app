@@ -40,12 +40,7 @@ class _RecitersTileState extends State<RecitersTile> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(context.tr('Memorisation (Hifz)', 'حفظ القرآن')),
-              subtitle: Text(
-                own.hasOwn(ActivityReciters.hifzKey)
-                    ? own.hifz.displayName(ar)
-                    : context.tr('${own.hifz.displayName(false)} · same as the player',
-                        '${own.hifz.displayName(true)} · مثل المشغّل'),
-              ),
+              subtitle: Text(own.hifz.displayName(ar)),
               trailing: const Icon(Icons.keyboard_arrow_down_rounded),
               onTap: () => showReciterSheet(
                 context,

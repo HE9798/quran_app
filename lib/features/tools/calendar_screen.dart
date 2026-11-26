@@ -223,59 +223,63 @@ class _CalendarScreenState extends State<CalendarScreen> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: p.border),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(context.tr('Show fasting days', 'إظهار أيام الصيام')),
-                subtitle: Text(context.tr(
-                  'Mondays, Thursdays and the white days (13, 14, 15). Off keeps the calendar clean.',
-                  'الاثنين والخميس والأيام البيض (١٣ و١٤ و١٥). إيقافه يُبقي التقويم نظيفًا.',
-                )),
-                value: _fasting,
-                onChanged: (v) {
-                  setState(() => _fasting = v);
-                  _save();
-                },
-              ),
-              const Divider(height: 16),
-              Text(context.tr('Adjust the date', 'تعديل التاريخ'),
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 2),
-              Text(
-                context.tr(
-                  'The month begins with the moon sighting, so it can differ by a day from the official date. Move it to match yours.',
-                  'يبدأ الشهر برؤية الهلال، فقد يختلف يومًا عن التاريخ الرسمي. عدِّله ليطابق تاريخ بلدك.',
+          // list tiles draw their tap ripple on this, above the card's colour
+          child: Material(
+            type: MaterialType.transparency,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(context.tr('Show fasting days', 'إظهار أيام الصيام')),
+                  subtitle: Text(context.tr(
+                    'Mondays, Thursdays and the white days (13, 14, 15). Off keeps the calendar clean.',
+                    'الاثنين والخميس والأيام البيض (١٣ و١٤ و١٥). إيقافه يُبقي التقويم نظيفًا.',
+                  )),
+                  value: _fasting,
+                  onChanged: (v) {
+                    setState(() => _fasting = v);
+                    _save();
+                  },
                 ),
-                style: TextStyle(fontSize: 12, color: p.muted, height: 1.4),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  IconButton.outlined(
-                    onPressed: _adjust > -2 ? () { setState(() { _adjust -= 1; _goToDate(_selected); }); _save(); } : null,
-                    icon: const Icon(Icons.remove_rounded),
+                const Divider(height: 16),
+                Text(context.tr('Adjust the date', 'تعديل التاريخ'),
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text(
+                  context.tr(
+                    'The month begins with the moon sighting, so it can differ by a day from the official date. Move it to match yours.',
+                    'يبدأ الشهر برؤية الهلال، فقد يختلف يومًا عن التاريخ الرسمي. عدِّله ليطابق تاريخ بلدك.',
                   ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        _adjust == 0
-                            ? context.tr('No adjustment', 'بدون تعديل')
-                            : context.tr(
-                                '${_adjust > 0 ? '+' : ''}$_adjust day${_adjust.abs() == 1 ? '' : 's'}',
-                                '${_adjust > 0 ? '+' : '-'}${context.n(_adjust.abs())} ${_adjust.abs() == 1 ? 'يوم' : 'أيام'}'),
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontSize: 12, color: p.muted, height: 1.4),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    IconButton.outlined(
+                      onPressed: _adjust > -2 ? () { setState(() { _adjust -= 1; _goToDate(_selected); }); _save(); } : null,
+                      icon: const Icon(Icons.remove_rounded),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          _adjust == 0
+                              ? context.tr('No adjustment', 'بدون تعديل')
+                              : context.tr(
+                                  '${_adjust > 0 ? '+' : ''}$_adjust day${_adjust.abs() == 1 ? '' : 's'}',
+                                  '${_adjust > 0 ? '+' : '-'}${context.n(_adjust.abs())} ${_adjust.abs() == 1 ? 'يوم' : 'أيام'}'),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
                       ),
                     ),
-                  ),
-                  IconButton.outlined(
-                    onPressed: _adjust < 2 ? () { setState(() { _adjust += 1; _goToDate(_selected); }); _save(); } : null,
-                    icon: const Icon(Icons.add_rounded),
-                  ),
-                ],
-              ),
-            ],
+                    IconButton.outlined(
+                      onPressed: _adjust < 2 ? () { setState(() { _adjust += 1; _goToDate(_selected); }); _save(); } : null,
+                      icon: const Icon(Icons.add_rounded),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ],

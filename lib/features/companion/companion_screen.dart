@@ -97,7 +97,8 @@ class _CompanionScreenState extends State<CompanionScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: p.border),
       ),
-      child: child,
+      // list tiles draw their tap ripple on this, above the card's colour
+      child: Material(type: MaterialType.transparency, child: child),
     );
   }
 

@@ -2,6 +2,8 @@ package com.example.quran
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import java.io.File
 
 /** Companion mode: on/off, which companion, where it was left, and small notes for the app. */
@@ -32,6 +34,20 @@ object CompanionStore {
         return changed
     }
 
+    /**
+     * A picture of the companion, from the copies the app made. An old copy in
+     * the Android res folder is used only if that is missing.
+     */
+    fun loadPicture(context: Context, name: String, opts: BitmapFactory.Options): Bitmap? {
+        val file = imageFile(context, name)
+        if (file.exists()) {
+            val bitmap = BitmapFactory.decodeFile(file.absolutePath, opts)
+            if (bitmap != null) return bitmap
+        }
+        val id = context.resources.getIdentifier("companion_$name", "drawable", context.packageName)
+        return if (id != 0) BitmapFactory.decodeResource(context.resources, id, opts) else null
+    }
+
     fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
@@ -48,6 +64,11 @@ object CompanionStore {
     fun bubbles(context: Context) = prefs(context).getBoolean("bubbles", true)
     fun setBubbles(context: Context, on: Boolean) =
         prefs(context).edit().putBoolean("bubbles", on).apply()
+
+    /** Show the companion full screen over the lock screen when a bubble is due. */
+    fun lockScreen(context: Context) = prefs(context).getBoolean("lock_screen", true)
+    fun setLockScreen(context: Context, on: Boolean) =
+        prefs(context).edit().putBoolean("lock_screen", on).apply()
 
     // ---- coins earned by the floating Tasbeeh button while the app was closed.
     // The app collects them (claimPending) and adds them to the wallet.

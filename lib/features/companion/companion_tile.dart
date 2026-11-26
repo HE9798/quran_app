@@ -15,6 +15,8 @@ class CompanionTile extends StatefulWidget {
 
 class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserver {
   bool _on = false;
+  bool _lock = true; //     companion on the lock screen
+  bool _lockAllowed = true; // Android 14+: full-screen notifications allowed
 
   @override
   void initState() {
@@ -36,9 +38,36 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
 
   Future<void> _refresh() async {
     final s = await CompanionWidget.state();
+    final lock = await CompanionWidget.lockState();
     if (mounted) {
-      setState(() => _on = s.enabled && s.permission);
+      setState(() {
+        _on = s.enabled && s.permission;
+        _lock = lock.enabled;
+        _lockAllowed = lock.allowed;
+      });
     }
+  }
+
+  Future<void> _setLock(bool on) async {
+    await CompanionWidget.setLockScreen(on);
+    if (on) await CompanionStore.instance.pushStrings(); // names on the buttons
+    if (mounted) setState(() => _lock = on);
+  }
+
+  Future<void> _tryLock() async {
+    final text = context.tr('Assalamu alaykum! I am here on your lock screen.',
+        'السلام عليكم! أنا هنا على شاشة القفل.');
+    await CompanionStore.instance.pushStrings();
+    await CompanionWidget.testLockScreen(text);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(context.tr(
+          'Lock your phone now: your companion appears in 10 seconds.',
+          'اقفل هاتفك الآن: سيظهر رفيقك خلال ١٠ ثوانٍ.',
+        )),
+      ));
   }
 
   Future<String?> _askGender() {
@@ -173,6 +202,40 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
             value: _on,
             onChanged: _toggle,
           ),
+          if (_on) ...[
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(context.tr('Show on the lock screen', 'الظهور على شاشة القفل')),
+              subtitle: Text(context.tr(
+                'When it has something to say while your phone is locked, it appears full screen',
+                'عندما يكون لديه ما يقوله وهاتفك مقفل، يظهر على الشاشة كاملة',
+              )),
+              value: _lock,
+              onChanged: _setLock,
+            ),
+            if (_lock && !_lockAllowed)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.warning_amber_rounded,
+                    color: Theme.of(context).colorScheme.error),
+                title: Text(context.tr('Allow full-screen notifications',
+                    'السماح بالإشعارات بملء الشاشة')),
+                subtitle: Text(context.tr(
+                  'Needed to appear over the lock screen. Without it you get a normal notification.',
+                  'مطلوب للظهور فوق شاشة القفل. بدونه يصلك إشعار عادي.',
+                )),
+                onTap: CompanionWidget.openLockPermission,
+              ),
+            if (_lock)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.lock_clock_rounded),
+                title: Text(context.tr('Try it', 'جرّبه')),
+                subtitle: Text(context.tr('Then lock your phone',
+                    'ثم اقفل هاتفك')),
+                onTap: _tryLock,
+              ),
+          ],
           if (store.chosen)
             ListTile(
               contentPadding: EdgeInsets.zero,

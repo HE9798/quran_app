@@ -328,9 +328,13 @@ class _Card extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: p.border),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: children,
+      // list tiles draw their tap ripple on this, above the card's colour
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: children,
+        ),
       ),
     );
   }

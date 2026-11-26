@@ -4,4 +4,11 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application>
+        <!-- Debug only: fire a companion bubble from adb (see CompanionDebugReceiver) -->
+        <receiver
+            android:name=".CompanionDebugReceiver"
+            android:exported="true" />
+    </application>
 </manifest>

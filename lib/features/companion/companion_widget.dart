@@ -103,4 +103,41 @@ class CompanionWidget {
       await _channel.invokeMethod<void>('setBubbles', on);
     } catch (_) {}
   }
+
+  // ------------------------------------------------ on the lock screen
+
+  /// enabled = the user wants the companion on the lock screen;
+  /// allowed = Android lets the app show it full screen there (Android 14+
+  /// asks the user; always true before that).
+  static Future<({bool enabled, bool allowed})> lockState() async {
+    try {
+      final m = await _channel.invokeMapMethod<String, dynamic>('lockState');
+      return (
+        enabled: (m?['enabled'] as bool?) ?? true,
+        allowed: (m?['allowed'] as bool?) ?? true,
+      );
+    } catch (_) {
+      return (enabled: false, allowed: false);
+    }
+  }
+
+  static Future<void> setLockScreen(bool on) async {
+    try {
+      await _channel.invokeMethod<void>('setLockScreen', on);
+    } catch (_) {}
+  }
+
+  /// Opens the phone's page to allow full-screen notifications (Android 14+).
+  static Future<void> openLockPermission() async {
+    try {
+      await _channel.invokeMethod<void>('lockPermission');
+    } catch (_) {}
+  }
+
+  /// A bubble in [seconds] seconds, so the user can lock the phone and see it.
+  static Future<void> testLockScreen(String text, {int seconds = 10}) async {
+    try {
+      await _channel.invokeMethod<void>('lockTest', {'text': text, 'seconds': seconds});
+    } catch (_) {}
+  }
 }

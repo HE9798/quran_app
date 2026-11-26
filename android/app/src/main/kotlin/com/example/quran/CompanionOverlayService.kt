@@ -123,15 +123,8 @@ class CompanionOverlayService : Service() {
      * copies them there from its assets, so they are changed in one place only).
      * An old copy in the Android res folder is used only if that is missing.
      */
-    private fun loadPicture(name: String, opts: BitmapFactory.Options): Bitmap? {
-        val file = CompanionStore.imageFile(this, name)
-        if (file.exists()) {
-            val bitmap = BitmapFactory.decodeFile(file.absolutePath, opts)
-            if (bitmap != null) return bitmap
-        }
-        val id = resources.getIdentifier("companion_$name", "drawable", packageName)
-        return if (id != 0) BitmapFactory.decodeResource(resources, id, opts) else null
-    }
+    private fun loadPicture(name: String, opts: BitmapFactory.Options): Bitmap? =
+        CompanionStore.loadPicture(this, name, opts)
 
     private fun createOverlay() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -286,7 +279,7 @@ class CompanionOverlayService : Service() {
  * when the head is "down" it is drawn [bobPx] lower, so only the head bobs.
  * No smoothing: the pixels stay sharp.
  */
-private class CompanionView(
+internal class CompanionView(
     context: Context,
     private val body: Bitmap,
     private val head: Bitmap?,
@@ -317,7 +310,7 @@ private class CompanionView(
 }
 
 /** The speech bubble: rounded box with a little tail that points at the companion. */
-private class BubbleView(context: Context, onTap: () -> Unit) : LinearLayout(context) {
+internal class BubbleView(context: Context, onTap: () -> Unit) : LinearLayout(context) {
     private val d = resources.displayMetrics.density
     private val text = TextView(context)
     private val tail = TailView(context)
