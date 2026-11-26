@@ -1,19 +1,19 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/settings/app_settings.dart';
 import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
-import '../prayer_times/data/adhan_voices.dart';
-import '../audio/reciters_tile.dart';
 import '../companion/companion_tile.dart';
 import '../tasbeeh/overlay_tile.dart';
 import '../tasbeeh/target_tile.dart';
 import '../tasbeeh/tasbeeh_widget.dart';
 import '../prayer_times/data/prayer_notifications.dart';
 
-/// Settings: language, font size, theme, notifications, vibration, azkar.
+/// Settings: appearance, notifications (incl. azkar alarms), tasbeeh button,
+/// companion mode. Adhan settings live on the Prayer page, reciters on the
+/// page of each activity (Quran, Hifz, Khatma).
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -38,8 +38,9 @@ class SettingsScreen extends StatelessWidget {
     settings.setNotifications(on);
   }
 
-  /// Azkar alarms need the notification permission too.
-  Future<void> _setAzkar(BuildContext context, bool morning, bool on) async {
+  /// Azkar alarms need the notification permission too. One switch turns on
+  /// all three: morning, evening and the unfinished-azkar reminder.
+  Future<void> _setAzkar(BuildContext context, bool on) async {
     final settings = AppSettings.instance;
     if (on) {
       final allowed = await PrayerNotifications.instance.requestPermission();
@@ -57,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
         return;
       }
     }
-    morning ? settings.setAzkarMorning(on) : settings.setAzkarEvening(on);
+    settings.setAzkarAlarms(on);
   }
 
   @override
@@ -207,78 +208,19 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(context.tr('Prayer countdown in the status bar',
-                          'العد التنازلي للصلاة في شريط الإشعارات')),
+                      title: Text(context.tr('Azkar alarms', 'تنبيهات الأذكار')),
                       subtitle: Text(context.tr(
-                          'A fixed notification with the time left for the next prayer',
-                          'إشعار ثابت بالوقت المتبقي للصلاة القادمة')),
-                      value: settings.statusCountdown,
+                          'Morning azkar after Fajr, evening azkar after Asr, '
+                              'and a reminder if you have not finished them',
+                          'أذكار الصباح بعد الفجر، وأذكار المساء بعد العصر، '
+                              'وتذكير إن لم تُكملها')),
+                      value: settings.azkarAlarms,
                       onChanged: settings.notifications
-                          ? settings.setStatusCountdown
+                          ? (v) => _setAzkar(context, v)
                           : null,
-                    ),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(context.tr('Adhan sound', 'صوت الأذان')),
-                      subtitle: Text(context.tr(
-                          'Turn off to mute prayer notifications',
-                          'أوقفه لكتم إشعارات الصلاة')),
-                      value: settings.adhanSound,
-                      onChanged:
-                          settings.notifications ? settings.setAdhanSound : null,
-                    ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      enabled: settings.notifications && settings.adhanSound,
-                      title: Text(context.tr('Adhan voice', 'صوت المؤذن')),
-                      subtitle: Text(
-                        AdhanVoice.byId(settings.adhanVoice)
-                            .label(context.isArabic),
-                      ),
-                      trailing: const Icon(Icons.chevron_right_rounded),
-                      onTap: () => _chooseAdhan(context),
                     ),
                   ]),
 
-                  // ----------------------------------------------- azkar
-                  const SizedBox(height: 20),
-                  _Section(context.tr('Azkar alarms', 'تنبيهات الأذكار')),
-                  _Card(children: [
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(context.tr('Morning azkar', 'أذكار الصباح')),
-                      subtitle: Text(context.tr(
-                          'After Fajr, until sunrise', 'بعد الفجر حتى الشروق')),
-                      value: settings.azkarMorning,
-                      onChanged: settings.notifications
-                          ? (v) => _setAzkar(context, true, v)
-                          : null,
-                    ),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(context.tr('Evening azkar', 'أذكار المساء')),
-                      subtitle: Text(context.tr(
-                          'After Asr, until Maghrib', 'بعد العصر حتى المغرب')),
-                      value: settings.azkarEvening,
-                      onChanged: settings.notifications
-                          ? (v) => _setAzkar(context, false, v)
-                          : null,
-                    ),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(context.tr('Unfinished azkar', 'الأذكار غير المكتملة')),
-                      subtitle: Text(context.tr(
-                          'Remind me when I have not finished the morning or evening azkar',
-                          'ذكّرني إن لم أُكمل أذكار الصباح أو المساء')),
-                      value: settings.azkarMissed,
-                      onChanged: settings.notifications
-                          ? settings.setMorningMissed
-                          : null,
-                    ),
-                  ]),
-                  const SizedBox(height: 20),
-                  _Section(context.tr('Reciters', 'القرّاء')),
-                  const _Card(children: [RecitersTile()]),
                   const SizedBox(height: 20),
                   _Section(context.tr('Tasbeeh button', 'زر التسبيح')),
                   _Card(children: [
@@ -332,84 +274,6 @@ class SettingsScreen extends StatelessWidget {
         );
       },
     );
-  }
-}
-
-/// Bottom sheet: pick the adhan voice (separate from the Quran reciter) and
-/// listen to it as a real notification.
-Future<void> _chooseAdhan(BuildContext context) {
-  return showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
-    builder: (context) => ListenableBuilder(
-      listenable: AppSettings.instance,
-      builder: (context, _) {
-        final s = AppSettings.instance;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.tr('Adhan voice', 'صوت المؤذن'),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  context.tr(
-                    'Used for prayer notifications only. It does not change the Quran reciter.',
-                    'للإشعارات فقط، ولا يغيّر قارئ القرآن.',
-                  ),
-                  style: TextStyle(fontSize: 12, color: context.palette.muted),
-                ),
-                const SizedBox(height: 8),
-                for (final v in AdhanVoice.all)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(
-                      s.adhanVoice == v.id
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_off,
-                      color: s.adhanVoice == v.id
-                          ? Theme.of(context).colorScheme.primary
-                          : context.palette.muted,
-                    ),
-                    title: Text(v.label(context.isArabic)),
-                    onTap: () => s.setAdhanVoice(v.id),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextButton(
-                          onPressed: () => _testAdhan(context, v.id, true),
-                          child: Text(context.tr('Fajr', 'الفجر')),
-                        ),
-                        IconButton(
-                          tooltip: context.tr('Listen', 'استمع'),
-                          icon: const Icon(Icons.play_circle_outline_rounded),
-                          onPressed: () => _testAdhan(context, v.id, false),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    ),
-  );
-}
-
-Future<void> _testAdhan(BuildContext context, String id, bool fajr) async {
-  final ok = await PrayerNotifications.instance.testAdhan(id, fajr: fajr);
-  if (!ok && context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(context.tr('Allow notifications to hear the adhan.',
-          'اسمح بالإشعارات لتسمع الأذان.')),
-    ));
   }
 }
 

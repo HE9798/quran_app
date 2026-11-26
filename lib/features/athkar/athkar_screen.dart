@@ -1,6 +1,6 @@
 import '../../core/settings/tr.dart';
 import '../../core/widgets/home_back_button.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/theme/app_palette.dart';

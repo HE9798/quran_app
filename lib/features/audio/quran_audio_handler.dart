@@ -53,13 +53,13 @@ class QuranAudioHandler extends BaseAudioHandler {
     }
 
     final arabic = AppSettings.instance.isArabic;
-    final key = '${surah.number}|${_player.reciter.id}|$arabic';
+    final key = '${surah.number}|${_player.activeReciter.id}|$arabic';
     if (key != _shownKey) {
       _shownKey = key;
       mediaItem.add(MediaItem(
         id: key,
         title: arabic ? 'سورة ${surah.arabicName}' : surah.englishName,
-        artist: arabic ? _player.reciter.name : _player.reciter.englishName,
+        artist: arabic ? _player.activeReciter.name : _player.activeReciter.englishName,
         album: arabic ? 'ورد اليوم' : 'Werd of the Day',
       ));
     }

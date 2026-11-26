@@ -33,7 +33,18 @@ class QuranAudioController extends ChangeNotifier {
 
   // ------------------------------------------------------------- state
 
+  /// The Quran player's own reciter (Quran page, Listening tab, player).
   Reciter reciter = Reciter.alafasy;
+
+  /// Which activity started the audio that is loaded: null = the Quran
+  /// player, otherwise an [ActivityReciters] key (the Khatma, say). Each
+  /// activity keeps its own reciter, so Khatma listening never changes the
+  /// player's voice and the other way round.
+  String? activity;
+  Reciter? _activityVoice;
+
+  /// The voice actually reciting now.
+  Reciter get activeReciter => _activityVoice ?? reciter;
   List<Reciter> reciters = Reciter.fallbackList;
   bool recitersLoaded = false;
 
@@ -166,8 +177,24 @@ class QuranAudioController extends ChangeNotifier {
 
   // ----------------------------------------------------------- control
 
-  /// Plays [target] from verse [startAyah] to the end, in the chosen voice.
-  Future<void> playSurah(Surah target, {int startAyah = 1}) async {
+  /// Plays [target] from verse [startAyah] to the end.
+  ///
+  /// Without [activity] it uses the Quran player's reciter. With an
+  /// [activity] key it uses [voice], that activity's own reciter; the next
+  /// surah, replay and so on keep that voice until another play starts.
+  Future<void> playSurah(
+    Surah target, {
+    int startAyah = 1,
+    String? activity,
+    Reciter? voice,
+  }) {
+    this.activity = activity;
+    _activityVoice = activity == null ? null : voice;
+    return _play(target, startAyah: startAyah);
+  }
+
+  /// Same as [playSurah] but keeps the current activity and its voice.
+  Future<void> _play(Surah target, {int startAyah = 1}) async {
     final token = ++_token;
     _completionHandled = false;
     error = null;
@@ -177,7 +204,7 @@ class QuranAudioController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final urls = await _audio.getSurahUrls(target.number, reciter.id);
+      final urls = await _audio.getSurahUrls(target.number, activeReciter.id);
       if (token != _token) return; // another request started meanwhile
 
       await _player.setAudioSources(
@@ -204,7 +231,7 @@ class QuranAudioController extends ChangeNotifier {
       await _player.pause();
     } else if (_player.processingState == ProcessingState.completed ||
         _player.processingState == ProcessingState.idle) {
-      await playSurah(surah!, startAyah: 1);
+      await _play(surah!, startAyah: 1);
     } else {
       unawaited(_player.play());
     }
@@ -232,7 +259,7 @@ class QuranAudioController extends ChangeNotifier {
     try {
       final all = await _quran.getSurahs();
       final target = all.firstWhere((s) => s.number == number);
-      await playSurah(target);
+      await _play(target);
     } catch (e) {
       error = e;
       notifyListeners();
@@ -244,6 +271,8 @@ class QuranAudioController extends ChangeNotifier {
     cancelSleep();
     await _player.stop();
     surah = null;
+    activity = null;
+    _activityVoice = null;
     playing = false;
     loading = false;
     notifyListeners();
@@ -257,9 +286,22 @@ class QuranAudioController extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_reciterKey, jsonEncode(value.toJson()));
     } catch (_) {}
-    // already listening: continue from the same verse with the new voice
+    // already listening with the player's voice: continue from the same
+    // verse with the new one (an activity's audio keeps its own voice)
     final current = surah;
-    if (current != null) await playSurah(current, startAyah: ayah);
+    if (current != null && activity == null) {
+      await _play(current, startAyah: ayah);
+    }
+  }
+
+  /// An activity's reciter changed. If that activity is playing now, go on
+  /// from the same verse in the new voice.
+  Future<void> setActivityVoice(String key, Reciter value) async {
+    if (activity != key || value == _activityVoice) return;
+    _activityVoice = value;
+    notifyListeners();
+    final current = surah;
+    if (current != null) await _play(current, startAyah: ayah);
   }
 
   Future<void> cycleSpeed() async {

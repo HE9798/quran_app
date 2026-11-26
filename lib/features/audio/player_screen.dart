@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/settings/tr.dart';
@@ -128,7 +128,7 @@ class PlayerScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
-                                    audio.reciter.displayName(context.isArabic),
+                                    audio.activeReciter.displayName(context.isArabic),
                                     style: const TextStyle(
                                         color: AppColors.cream,
                                         fontWeight: FontWeight.w700),
@@ -253,7 +253,7 @@ class PlayerScreen extends StatelessWidget {
                             runSpacing: 8,
                             children: [
                               OutlinedButton.icon(
-                                onPressed: () => showReciterSheet(context),
+                                onPressed: () => showActiveReciterSheet(context),
                                 icon: const Icon(Icons.record_voice_over_rounded),
                                 label: Text(context.tr('Change reciter', 'تغيير القارئ')),
                               ),

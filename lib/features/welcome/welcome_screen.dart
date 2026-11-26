@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/settings/tr.dart';
@@ -38,7 +38,7 @@ class WelcomeScreen extends StatelessWidget {
                       width: 150,
                       height: 150,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Icon(
+                      errorBuilder: (_, _, _) => Icon(
                         Icons.menu_book_rounded,
                         size: 96,
                         color: scheme.primary,

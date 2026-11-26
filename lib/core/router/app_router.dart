@@ -25,6 +25,21 @@ import '../widgets/main_shell.dart';
 /// live inside their parent tab so the bottom bar stays visible.
 ///
 /// Replace each PlaceholderScreen with the real screen as you build it.
+/// The reader. ?page=5 opens a saved page, ?end=1 opens the last page.
+/// [fromKhatma]: reading here moves the Khatma's place, not "Continue reading".
+Widget _surah(GoRouterState state, {required bool fromKhatma}) {
+  final number = int.tryParse(state.pathParameters['number'] ?? '') ?? 1;
+  final page = int.tryParse(state.uri.queryParameters['page'] ?? '');
+  final end = state.uri.queryParameters['end'] == '1';
+  return SurahScreen(
+    key: ValueKey('$number-$page-$end-$fromKhatma'),
+    number: number,
+    initialPage: page,
+    startAtEnd: end,
+    fromKhatma: fromKhatma,
+  );
+}
+
 final appRouter = GoRouter(
   initialLocation: '/welcome', // shown every time the app opens
   routes: [
@@ -45,6 +60,16 @@ final appRouter = GoRouter(
               GoRoute(
                 path: 'khatma',
                 builder: (context, state) => const KhatmaScreen(),
+                routes: [
+                  // The Khatma's own reader: it sits on top of the Khatma page
+                  // (Home tab), so "back" returns to the Khatma, and the
+                  // Quran tab keeps its own place untouched.
+                  GoRoute(
+                    path: 'surah/:number',
+                    builder: (context, state) =>
+                        _surah(state, fromKhatma: true),
+                  ),
+                ],
               ),
               GoRoute(
                 path: 'companion',
@@ -100,23 +125,12 @@ final appRouter = GoRouter(
             routes: [
               GoRoute(
                 path: 'surah/:number',
-                builder: (context, state) {
-                  final number =
-                      int.tryParse(state.pathParameters['number'] ?? '') ?? 1;
-                  // ?page=5  opens a saved page, ?end=1 opens the last page
-                  final page =
-                      int.tryParse(state.uri.queryParameters['page'] ?? '');
-                  final end = state.uri.queryParameters['end'] == '1';
-                  // ?khatma=1: opened from the Khatma (keeps "Continue reading" untouched)
-                  final fromKhatma = state.uri.queryParameters['khatma'] == '1';
-                  return SurahScreen(
-                    key: ValueKey('$number-$page-$end-$fromKhatma'),
-                    number: number,
-                    initialPage: page,
-                    startAtEnd: end,
-                    fromKhatma: fromKhatma,
-                  );
-                },
+                // ?khatma=1: opened from the Khatma (older links; the Khatma
+                // now uses /khatma/surah/:number)
+                builder: (context, state) => _surah(
+                  state,
+                  fromKhatma: state.uri.queryParameters['khatma'] == '1',
+                ),
               ),
               GoRoute(
                 path: 'player',

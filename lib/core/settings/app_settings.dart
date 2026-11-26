@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// All the user's settings in one place, saved on the phone.
@@ -13,10 +13,10 @@ class AppSettings extends ChangeNotifier {
   static const _kFont = 'set_font_scale_v1';
   static const _kNotif = 'set_notifications_v1';
   static const _kVibrate = 'set_vibration_v1';
-  static const _kMorning = 'set_azkar_morning_v1';
-  static const _kEvening = 'set_azkar_evening_v1';
-  static const _kAzkarMissed = 'set_azkar_missed_v1';
-  static const _kStatusCountdown = 'set_status_countdown_v1';
+  static const _kAzkar = 'set_azkar_alarms_v1';
+  // older, separate azkar switches: read once to carry the choice over
+  static const _kOldMorning = 'set_azkar_morning_v1';
+  static const _kOldEvening = 'set_azkar_evening_v1';
   static const _kAdhanSound = 'set_adhan_sound_v1';
   static const _kAdhanVoice = 'set_adhan_voice_v1';
 
@@ -32,12 +32,16 @@ class AppSettings extends ChangeNotifier {
   double fontScale = 1.0;
   bool notifications = true; // master switch for every reminder
   bool vibration = true;
-  bool azkarMorning = false;
-  bool azkarEvening = false;
-  bool azkarMissed = true; //  remind about unfinished morning azkar
-  bool statusCountdown = true; // next-prayer countdown in the notification bar
+  /// One switch for every azkar alarm: morning, evening and the reminder
+  /// about unfinished azkar.
+  bool azkarAlarms = false;
   bool adhanSound = true; //      false = prayer notifications are silent
   String adhanVoice = 'makkah'; // chosen adhan, independent of the Quran reciter
+
+  // The three azkar alarms always go together (see [azkarAlarms]).
+  bool get azkarMorning => azkarAlarms;
+  bool get azkarEvening => azkarAlarms;
+  bool get azkarMissed => azkarAlarms;
 
   ThemeMode get themeMode => followDevice
       ? ThemeMode.system
@@ -56,10 +60,11 @@ class AppSettings extends ChangeNotifier {
           .clamp(minFontScale, maxFontScale);
       notifications = p.getBool(_kNotif) ?? notifications;
       vibration = p.getBool(_kVibrate) ?? vibration;
-      azkarMorning = p.getBool(_kMorning) ?? azkarMorning;
-      azkarEvening = p.getBool(_kEvening) ?? azkarEvening;
-      azkarMissed = p.getBool(_kAzkarMissed) ?? azkarMissed;
-      statusCountdown = p.getBool(_kStatusCountdown) ?? statusCountdown;
+      // Before the merge there were separate morning / evening switches:
+      // if either was on, the merged switch starts on.
+      azkarAlarms = p.getBool(_kAzkar) ??
+          ((p.getBool(_kOldMorning) ?? false) ||
+              (p.getBool(_kOldEvening) ?? false));
       adhanSound = p.getBool(_kAdhanSound) ?? adhanSound;
       adhanVoice = p.getString(_kAdhanVoice) ?? adhanVoice;
     } catch (_) {
@@ -113,28 +118,10 @@ class AppSettings extends ChangeNotifier {
     _saveBool(_kVibrate, v);
   }
 
-  void setAzkarMorning(bool v) {
-    azkarMorning = v;
+  void setAzkarAlarms(bool v) {
+    azkarAlarms = v;
     _changed();
-    _saveBool(_kMorning, v);
-  }
-
-  void setAzkarEvening(bool v) {
-    azkarEvening = v;
-    _changed();
-    _saveBool(_kEvening, v);
-  }
-
-  void setMorningMissed(bool v) {
-    azkarMissed = v;
-    _changed();
-    _saveBool(_kAzkarMissed, v);
-  }
-
-  void setStatusCountdown(bool v) {
-    statusCountdown = v;
-    _changed();
-    _saveBool(_kStatusCountdown, v);
+    _saveBool(_kAzkar, v);
   }
 
   void setAdhanSound(bool v) {
@@ -157,6 +144,6 @@ class AppSettings extends ChangeNotifier {
 
   /// Changes that need the phone's reminders to be created again.
   String get reminderSignature =>
-      '$notifications|$vibration|$azkarMorning|$azkarEvening|$languageCode|'
-      '$adhanSound|$adhanVoice|$statusCountdown|$followDevice|$darkMode|$azkarMissed';
+      '$notifications|$vibration|$azkarAlarms|$languageCode|'
+      '$adhanSound|$adhanVoice|$followDevice|$darkMode';
 }

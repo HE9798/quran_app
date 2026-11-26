@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
+import '../audio/data/activity_reciters.dart';
+import '../audio/reciter_sheet.dart';
 import '../quran/data/quran_repository.dart';
 import '../quran/data/surah.dart';
 import 'data/hifz_store.dart';
@@ -82,6 +84,11 @@ class HifzScreen extends StatelessWidget {
                 ],
               ),
             ),
+            // the voice used in memorisation sessions (its own choice)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: ReciterCard(activity: ActivityReciters.hifzKey),
+            ),
             Expanded(
               child: items.isEmpty
                   ? Center(
@@ -120,7 +127,7 @@ class HifzScreen extends StatelessWidget {
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                       itemCount: items.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final i = items[index];
                         final due = store.isDue(i);

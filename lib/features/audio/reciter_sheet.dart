@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
+import 'data/activity_reciters.dart';
 import 'data/reciter.dart';
 import 'quran_audio_controller.dart';
 
@@ -111,9 +112,29 @@ class _ReciterSheet extends StatelessWidget {
   }
 }
 
+/// For the full player: changes the voice that is reciting now. When the
+/// audio was started by an activity (the Khatma, say) it changes that
+/// activity's reciter, otherwise the Quran player's.
+Future<void> showActiveReciterSheet(BuildContext context) {
+  final audio = QuranAudioController.instance;
+  final activity = audio.activity;
+  if (activity == null) return showReciterSheet(context);
+  return showReciterSheet(
+    context,
+    current: audio.activeReciter,
+    onPick: (r) => ActivityReciters.instance.set(activity, r),
+  );
+}
+
 /// Card showing the chosen reciter; tap to change it.
+///
+/// Without [activity] it is the Quran player's reciter (Quran page). With an
+/// [ActivityReciters] key it is that activity's own reciter (Hifz, Khatma),
+/// independent from the player and from the other activities.
 class ReciterCard extends StatefulWidget {
-  const ReciterCard({super.key});
+  const ReciterCard({super.key, this.activity});
+
+  final String? activity;
 
   @override
   State<ReciterCard> createState() => _ReciterCardState();
@@ -121,11 +142,26 @@ class ReciterCard extends StatefulWidget {
 
 class _ReciterCardState extends State<ReciterCard> {
   final _audio = QuranAudioController.instance;
+  final _own = ActivityReciters.instance;
 
   @override
   void initState() {
     super.initState();
     _audio.loadReciters();
+    _own.load();
+  }
+
+  void _pick() {
+    final activity = widget.activity;
+    if (activity == null) {
+      showReciterSheet(context);
+      return;
+    }
+    showReciterSheet(
+      context,
+      current: _own.of(activity),
+      onPick: (r) => _own.set(activity, r),
+    );
   }
 
   @override
@@ -133,9 +169,10 @@ class _ReciterCardState extends State<ReciterCard> {
     final p = context.palette;
     final scheme = Theme.of(context).colorScheme;
     return ListenableBuilder(
-      listenable: _audio,
+      listenable: Listenable.merge([_audio, _own]),
       builder: (context, _) {
-        final r = _audio.reciter;
+        final activity = widget.activity;
+        final r = activity == null ? _audio.reciter : _own.of(activity);
         return Material(
           color: p.surface,
           shape: RoundedRectangleBorder(
@@ -144,7 +181,7 @@ class _ReciterCardState extends State<ReciterCard> {
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            onTap: () => showReciterSheet(context),
+            onTap: _pick,
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
@@ -162,6 +199,8 @@ class _ReciterCardState extends State<ReciterCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(context.tr('Reciter', 'القارئ'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(fontSize: 12, color: p.muted)),
                         Text(
                           r.displayName(context.isArabic),

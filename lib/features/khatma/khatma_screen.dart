@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
+import '../audio/data/activity_reciters.dart';
+import '../audio/reciter_sheet.dart';
 import '../companion/data/companion_store.dart';
 import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
@@ -31,7 +33,7 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
       final page = _store.nextPage;
       final surah = await _repo.surahForPage(page);
       if (!mounted) return;
-      context.go('/quran/surah/$surah?page=$page&khatma=1');
+      context.go('/khatma/surah/$surah?page=$page');
     } finally {
       if (mounted) setState(() => _opening = false);
     }
@@ -238,6 +240,8 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
           ],
         ),
       ),
+      const SizedBox(height: 12),
+      const ReciterCard(activity: ActivityReciters.khatmaKey),
       const SizedBox(height: 16),
       SizedBox(
         height: 54,
@@ -372,6 +376,9 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
           ],
         ),
       ),
+      const SizedBox(height: 12),
+      // the voice used when listening during the khatma (its own choice)
+      const ReciterCard(activity: ActivityReciters.khatmaKey),
       const SizedBox(height: 16),
 
       SizedBox(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/tr.dart';
 import '../tasbeeh/tasbeeh_widget.dart';
@@ -15,7 +15,6 @@ class CompanionTile extends StatefulWidget {
 
 class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserver {
   bool _on = false;
-  String _type = 'sheikh';
 
   @override
   void initState() {
@@ -37,10 +36,9 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
 
   Future<void> _refresh() async {
     final s = await CompanionWidget.state();
-    if (mounted) setState(() {
-      _on = s.enabled && s.permission;
-      _type = s.type;
-    });
+    if (mounted) {
+      setState(() => _on = s.enabled && s.permission);
+    }
   }
 
   Future<String?> _askGender() {
@@ -121,10 +119,7 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
       if (type != null) await store.setIdentity(type, newName ?? '');
       await store.setActive(true, companion: useType);
       if (mounted) {
-        setState(() {
-          _on = true;
-          _type = useType;
-        });
+        setState(() => _on = true);
       }
     }
   }

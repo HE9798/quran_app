@@ -106,6 +106,22 @@ class KhatmaStore extends ChangeNotifier {
     return false;
   }
 
+  /// The reader (opened from the Khatma) is on mushaf [page]: every page
+  /// before it counts as read, so "Continue" reopens [page] next time.
+  /// Only moves forward, so looking back at earlier pages loses nothing.
+  /// Never finishes the khatma by itself (that stays the user's choice).
+  /// Returns true when today's portion just became done.
+  Future<bool> readUpTo(int page) async {
+    if (!active) return false;
+    final finished = (page - 1).clamp(0, totalPages - 1);
+    if (finished <= currentPage) return false;
+    final wasDone = todayDone;
+    currentPage = finished;
+    await _save();
+    notifyListeners();
+    return !wasDone && todayDone;
+  }
+
   /// Manual reset: the progress goes away.
   Future<void> reset() async {
     _clear();

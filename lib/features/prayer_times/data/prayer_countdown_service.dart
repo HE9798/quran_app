@@ -46,7 +46,8 @@ class PrayerCountdownService {
   /// stops it according to the settings.
   Future<void> sync(PrayerSchedule schedule) async {
     final settings = AppSettings.instance;
-    final want = settings.notifications && settings.statusCountdown;
+    // Always shown while notifications are on (no separate switch).
+    final want = settings.notifications;
 
     if (!want) {
       if (await FlutterForegroundTask.isRunningService) {

@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/settings/tr.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/theme/lang_text.dart';
 import '../hadith/data/hadith_models.dart';
 import '../hadith/data/hadith_repository.dart';

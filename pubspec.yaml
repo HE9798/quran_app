@@ -46,7 +46,11 @@ dependencies:
   just_audio: ^0.10.6
   flutter_foreground_task: ^11.0.3
   just_audio_background: ^0.0.1-beta.17
-
+  material_ui: ^1.11.1
+  cupertino_ui: ^1.1.7
+  audio_service: ^0.18.19
+  flutter_localizations:
+    sdk: flutter
 dev_dependencies:
   flutter_test:
     sdk: flutter

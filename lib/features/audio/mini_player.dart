@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/settings/tr.dart';
@@ -53,8 +53,8 @@ class MiniPlayer extends StatelessWidget {
                               ),
                               Text(
                                 context.isArabic
-                                    ? '${audio.reciter.displayName(true)} · الآية ${context.n(audio.ayah)}/${context.n(surah.ayahCount)}'
-                                    : '${audio.reciter.englishName} · Verse ${audio.ayah}/${surah.ayahCount}',
+                                    ? '${audio.activeReciter.displayName(true)} · الآية ${context.n(audio.ayah)}/${context.n(surah.ayahCount)}'
+                                    : '${audio.activeReciter.englishName} · Verse ${audio.ayah}/${surah.ayahCount}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(

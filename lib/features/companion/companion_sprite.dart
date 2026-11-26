@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The companion drawn in the app: body + head, and the head bobs down a
 /// little and back (the same idle animation as on the phone screen).

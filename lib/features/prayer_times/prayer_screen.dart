@@ -1,14 +1,14 @@
 import '../../core/settings/tr.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_view.dart';
 import '../../core/widgets/home_back_button.dart';
 import '../home/home_screen.dart' show StarPatternPainter;
 import '../qibla/qibla_math.dart';
 import 'data/location_service.dart';
+import 'adhan_settings_card.dart';
 import 'azkar_countdown.dart';
 import 'data/prayer_models.dart';
 import 'prayer_controller.dart';
@@ -49,21 +49,6 @@ class _PrayerScreenState extends State<PrayerScreen>
         _controller.load();
       }
     }
-  }
-
-  static String time12(DateTime t) {
-    final hour = t.hour % 12 == 0 ? 12 : t.hour % 12;
-    final minute = t.minute.toString().padLeft(2, '0');
-    return '$hour:$minute ${t.hour < 12 ? 'AM' : 'PM'}';
-  }
-
-  static String _countdown(Duration d) {
-    final minutes = (d.inSeconds / 60).ceil();
-    if (minutes <= 0) return 'now';
-    final h = minutes ~/ 60;
-    final m = minutes % 60;
-    if (h == 0) return 'in ${m}m';
-    return 'in ${h}h ${m}m';
   }
 
   Future<void> _toggle(Prayer prayer, bool on) async {
@@ -375,6 +360,8 @@ class _Content extends StatelessWidget {
               on: c.isAlertOn(prayer),
               onChanged: (value) => onToggle(prayer, value),
             ),
+        const SizedBox(height: 10),
+        const AdhanSettingsCard(),
         const SizedBox(height: 10),
         if (location != null) _QiblaCard(location: location),
       ],

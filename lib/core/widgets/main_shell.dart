@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../settings/tr.dart';
@@ -50,7 +50,8 @@ class _MainShellState extends State<MainShell> {
     // The mini player is hidden where it would be in the way
     final location = GoRouterState.of(context).uri.path;
     final hideMini = location.startsWith('/quran/player') ||
-        location.startsWith('/quran/surah/');
+        location.startsWith('/quran/surah/') ||
+        location.startsWith('/khatma/surah/');
 
     // Phone's back button / back gesture: inside a page it goes back (handled
     // by the pages themselves); on another tab it goes to Home; only on Home

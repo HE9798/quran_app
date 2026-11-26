@@ -1,17 +1,19 @@
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../companion/data/companion_store.dart';
 import '../hifz/data/hifz_store.dart';
+import '../khatma/data/khatma_store.dart';
 import '../../core/settings/tr.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_view.dart';
+import '../audio/data/activity_reciters.dart';
 import '../audio/quran_audio_controller.dart';
 import '../bookmarks/data/bookmark_store.dart';
 import 'data/quran_repository.dart';
@@ -77,11 +79,9 @@ class _SurahScreenState extends State<SurahScreen> {
       setState(() => _future = _repo.getSurahDetail(widget.number));
 
   void _goToSurah(int number, bool atEnd) {
-    final query = [
-      if (atEnd) 'end=1',
-      if (widget.fromKhatma) 'khatma=1',
-    ].join('&');
-    context.go('/quran/surah/$number${query.isEmpty ? '' : '?$query'}');
+    // the Khatma's reader stays on top of the Khatma page
+    final base = widget.fromKhatma ? '/khatma/surah' : '/quran/surah';
+    context.go('$base/$number${atEnd ? '?end=1' : ''}');
   }
 
   @override
@@ -92,6 +92,7 @@ class _SurahScreenState extends State<SurahScreen> {
         if (snapshot.connectionState != ConnectionState.done) {
           return _SimpleShell(
             title: context.tr('Surah ${widget.number}', 'سورة ${context.n(widget.number)}'),
+            fromKhatma: widget.fromKhatma,
             child: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -99,6 +100,7 @@ class _SurahScreenState extends State<SurahScreen> {
         if (snapshot.hasError || detail == null) {
           return _SimpleShell(
             title: context.tr('Surah ${widget.number}', 'سورة ${context.n(widget.number)}'),
+            fromKhatma: widget.fromKhatma,
             child: ErrorView(
               title: context.tr("Couldn't load this surah", 'تعذّر تحميل هذه السورة'),
               onRetry: _retry,
@@ -128,10 +130,15 @@ void _goBack(BuildContext context, {bool fromKhatma = false}) {
 
 /// Top bar + body, used while loading or on error.
 class _SimpleShell extends StatelessWidget {
-  const _SimpleShell({required this.title, required this.child});
+  const _SimpleShell({
+    required this.title,
+    required this.child,
+    this.fromKhatma = false,
+  });
 
   final String title;
   final Widget child;
+  final bool fromKhatma;
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +147,7 @@ class _SimpleShell extends StatelessWidget {
         _TopBar(
           title: title,
           subtitle: null,
-          onBack: () => _goBack(context),
+          onBack: () => _goBack(context, fromKhatma: fromKhatma),
           trailing: const SizedBox(width: 44),
         ),
         Expanded(child: child),
@@ -290,7 +297,13 @@ class _SurahReaderState extends State<_SurahReader> {
 
   void _saveLastRead() {
     if (!mounted) return;
-    if (widget.fromKhatma) return; // the Khatma has its own place
+    if (widget.fromKhatma) {
+      // the Khatma has its own place, separate from "Continue reading"
+      KhatmaStore.instance.readUpTo(_current.number).then((todayDone) {
+        if (todayDone) CompanionStore.instance.khatmaDayDone();
+      });
+      return;
+    }
     BookmarkStore.instance.setLastRead(_savedPage());
   }
 
@@ -365,14 +378,35 @@ class _SurahReaderState extends State<_SurahReader> {
       if (sameSurah && audio.ayah == selected && audio.playing) {
         audio.togglePlay();
       } else {
-        audio.playSurah(surah, startAyah: selected);
+        _play(surah, selected);
       }
       setState(() => _selected = null); // close the panel
-    } else if (sameSurah) {
+    } else if (sameSurah && (audio.playing || audio.activity == _activity)) {
+      // pause what is playing; resume only when it is in this screen's voice
       audio.togglePlay();
     } else {
-      audio.playSurah(surah, startAyah: _current.ayahs.first.numberInSurah);
+      _play(surah, _current.ayahs.first.numberInSurah);
     }
+  }
+
+  /// Opened from the Khatma: listen with the Khatma's own reciter.
+  /// Otherwise: the Quran player's reciter.
+  String? get _activity =>
+      widget.fromKhatma ? ActivityReciters.khatmaKey : null;
+
+  Future<void> _play(Surah surah, int startAyah) async {
+    final activity = _activity;
+    if (activity == null) {
+      await _audio.playSurah(surah, startAyah: startAyah);
+      return;
+    }
+    await ActivityReciters.instance.load();
+    await _audio.playSurah(
+      surah,
+      startAyah: startAyah,
+      activity: activity,
+      voice: ActivityReciters.instance.of(activity),
+    );
   }
 
   void _copy(Ayah ayah) {
@@ -810,7 +844,7 @@ List<InlineSpan> _verseSpans(
               number: ayah.numberInSurah,
               selected: isSelected,
               size: markerSize,
-              onTap: () => onSelect!(ayah.numberInSurah),
+              onTap: () => onSelect(ayah.numberInSurah),
             ),
     ));
     spans.add(const TextSpan(text: ' '));
