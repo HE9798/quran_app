@@ -379,10 +379,8 @@ class _SahihBodyState extends State<_SahihBody> {
                 ? context.tr('No results', 'لا توجد نتائج')
                 : context.tr('No hadiths', 'لا توجد أحاديث'),
             header: searching
-                ? (items.length >= 100
-                    ? context.tr('First 100 results', 'أول ١٠٠ نتيجة')
-                    : context.tr('${items.length} results',
-                        '${context.n(items.length)} نتيجة'))
+                ? context.tr('${items.length} results',
+                    '${context.n(items.length)} نتيجة')
                 : null,
           ),
         ),

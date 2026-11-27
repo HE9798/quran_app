@@ -103,7 +103,7 @@ class HadithCollection {
 
   /// Hadiths whose text contains every word typed (diacritics ignored).
   /// Returns at most [limit] results.
-  List<Hadith> search(String query, {int limit = 100}) {
+  List<Hadith> search(String query) {
     final words = normalizeArabic(query)
         .split(RegExp(r'\s+'))
         .where((w) => w.isNotEmpty)
@@ -113,7 +113,6 @@ class HadithCollection {
     for (final h in hadiths) {
       if (words.every(h.searchKey.contains)) {
         results.add(h);
-        if (results.length >= limit) break;
       }
     }
     return results;
