@@ -1,11 +1,20 @@
 import 'package:flutter/foundation.dart';
 
-/// The three books we show. [editionId] is the name of the Arabic edition in
+/// The books we show. [editionId] is the name of the Arabic edition in
 /// the free hadith API (https://github.com/fawazahmed0/hadith-api).
 enum HadithBook {
   nawawi('ara-nawawi', 'eng-nawawi', 'الأربعون النووية', "Nawawi's Forty"),
   bukhari('ara-bukhari', 'eng-bukhari', 'صحيح البخاري', 'Sahih al-Bukhari'),
-  muslim('ara-muslim', 'eng-muslim', 'صحيح مسلم', 'Sahih Muslim');
+  muslim('ara-muslim', 'eng-muslim', 'صحيح مسلم', 'Sahih Muslim'),
+  /// Authentic Hadith Qudsi, shipped with the app (assets/hadith/qudsi.json):
+  /// the ones in Sahih al-Bukhari and Sahih Muslim, then those of the
+  /// "Forty Hadith Qudsi" narrated elsewhere with sound chains. Each text
+  /// ends with where it was narrated.
+  qudsi('asset:assets/hadith/qudsi.json', 'asset:assets/hadith/qudsi.json',
+      'الأحاديث القدسية', 'Hadith Qudsi');
+
+  /// Small books that are a single list, without chapters or a book picker.
+  bool get isForty => this == nawawi || this == qudsi;
 
   const HadithBook(this.editionId, this.englishEditionId, this.title, this.titleEn);
 

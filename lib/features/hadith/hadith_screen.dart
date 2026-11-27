@@ -12,9 +12,10 @@ import 'data/hadith_bookmark_store.dart';
 import 'data/hadith_models.dart';
 import 'data/hadith_repository.dart';
 
-/// Ahadeeth: two tabs.
+/// Ahadeeth: three tabs.
 ///  1. الأربعين النووية
 ///  2. الأحاديث النبوية الصحيحة (من صحيحي البخاري ومسلم)
+///  3. الأحاديث القدسية الصحيحة
 class HadithScreen extends StatefulWidget {
   const HadithScreen({super.key});
 
@@ -24,7 +25,7 @@ class HadithScreen extends StatefulWidget {
 
 class _HadithScreenState extends State<HadithScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabs = TabController(length: 2, vsync: this);
+  late final TabController _tabs = TabController(length: 3, vsync: this);
 
   @override
   void dispose() {
@@ -92,6 +93,7 @@ class _HadithScreenState extends State<HadithScreen>
             tabs: [
               _TabLabel(context.tr("Nawawi's Forty", 'الأربعين النووية')),
               _TabLabel(context.tr('Authentic Hadith', 'الأحاديث النبوية الصحيحة')),
+              _TabLabel(context.tr('Hadith Qudsi', 'الأحاديث القدسية الصحيحة')),
             ],
           ),
         ),
@@ -99,7 +101,11 @@ class _HadithScreenState extends State<HadithScreen>
         Expanded(
           child: TabBarView(
             controller: _tabs,
-            children: const [_NawawiTab(), _SahihTab()],
+            children: const [
+              _NawawiTab(),
+              _SahihTab(),
+              _NawawiTab(book: HadithBook.qudsi),
+            ],
           ),
         ),
       ],
@@ -133,8 +139,11 @@ class _TabLabel extends StatelessWidget {
 
 // =================================================================== tab 1
 
+/// A Forty book (Nawawi's or the Qudsi one): one list with a search.
 class _NawawiTab extends StatefulWidget {
-  const _NawawiTab();
+  const _NawawiTab({this.book = HadithBook.nawawi});
+
+  final HadithBook book;
 
   @override
   State<_NawawiTab> createState() => _NawawiTabState();
@@ -149,7 +158,7 @@ class _NawawiTabState extends State<_NawawiTab>
   Widget build(BuildContext context) {
     super.build(context);
     return _CollectionLoader(
-      book: HadithBook.nawawi,
+      book: widget.book,
       builder: (context, collection) => _NawawiBody(collection: collection),
     );
   }
@@ -175,6 +184,19 @@ class _NawawiBodyState extends State<_NawawiBody> {
 
     return Column(
       children: [
+        // the Qudsi book is a selection: say so
+        if (c.book == HadithBook.qudsi)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            child: Align(
+              alignment: Alignment.centerRight, // Arabic text, in both languages
+              child: Text(
+                'مختارات من الأحاديث القدسية الصحيحة، وليست كلها',
+                textDirection: TextDirection.rtl,
+                style: AppTheme.arabic(size: 14, height: 1.3, color: context.palette.muted),
+              ),
+            ),
+          ),
         _SearchField(onChanged: (value) => setState(() => _query = value)),
         Expanded(
           child: _HadithList(
@@ -579,7 +601,7 @@ class _CollectionLoaderState extends State<_CollectionLoader> {
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(
-                widget.book == HadithBook.nawawi
+                widget.book.isForty
                     ? context.tr('Loading…', 'جارٍ التحميل…')
                     : context.tr(
                         'Downloading ${widget.book.titleEn}…\nOnly the first time.',

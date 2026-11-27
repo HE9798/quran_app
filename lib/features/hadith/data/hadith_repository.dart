@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 
 import '../../../core/text/html_text.dart';
@@ -44,6 +45,12 @@ class HadithRepository {
 
   Future<HadithCollection> _load(HadithBook book, bool arabic) async {
     final edition = book.edition(arabic);
+    // books shipped with the app
+    if (edition.startsWith('asset:')) {
+      final body = await rootBundle.loadString(edition.substring(6));
+      return _memory[edition] =
+          await compute(_parse, [body, book.name, arabic ? 'ar' : 'en']);
+    }
     final file = _cacheFile(edition);
 
     if (file != null && await file.exists()) {
@@ -217,5 +224,6 @@ String? _grade(Object? grades, HadithBook book, bool arabic) {
       }
     }
   }
-  return book == HadithBook.nawawi ? null : g('صحيح', 'Sahih');
+  // the Forty books state their sources in the text itself
+  return book.isForty ? null : g('صحيح', 'Sahih');
 }
