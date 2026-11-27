@@ -52,6 +52,14 @@ class ToolsScreen extends StatelessWidget {
           subtitle: context.tr('Work out the zakat on your wealth', 'احسب زكاة مالك'),
           onTap: () => context.go('/tools/zakat'),
         ),
+        const SizedBox(height: 12),
+        _ToolTile(
+          icon: Icons.mosque_outlined,
+          title: context.tr('Hajj & Umrah', 'مناسك الحج والعمرة'),
+          subtitle: context.tr('The rites step by step, with their supplications',
+              'المناسك خطوة بخطوة مع أذكارها'),
+          onTap: () => context.go('/tools/manasik'),
+        ),
         const SizedBox(height: 20),
         Center(
           child: Text(

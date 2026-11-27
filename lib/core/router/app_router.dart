@@ -12,6 +12,7 @@ import '../../features/khatma/khatma_screen.dart';
 import '../../features/prayer_times/prayer_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/tools/calendar_screen.dart';
+import '../../features/tools/manasik/manasik_screen.dart';
 import '../../features/tools/tools_screen.dart';
 import '../../features/tools/zakat_screen.dart';
 import '../../features/qibla/qibla_screen.dart';
@@ -103,6 +104,10 @@ final appRouter = GoRouter(
                   GoRoute(
                     path: 'zakat',
                     builder: (context, state) => const ZakatScreen(),
+                  ),
+                  GoRoute(
+                    path: 'manasik',
+                    builder: (context, state) => const ManasikScreen(),
                   ),
                 ],
               ),
