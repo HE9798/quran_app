@@ -33,7 +33,7 @@ class HomeScreen extends StatelessWidget {
         SizedBox(height: 20),
         _ContinueReadingCard(),
         SizedBox(height: 12),
-        _CardsRow(), // Khatma · Hifz · (Companion, only when it is on)
+        _CardsRow(), // Khatma · Hifz · Dua, and the Companion under them when it is on
         SizedBox(height: 20),
         _HadithOfTheDay(),
       ],
@@ -597,19 +597,27 @@ class _CardsRowState extends State<_CardsRow> with WidgetsBindingObserver {
       listenable: CompanionStore.instance,
       builder: (context, _) {
         final withCompanion = CompanionStore.instance.active;
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Expanded(child: _KhatmaCard()),
-              const SizedBox(width: 10),
-              const Expanded(child: _HifzCard()),
-              if (withCompanion) ...[
-                const SizedBox(width: 10),
-                const Expanded(child: _CompanionCard()),
-              ],
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: _KhatmaCard()),
+                  SizedBox(width: 10),
+                  Expanded(child: _HifzCard()),
+                  SizedBox(width: 10),
+                  Expanded(child: _DuaCard()),
+                ],
+              ),
+            ),
+            // full width under the three, like the reading card above them
+            if (withCompanion) ...[
+              const SizedBox(height: 12),
+              const _CompanionCard(),
             ],
-          ),
+          ],
         );
       },
     );
@@ -747,21 +755,82 @@ class _HifzCard extends StatelessWidget {
   }
 }
 
-/// Companion mode: only shown when the companion is turned on in the settings.
+/// Duas from the Quran and the Sunnah.
+class _DuaCard extends StatelessWidget {
+  const _DuaCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return _HomeTile(
+      leading: const _IconTile(icon: Icons.volunteer_activism_outlined, size: 48),
+      title: context.tr('Dua', 'الأدعية'),
+      subtitle: context.tr('From the Quran and Sunnah', 'من القرآن والسنة'),
+      onTap: () => context.go('/dua'),
+    );
+  }
+}
+
+/// Companion mode: only shown when the companion is turned on in the
+/// settings. Full width, laid out like the reading card.
 class _CompanionCard extends StatelessWidget {
   const _CompanionCard();
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return ListenableBuilder(
       listenable: CompanionStore.instance,
       builder: (context, _) {
         final c = CompanionStore.instance;
-        return _HomeTile(
-          leading: CompanionSprite(type: c.type, height: 46),
-          title: c.displayName(context.isArabic),
-          subtitle: context.tr('${c.coins} coins', '${context.n(c.coins)} عملة'),
-          onTap: () => context.go('/companion'),
+        final details = [
+          context.tr('${c.coins} coins', '${context.n(c.coins)} عملة'),
+          if (c.streak > 0)
+            context.tr('${c.streak}-day streak', '${context.n(c.streak)} يوم متتالي'),
+        ].join(' · ');
+        return Material(
+          color: p.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: p.border),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => context.go('/companion'),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Center(child: CompanionSprite(type: c.type, height: 46)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          context.tr('Your companion', 'رفيقك'),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: p.muted),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          c.displayName(context.isArabic),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(details, style: TextStyle(fontSize: 13, color: p.muted)),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded, color: p.muted),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );

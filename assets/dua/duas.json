@@ -1,0 +1,1298 @@
+{
+ "quran": [
+  {
+   "ar": "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٦﴾ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٧﴾",
+   "en": "Guide us to the straight path - The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray.",
+   "surah": 1,
+   "from": 6,
+   "to": 7,
+   "surahAr": "الفاتحة",
+   "surahEn": "Al-Faatiha",
+   "topic": "guidance"
+  },
+  {
+   "ar": "سُبْحَانَكَ لَا عِلْمَ لَنَا إِلَّا مَا عَلَّمْتَنَا ۖ إِنَّكَ أَنْتَ الْعَلِيمُ الْحَكِيمُ",
+   "en": "Exalted are You; we have no knowledge except what You have taught us. Indeed, it is You who is the Knowing, the Wise.",
+   "surah": 2,
+   "from": 32,
+   "to": 32,
+   "surahAr": "البقرة",
+   "surahEn": "Al-Baqara",
+   "topic": "praise"
+  },
+  {
+   "ar": "رَبِّ اجْعَلْ هَٰذَا بَلَدًا آمِنًا وَارْزُقْ أَهْلَهُ مِنَ الثَّمَرَاتِ مَنْ آمَنَ مِنْهُمْ بِاللَّهِ وَالْيَوْمِ الْآخِرِ",
+   "en": "My Lord, make this a secure city and provide its people with fruits - whoever of them believes in Allah and the Last Day.",
+   "surah": 2,
+   "from": 126,
+   "to": 126,
+   "surahAr": "البقرة",
+   "surahEn": "Al-Baqara",
+   "topic": "goodness"
+  },
+  {
+   "ar": "رَبَّنَا تَقَبَّلْ مِنَّا ۖ إِنَّكَ أَنْتَ السَّمِيعُ الْعَلِيمُ",
+   "en": "Our Lord, accept [this] from us. Indeed You are the Hearing, the Knowing.",
+   "surah": 2,
+   "from": 127,
+   "to": 127,
+   "surahAr": "البقرة",
+   "surahEn": "Al-Baqara",
+   "topic": "goodness"
+  },
+  {
+   "ar": "رَبَّنَا وَاجْعَلْنَا مُسْلِمَيْنِ لَكَ وَمِنْ ذُرِّيَّتِنَا أُمَّةً مُسْلِمَةً لَكَ وَأَرِنَا مَنَاسِكَنَا وَتُبْ عَلَيْنَا ۖ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ",
+   "en": "Our Lord, and make us Muslims [in submission] to You and from our descendants a Muslim nation [in submission] to You. And show us our rites and accept our repentance. Indeed, You are the Accepting of repentance, the Merciful.",
+   "surah": 2,
+   "from": 128,
+   "to": 128,
+   "surahAr": "البقرة",
+   "surahEn": "Al-Baqara",
+   "topic": "guidance"
+  },
+  {
+   "ar": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+   "en": "Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire.",
+   "surah": 2,
+   "from": 201,
+   "to": 201,
+   "surahAr": "البقرة",
+   "surahEn": "Al-Baqara",
+   "topic": "goodness"
+  },
+  {
+   "ar": "رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا وَثَبِّتْ أَقْدَامَنَا وَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",
+   "en": "Our Lord, pour upon us patience and plant firmly our feet and give us victory over the disbelieving people.",
+   "surah": 2,
+   "from": 250,
+   "to": 250,
+   "surahAr": "البقرة",
+   "surahEn": "Al-Baqara",
+   "topic": "hardship"
+  },
+  {
+   "ar": "سَمِعْنَا وَأَطَعْنَا ۖ غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ",
+   "en": "We hear and we obey. [We seek] Your forgiveness, our Lord, and to You is the [final] destination.",
+   "surah": 2,
+   "from": 285,
+   "to": 285,
+   "surahAr": "البقرة",
+   "surahEn": "Al-Baqara",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِنْ قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا ۚ أَنْتَ مَوْلَانَا فَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",
+   "en": "Our Lord, do not impose blame upon us if we have forgotten or erred. Our Lord, and lay not upon us a burden like that which You laid upon those before us. Our Lord, and burden us not with that which we have no ability to bear. And pardon us; and forgive us; and have mercy upon us. You are our protector, so give us victory over the disbelieving people.",
+   "surah": 2,
+   "from": 286,
+   "to": 286,
+   "surahAr": "البقرة",
+   "surahEn": "Al-Baqara",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِنْ لَدُنْكَ رَحْمَةً ۚ إِنَّكَ أَنْتَ الْوَهَّابُ",
+   "en": "Our Lord, let not our hearts deviate after You have guided us and grant us from Yourself mercy. Indeed, You are the Bestower.",
+   "surah": 3,
+   "from": 8,
+   "to": 8,
+   "surahAr": "آل عمران",
+   "surahEn": "Aal-i-Imraan",
+   "topic": "guidance"
+  },
+  {
+   "ar": "رَبَّنَا إِنَّكَ جَامِعُ النَّاسِ لِيَوْمٍ لَا رَيْبَ فِيهِ ۚ إِنَّ اللَّهَ لَا يُخْلِفُ الْمِيعَادَ",
+   "en": "Our Lord, surely You will gather the people for a Day about which there is no doubt. Indeed, Allah does not fail in His promise.",
+   "surah": 3,
+   "from": 9,
+   "to": 9,
+   "surahAr": "آل عمران",
+   "surahEn": "Aal-i-Imraan",
+   "topic": "praise"
+  },
+  {
+   "ar": "رَبَّنَا إِنَّنَا آمَنَّا فَاغْفِرْ لَنَا ذُنُوبَنَا وَقِنَا عَذَابَ النَّارِ",
+   "en": "Our Lord, indeed we have believed, so forgive us our sins and protect us from the punishment of the Fire.",
+   "surah": 3,
+   "from": 16,
+   "to": 16,
+   "surahAr": "آل عمران",
+   "surahEn": "Aal-i-Imraan",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "اللَّهُمَّ مَالِكَ الْمُلْكِ تُؤْتِي الْمُلْكَ مَنْ تَشَاءُ وَتَنْزِعُ الْمُلْكَ مِمَّنْ تَشَاءُ وَتُعِزُّ مَنْ تَشَاءُ وَتُذِلُّ مَنْ تَشَاءُ ۖ بِيَدِكَ الْخَيْرُ ۖ إِنَّكَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ ﴿٢٦﴾ تُولِجُ اللَّيْلَ فِي النَّهَارِ وَتُولِجُ النَّهَارَ فِي اللَّيْلِ ۖ وَتُخْرِجُ الْحَيَّ مِنَ الْمَيِّتِ وَتُخْرِجُ الْمَيِّتَ مِنَ الْحَيِّ ۖ وَتَرْزُقُ مَنْ تَشَاءُ بِغَيْرِ حِسَابٍ ﴿٢٧﴾",
+   "en": "O Allah, Owner of Sovereignty, You give sovereignty to whom You will and You take sovereignty away from whom You will. You honor whom You will and You humble whom You will. In Your hand is [all] good. Indeed, You are over all things competent. You cause the night to enter the day, and You cause the day to enter the night; and You bring the living out of the dead, and You bring the dead out of the living. And You give provision to whom You will without account.",
+   "surah": 3,
+   "from": 26,
+   "to": 27,
+   "surahAr": "آل عمران",
+   "surahEn": "Aal-i-Imraan",
+   "topic": "praise"
+  },
+  {
+   "ar": "رَبِّ إِنِّي نَذَرْتُ لَكَ مَا فِي بَطْنِي مُحَرَّرًا فَتَقَبَّلْ مِنِّي ۖ إِنَّكَ أَنْتَ السَّمِيعُ الْعَلِيمُ",
+   "en": "My Lord, indeed I have pledged to You what is in my womb, consecrated [for Your service], so accept this from me. Indeed, You are the Hearing, the Knowing.",
+   "surah": 3,
+   "from": 35,
+   "to": 35,
+   "surahAr": "آل عمران",
+   "surahEn": "Aal-i-Imraan",
+   "topic": "family"
+  },
+  {
+   "ar": "رَبِّ هَبْ لِي مِنْ لَدُنْكَ ذُرِّيَّةً طَيِّبَةً ۖ إِنَّكَ سَمِيعُ الدُّعَاءِ",
+   "en": "My Lord, grant me from Yourself a good offspring. Indeed, You are the Hearer of supplication.",
+   "surah": 3,
+   "from": 38,
+   "to": 38,
+   "surahAr": "آل عمران",
+   "surahEn": "Aal-i-Imraan",
+   "topic": "family"
+  },
+  {
+   "ar": "رَبَّنَا آمَنَّا بِمَا أَنْزَلْتَ وَاتَّبَعْنَا الرَّسُولَ فَاكْتُبْنَا مَعَ الشَّاهِدِينَ",
+   "en": "Our Lord, we have believed in what You revealed and have followed the messenger Jesus, so register us among the witnesses [to truth].",
+   "surah": 3,
+   "from": 53,
+   "to": 53,
+   "surahAr": "آل عمران",
+   "surahEn": "Aal-i-Imraan",
+   "topic": "guidance"
+  },
+  {
+   "ar": "رَبَّنَا اغْفِرْ لَنَا ذُنُوبَنَا وَإِسْرَافَنَا فِي أَمْرِنَا وَثَبِّتْ أَقْدَامَنَا وَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",
+   "en": "Our Lord, forgive us our sins and the excess [committed] in our affairs and plant firmly our feet and give us victory over the disbelieving people.",
+   "surah": 3,
+   "from": 147,
+   "to": 147,
+   "surahAr": "آل عمران",
+   "surahEn": "Aal-i-Imraan",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ",
+   "en": "Sufficient for us is Allah, and [He is] the best Disposer of affairs.",
+   "surah": 3,
+   "from": 173,
+   "to": 173,
+   "surahAr": "آل عمران",
+   "surahEn": "Aal-i-Imraan",
+   "topic": "hardship"
+  },
+  {
+   "ar": "رَبَّنَا مَا خَلَقْتَ هَٰذَا بَاطِلًا سُبْحَانَكَ فَقِنَا عَذَابَ النَّارِ ﴿١٩١﴾ رَبَّنَا إِنَّكَ مَنْ تُدْخِلِ النَّارَ فَقَدْ أَخْزَيْتَهُ ۖ وَمَا لِلظَّالِمِينَ مِنْ أَنْصَارٍ ﴿١٩٢﴾ رَبَّنَا إِنَّنَا سَمِعْنَا مُنَادِيًا يُنَادِي لِلْإِيمَانِ أَنْ آمِنُوا بِرَبِّكُمْ فَآمَنَّا ۚ رَبَّنَا فَاغْفِرْ لَنَا ذُنُوبَنَا وَكَفِّرْ عَنَّا سَيِّئَاتِنَا وَتَوَفَّنَا مَعَ الْأَبْرَارِ ﴿١٩٣﴾ رَبَّنَا وَآتِنَا مَا وَعَدْتَنَا عَلَىٰ رُسُلِكَ وَلَا تُخْزِنَا يَوْمَ الْقِيَامَةِ ۗ إِنَّكَ لَا تُخْلِفُ الْمِيعَادَ ﴿١٩٤﴾",
+   "en": "Our Lord, You did not create this aimlessly; exalted are You [above such a thing]; then protect us from the punishment of the Fire. Our Lord, indeed whoever You admit to the Fire - You have disgraced him, and for the wrongdoers there are no helpers. Our Lord, indeed we have heard a caller calling to faith, [saying], 'Believe in your Lord,' and we have believed. Our Lord, so forgive us our sins and remove from us our misdeeds and cause us to die with the righteous. Our Lord, and grant us what You promised us through Your messengers and do not disgrace us on the Day of Resurrection. Indeed, You do not fail in [Your] promise.",
+   "surah": 3,
+   "from": 191,
+   "to": 194,
+   "surahAr": "آل عمران",
+   "surahEn": "Aal-i-Imraan",
+   "topic": "protection"
+  },
+  {
+   "ar": "رَبَّنَا أَخْرِجْنَا مِنْ هَٰذِهِ الْقَرْيَةِ الظَّالِمِ أَهْلُهَا وَاجْعَلْ لَنَا مِنْ لَدُنْكَ وَلِيًّا وَاجْعَلْ لَنَا مِنْ لَدُنْكَ نَصِيرًا",
+   "en": "Our Lord, take us out of this city of oppressive people and appoint for us from Yourself a protector and appoint for us from Yourself a helper.",
+   "surah": 4,
+   "from": 75,
+   "to": 75,
+   "surahAr": "النساء",
+   "surahEn": "An-Nisaa",
+   "topic": "hardship"
+  },
+  {
+   "ar": "رَبَّنَا آمَنَّا فَاكْتُبْنَا مَعَ الشَّاهِدِينَ",
+   "en": "Our Lord, we have believed, so register us among the witnesses.",
+   "surah": 5,
+   "from": 83,
+   "to": 83,
+   "surahAr": "المائدة",
+   "surahEn": "Al-Maaida",
+   "topic": "guidance"
+  },
+  {
+   "ar": "رَبَّنَا ظَلَمْنَا أَنْفُسَنَا وَإِنْ لَمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ",
+   "en": "Our Lord, we have wronged ourselves, and if You do not forgive us and have mercy upon us, we will surely be among the losers.",
+   "surah": 7,
+   "from": 23,
+   "to": 23,
+   "surahAr": "الاعراف",
+   "surahEn": "Al-A'raaf",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبَّنَا لَا تَجْعَلْنَا مَعَ الْقَوْمِ الظَّالِمِينَ",
+   "en": "Our Lord, do not place us with the wrongdoing people.",
+   "surah": 7,
+   "from": 47,
+   "to": 47,
+   "surahAr": "الاعراف",
+   "surahEn": "Al-A'raaf",
+   "topic": "protection"
+  },
+  {
+   "ar": "رَبَّنَا افْتَحْ بَيْنَنَا وَبَيْنَ قَوْمِنَا بِالْحَقِّ وَأَنْتَ خَيْرُ الْفَاتِحِينَ",
+   "en": "Our Lord, decide between us and our people in truth, and You are the best of those who give decision.",
+   "surah": 7,
+   "from": 89,
+   "to": 89,
+   "surahAr": "الاعراف",
+   "surahEn": "Al-A'raaf",
+   "topic": "hardship"
+  },
+  {
+   "ar": "رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا وَتَوَفَّنَا مُسْلِمِينَ",
+   "en": "Our Lord, pour upon us patience and let us die as Muslims [in submission to You].",
+   "surah": 7,
+   "from": 126,
+   "to": 126,
+   "surahAr": "الاعراف",
+   "surahEn": "Al-A'raaf",
+   "topic": "hardship"
+  },
+  {
+   "ar": "سُبْحَانَكَ تُبْتُ إِلَيْكَ وَأَنَا أَوَّلُ الْمُؤْمِنِينَ",
+   "en": "Exalted are You! I have repented to You, and I am the first of the believers.",
+   "surah": 7,
+   "from": 143,
+   "to": 143,
+   "surahAr": "الاعراف",
+   "surahEn": "Al-A'raaf",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبِّ اغْفِرْ لِي وَلِأَخِي وَأَدْخِلْنَا فِي رَحْمَتِكَ ۖ وَأَنْتَ أَرْحَمُ الرَّاحِمِينَ",
+   "en": "My Lord, forgive me and my brother and admit us into Your mercy, for You are the most merciful of the merciful.",
+   "surah": 7,
+   "from": 151,
+   "to": 151,
+   "surahAr": "الاعراف",
+   "surahEn": "Al-A'raaf",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "أَنْتَ وَلِيُّنَا فَاغْفِرْ لَنَا وَارْحَمْنَا ۖ وَأَنْتَ خَيْرُ الْغَافِرِينَ ﴿١٥٥﴾ وَاكْتُبْ لَنَا فِي هَٰذِهِ الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ إِنَّا هُدْنَا إِلَيْكَ ﴿١٥٦﴾",
+   "en": "You are our Protector, so forgive us and have mercy upon us; and You are the best of forgivers. And decree for us in this world [that which is] good and [also] in the Hereafter; indeed, we have turned back to You.",
+   "surah": 7,
+   "from": 155,
+   "to": 156,
+   "surahAr": "الاعراف",
+   "surahEn": "Al-A'raaf",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ ۖ عَلَيْهِ تَوَكَّلْتُ ۖ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
+   "en": "Sufficient for me is Allah; there is no deity except Him. On Him I have relied, and He is the Lord of the Great Throne.",
+   "surah": 9,
+   "from": 129,
+   "to": 129,
+   "surahAr": "التوبة",
+   "surahEn": "At-Tawba",
+   "topic": "praise"
+  },
+  {
+   "ar": "عَلَى اللَّهِ تَوَكَّلْنَا رَبَّنَا لَا تَجْعَلْنَا فِتْنَةً لِلْقَوْمِ الظَّالِمِينَ ﴿٨٥﴾ وَنَجِّنَا بِرَحْمَتِكَ مِنَ الْقَوْمِ الْكَافِرِينَ ﴿٨٦﴾",
+   "en": "Upon Allah do we rely. Our Lord, make us not [objects of] trial for the wrongdoing people And save us by Your mercy from the disbelieving people.",
+   "surah": 10,
+   "from": 85,
+   "to": 86,
+   "surahAr": "يونس",
+   "surahEn": "Yunus",
+   "topic": "protection"
+  },
+  {
+   "ar": "رَبِّ إِنِّي أَعُوذُ بِكَ أَنْ أَسْأَلَكَ مَا لَيْسَ لِي بِهِ عِلْمٌ ۖ وَإِلَّا تَغْفِرْ لِي وَتَرْحَمْنِي أَكُنْ مِنَ الْخَاسِرِينَ",
+   "en": "My Lord, I seek refuge in You from asking that of which I have no knowledge. And unless You forgive me and have mercy upon me, I will be among the losers.",
+   "surah": 11,
+   "from": 47,
+   "to": 47,
+   "surahAr": "هود",
+   "surahEn": "Hud",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبِّ قَدْ آتَيْتَنِي مِنَ الْمُلْكِ وَعَلَّمْتَنِي مِنْ تَأْوِيلِ الْأَحَادِيثِ ۚ فَاطِرَ السَّمَاوَاتِ وَالْأَرْضِ أَنْتَ وَلِيِّي فِي الدُّنْيَا وَالْآخِرَةِ ۖ تَوَفَّنِي مُسْلِمًا وَأَلْحِقْنِي بِالصَّالِحِينَ",
+   "en": "My Lord, You have given me [something] of sovereignty and taught me of the interpretation of dreams. Creator of the heavens and earth, You are my protector in this world and in the Hereafter. Cause me to die a Muslim and join me with the righteous.",
+   "surah": 12,
+   "from": 101,
+   "to": 101,
+   "surahAr": "يوسف",
+   "surahEn": "Yusuf",
+   "topic": "guidance"
+  },
+  {
+   "ar": "رَبِّ اجْعَلْ هَٰذَا الْبَلَدَ آمِنًا وَاجْنُبْنِي وَبَنِيَّ أَنْ نَعْبُدَ الْأَصْنَامَ",
+   "en": "My Lord, make this city [Makkah] secure and keep me and my sons away from worshipping idols.",
+   "surah": 14,
+   "from": 35,
+   "to": 35,
+   "surahAr": "ابراهيم",
+   "surahEn": "Ibrahim",
+   "topic": "protection"
+  },
+  {
+   "ar": "رَبِّ اجْعَلْنِي مُقِيمَ الصَّلَاةِ وَمِنْ ذُرِّيَّتِي ۚ رَبَّنَا وَتَقَبَّلْ دُعَاءِ ﴿٤٠﴾ رَبَّنَا اغْفِرْ لِي وَلِوَالِدَيَّ وَلِلْمُؤْمِنِينَ يَوْمَ يَقُومُ الْحِسَابُ ﴿٤١﴾",
+   "en": "My Lord, make me an establisher of prayer, and [many] from my descendants. Our Lord, and accept my supplication. Our Lord, forgive me and my parents and the believers the Day the account is established.",
+   "surah": 14,
+   "from": 40,
+   "to": 41,
+   "surahAr": "ابراهيم",
+   "surahEn": "Ibrahim",
+   "topic": "family"
+  },
+  {
+   "ar": "رَبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",
+   "en": "My Lord, have mercy upon them as they brought me up [when I was] small.",
+   "surah": 17,
+   "from": 24,
+   "to": 24,
+   "surahAr": "الاسراء",
+   "surahEn": "Al-Israa",
+   "topic": "family"
+  },
+  {
+   "ar": "رَبِّ أَدْخِلْنِي مُدْخَلَ صِدْقٍ وَأَخْرِجْنِي مُخْرَجَ صِدْقٍ وَاجْعَلْ لِي مِنْ لَدُنْكَ سُلْطَانًا نَصِيرًا",
+   "en": "My Lord, cause me to enter a sound entrance and to exit a sound exit and grant me from Yourself a supporting authority.",
+   "surah": 17,
+   "from": 80,
+   "to": 80,
+   "surahAr": "الاسراء",
+   "surahEn": "Al-Israa",
+   "topic": "guidance"
+  },
+  {
+   "ar": "رَبَّنَا آتِنَا مِنْ لَدُنْكَ رَحْمَةً وَهَيِّئْ لَنَا مِنْ أَمْرِنَا رَشَدًا",
+   "en": "Our Lord, grant us from Yourself mercy and prepare for us from our affair right guidance.",
+   "surah": 18,
+   "from": 10,
+   "to": 10,
+   "surahAr": "الكهف",
+   "surahEn": "Al-Kahf",
+   "topic": "guidance"
+  },
+  {
+   "ar": "رَبِّ إِنِّي وَهَنَ الْعَظْمُ مِنِّي وَاشْتَعَلَ الرَّأْسُ شَيْبًا وَلَمْ أَكُنْ بِدُعَائِكَ رَبِّ شَقِيًّا ﴿٤﴾ وَإِنِّي خِفْتُ الْمَوَالِيَ مِنْ وَرَائِي وَكَانَتِ امْرَأَتِي عَاقِرًا فَهَبْ لِي مِنْ لَدُنْكَ وَلِيًّا ﴿٥﴾ يَرِثُنِي وَيَرِثُ مِنْ آلِ يَعْقُوبَ ۖ وَاجْعَلْهُ رَبِّ رَضِيًّا ﴿٦﴾",
+   "en": "My Lord, indeed my bones have weakened, and my head has filled with white, and never have I been in my supplication to You, my Lord, unhappy. And indeed, I fear the successors after me, and my wife has been barren, so give me from Yourself an heir Who will inherit me and inherit from the family of Jacob. And make him, my Lord, pleasing [to You].",
+   "surah": 19,
+   "from": 4,
+   "to": 6,
+   "surahAr": "مريم",
+   "surahEn": "Maryam",
+   "topic": "family"
+  },
+  {
+   "ar": "رَبِّ اشْرَحْ لِي صَدْرِي ﴿٢٥﴾ وَيَسِّرْ لِي أَمْرِي ﴿٢٦﴾ وَاحْلُلْ عُقْدَةً مِنْ لِسَانِي ﴿٢٧﴾ يَفْقَهُوا قَوْلِي ﴿٢٨﴾",
+   "en": "My Lord, expand for me my breast [with assurance] And ease for me my task And untie the knot from my tongue That they may understand my speech.",
+   "surah": 20,
+   "from": 25,
+   "to": 28,
+   "surahAr": "طه",
+   "surahEn": "Taa-Haa",
+   "topic": "guidance"
+  },
+  {
+   "ar": "رَبِّ زِدْنِي عِلْمًا",
+   "en": "My Lord, increase me in knowledge.",
+   "surah": 20,
+   "from": 114,
+   "to": 114,
+   "surahAr": "طه",
+   "surahEn": "Taa-Haa",
+   "topic": "guidance"
+  },
+  {
+   "ar": "أَنِّي مَسَّنِيَ الضُّرُّ وَأَنْتَ أَرْحَمُ الرَّاحِمِينَ",
+   "en": "Indeed, adversity has touched me, and you are the Most Merciful of the merciful.",
+   "surah": 21,
+   "from": 83,
+   "to": 83,
+   "surahAr": "الانبياء",
+   "surahEn": "Al-Anbiyaa",
+   "topic": "hardship"
+  },
+  {
+   "ar": "لَا إِلَٰهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ",
+   "en": "There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers.",
+   "surah": 21,
+   "from": 87,
+   "to": 87,
+   "surahAr": "الانبياء",
+   "surahEn": "Al-Anbiyaa",
+   "topic": "hardship"
+  },
+  {
+   "ar": "رَبِّ لَا تَذَرْنِي فَرْدًا وَأَنْتَ خَيْرُ الْوَارِثِينَ",
+   "en": "My Lord, do not leave me alone [with no heir], while you are the best of inheritors.",
+   "surah": 21,
+   "from": 89,
+   "to": 89,
+   "surahAr": "الانبياء",
+   "surahEn": "Al-Anbiyaa",
+   "topic": "family"
+  },
+  {
+   "ar": "رَبِّ احْكُمْ بِالْحَقِّ ۗ وَرَبُّنَا الرَّحْمَٰنُ الْمُسْتَعَانُ عَلَىٰ مَا تَصِفُونَ",
+   "en": "My Lord, judge [between us] in truth. And our Lord is the Most Merciful, the one whose help is sought against that which you describe.",
+   "surah": 21,
+   "from": 112,
+   "to": 112,
+   "surahAr": "الانبياء",
+   "surahEn": "Al-Anbiyaa",
+   "topic": "hardship"
+  },
+  {
+   "ar": "رَبِّ انْصُرْنِي بِمَا كَذَّبُونِ",
+   "en": "My Lord, support me because they have denied me.",
+   "surah": 23,
+   "from": 26,
+   "to": 26,
+   "surahAr": "المؤمنون",
+   "surahEn": "Al-Muminoon",
+   "topic": "hardship"
+  },
+  {
+   "ar": "رَبِّ أَنْزِلْنِي مُنْزَلًا مُبَارَكًا وَأَنْتَ خَيْرُ الْمُنْزِلِينَ",
+   "en": "My Lord, let me land at a blessed landing place, and You are the best to accommodate [us].",
+   "surah": 23,
+   "from": 29,
+   "to": 29,
+   "surahAr": "المؤمنون",
+   "surahEn": "Al-Muminoon",
+   "topic": "goodness"
+  },
+  {
+   "ar": "رَبِّ إِمَّا تُرِيَنِّي مَا يُوعَدُونَ ﴿٩٣﴾ رَبِّ فَلَا تَجْعَلْنِي فِي الْقَوْمِ الظَّالِمِينَ ﴿٩٤﴾",
+   "en": "My Lord, if You should show me that which they are promised. My Lord, then do not place me among the wrongdoing people.",
+   "surah": 23,
+   "from": 93,
+   "to": 94,
+   "surahAr": "المؤمنون",
+   "surahEn": "Al-Muminoon",
+   "topic": "protection"
+  },
+  {
+   "ar": "رَبِّ أَعُوذُ بِكَ مِنْ هَمَزَاتِ الشَّيَاطِينِ ﴿٩٧﴾ وَأَعُوذُ بِكَ رَبِّ أَنْ يَحْضُرُونِ ﴿٩٨﴾",
+   "en": "My Lord, I seek refuge in You from the incitements of the devils. And I seek refuge in You, my Lord, lest they be present with me.",
+   "surah": 23,
+   "from": 97,
+   "to": 98,
+   "surahAr": "المؤمنون",
+   "surahEn": "Al-Muminoon",
+   "topic": "protection"
+  },
+  {
+   "ar": "رَبَّنَا آمَنَّا فَاغْفِرْ لَنَا وَارْحَمْنَا وَأَنْتَ خَيْرُ الرَّاحِمِينَ",
+   "en": "Our Lord, we have believed, so forgive us and have mercy upon us, and You are the best of the merciful.",
+   "surah": 23,
+   "from": 109,
+   "to": 109,
+   "surahAr": "المؤمنون",
+   "surahEn": "Al-Muminoon",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبِّ اغْفِرْ وَارْحَمْ وَأَنْتَ خَيْرُ الرَّاحِمِينَ",
+   "en": "My Lord, forgive and have mercy, and You are the best of the merciful.",
+   "surah": 23,
+   "from": 118,
+   "to": 118,
+   "surahAr": "المؤمنون",
+   "surahEn": "Al-Muminoon",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبَّنَا اصْرِفْ عَنَّا عَذَابَ جَهَنَّمَ ۖ إِنَّ عَذَابَهَا كَانَ غَرَامًا ﴿٦٥﴾ إِنَّهَا سَاءَتْ مُسْتَقَرًّا وَمُقَامًا ﴿٦٦﴾",
+   "en": "Our Lord, avert from us the punishment of Hell. Indeed, its punishment is ever adhering; Indeed, it is evil as a settlement and residence.",
+   "surah": 25,
+   "from": 65,
+   "to": 66,
+   "surahAr": "الفرقان",
+   "surahEn": "Al-Furqaan",
+   "topic": "protection"
+  },
+  {
+   "ar": "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا",
+   "en": "Our Lord, grant us from among our wives and offspring comfort to our eyes and make us an example for the righteous.",
+   "surah": 25,
+   "from": 74,
+   "to": 74,
+   "surahAr": "الفرقان",
+   "surahEn": "Al-Furqaan",
+   "topic": "family"
+  },
+  {
+   "ar": "رَبِّ هَبْ لِي حُكْمًا وَأَلْحِقْنِي بِالصَّالِحِينَ ﴿٨٣﴾ وَاجْعَلْ لِي لِسَانَ صِدْقٍ فِي الْآخِرِينَ ﴿٨٤﴾ وَاجْعَلْنِي مِنْ وَرَثَةِ جَنَّةِ النَّعِيمِ ﴿٨٥﴾",
+   "en": "My Lord, grant me authority and join me with the righteous. And grant me a reputation of honor among later generations. And place me among the inheritors of the Garden of Pleasure.",
+   "surah": 26,
+   "from": 83,
+   "to": 85,
+   "surahAr": "الشعراء",
+   "surahEn": "Ash-Shu'araa",
+   "topic": "goodness"
+  },
+  {
+   "ar": "رَبِّ نَجِّنِي وَأَهْلِي مِمَّا يَعْمَلُونَ",
+   "en": "My Lord, save me and my family from [the consequence of] what they do.",
+   "surah": 26,
+   "from": 169,
+   "to": 169,
+   "surahAr": "الشعراء",
+   "surahEn": "Ash-Shu'araa",
+   "topic": "protection"
+  },
+  {
+   "ar": "رَبِّ أَوْزِعْنِي أَنْ أَشْكُرَ نِعْمَتَكَ الَّتِي أَنْعَمْتَ عَلَيَّ وَعَلَىٰ وَالِدَيَّ وَأَنْ أَعْمَلَ صَالِحًا تَرْضَاهُ وَأَدْخِلْنِي بِرَحْمَتِكَ فِي عِبَادِكَ الصَّالِحِينَ",
+   "en": "My Lord, enable me to be grateful for Your favor which You have bestowed upon me and upon my parents and to do righteousness of which You approve. And admit me by Your mercy into [the ranks of] Your righteous servants.",
+   "surah": 27,
+   "from": 19,
+   "to": 19,
+   "surahAr": "النمل",
+   "surahEn": "An-Naml",
+   "topic": "guidance"
+  },
+  {
+   "ar": "رَبِّ إِنِّي ظَلَمْتُ نَفْسِي وَأَسْلَمْتُ مَعَ سُلَيْمَانَ لِلَّهِ رَبِّ الْعَالَمِينَ",
+   "en": "My Lord, indeed I have wronged myself, and I submit with Solomon to Allah, Lord of the worlds.",
+   "surah": 27,
+   "from": 44,
+   "to": 44,
+   "surahAr": "النمل",
+   "surahEn": "An-Naml",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبِّ إِنِّي ظَلَمْتُ نَفْسِي فَاغْفِرْ لِي",
+   "en": "My Lord, indeed I have wronged myself, so forgive me.",
+   "surah": 28,
+   "from": 16,
+   "to": 16,
+   "surahAr": "القصص",
+   "surahEn": "Al-Qasas",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبِّ بِمَا أَنْعَمْتَ عَلَيَّ فَلَنْ أَكُونَ ظَهِيرًا لِلْمُجْرِمِينَ",
+   "en": "My Lord, for the favor You bestowed upon me, I will never be an assistant to the criminals.",
+   "surah": 28,
+   "from": 17,
+   "to": 17,
+   "surahAr": "القصص",
+   "surahEn": "Al-Qasas",
+   "topic": "guidance"
+  },
+  {
+   "ar": "رَبِّ نَجِّنِي مِنَ الْقَوْمِ الظَّالِمِينَ",
+   "en": "My Lord, save me from the wrongdoing people.",
+   "surah": 28,
+   "from": 21,
+   "to": 21,
+   "surahAr": "القصص",
+   "surahEn": "Al-Qasas",
+   "topic": "protection"
+  },
+  {
+   "ar": "رَبِّ إِنِّي لِمَا أَنْزَلْتَ إِلَيَّ مِنْ خَيْرٍ فَقِيرٌ",
+   "en": "My Lord, indeed I am, for whatever good You would send down to me, in need.",
+   "surah": 28,
+   "from": 24,
+   "to": 24,
+   "surahAr": "القصص",
+   "surahEn": "Al-Qasas",
+   "topic": "goodness"
+  },
+  {
+   "ar": "رَبِّ انْصُرْنِي عَلَى الْقَوْمِ الْمُفْسِدِينَ",
+   "en": "My Lord, support me against the corrupting people.",
+   "surah": 29,
+   "from": 30,
+   "to": 30,
+   "surahAr": "العنكبوت",
+   "surahEn": "Al-Ankaboot",
+   "topic": "hardship"
+  },
+  {
+   "ar": "رَبِّ هَبْ لِي مِنَ الصَّالِحِينَ",
+   "en": "My Lord, grant me [a child] from among the righteous.",
+   "surah": 37,
+   "from": 100,
+   "to": 100,
+   "surahAr": "الصافات",
+   "surahEn": "As-Saaffaat",
+   "topic": "family"
+  },
+  {
+   "ar": "اللَّهُمَّ فَاطِرَ السَّمَاوَاتِ وَالْأَرْضِ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ أَنْتَ تَحْكُمُ بَيْنَ عِبَادِكَ فِي مَا كَانُوا فِيهِ يَخْتَلِفُونَ",
+   "en": "O Allah, Creator of the heavens and the earth, Knower of the unseen and the witnessed, You will judge between your servants concerning that over which they used to differ.",
+   "surah": 39,
+   "from": 46,
+   "to": 46,
+   "surahAr": "الزمر",
+   "surahEn": "Az-Zumar",
+   "topic": "praise"
+  },
+  {
+   "ar": "رَبَّنَا وَسِعْتَ كُلَّ شَيْءٍ رَحْمَةً وَعِلْمًا فَاغْفِرْ لِلَّذِينَ تَابُوا وَاتَّبَعُوا سَبِيلَكَ وَقِهِمْ عَذَابَ الْجَحِيمِ ﴿٧﴾ رَبَّنَا وَأَدْخِلْهُمْ جَنَّاتِ عَدْنٍ الَّتِي وَعَدْتَهُمْ وَمَنْ صَلَحَ مِنْ آبَائِهِمْ وَأَزْوَاجِهِمْ وَذُرِّيَّاتِهِمْ ۚ إِنَّكَ أَنْتَ الْعَزِيزُ الْحَكِيمُ ﴿٨﴾ وَقِهِمُ السَّيِّئَاتِ ۚ وَمَنْ تَقِ السَّيِّئَاتِ يَوْمَئِذٍ فَقَدْ رَحِمْتَهُ ۚ وَذَٰلِكَ هُوَ الْفَوْزُ الْعَظِيمُ ﴿٩﴾",
+   "en": "Our Lord, You have encompassed all things in mercy and knowledge, so forgive those who have repented and followed Your way and protect them from the punishment of Hellfire. Our Lord, and admit them to gardens of perpetual residence which You have promised them and whoever was righteous among their fathers, their spouses and their offspring. Indeed, it is You who is the Exalted in Might, the Wise. And protect them from the evil consequences [of their deeds]. And he whom You protect from evil consequences that Day - You will have given him mercy. And that is the great attainment.",
+   "surah": 40,
+   "from": 7,
+   "to": 9,
+   "surahAr": "غافر",
+   "surahEn": "Ghafir",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "أُفَوِّضُ أَمْرِي إِلَى اللَّهِ ۚ إِنَّ اللَّهَ بَصِيرٌ بِالْعِبَادِ",
+   "en": "I entrust my affair to Allah. Indeed, Allah is Seeing of [His] servants.",
+   "surah": 40,
+   "from": 44,
+   "to": 44,
+   "surahAr": "غافر",
+   "surahEn": "Ghafir",
+   "topic": "praise"
+  },
+  {
+   "ar": "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَٰذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ ﴿١٣﴾ وَإِنَّا إِلَىٰ رَبِّنَا لَمُنْقَلِبُونَ ﴿١٤﴾",
+   "en": "Exalted is He who has subjected this to us, and we could not have [otherwise] subdued it. And indeed we, to our Lord, will [surely] return.",
+   "surah": 43,
+   "from": 13,
+   "to": 14,
+   "surahAr": "الزخرف",
+   "surahEn": "Az-Zukhruf",
+   "topic": "occasions"
+  },
+  {
+   "ar": "رَبِّ أَوْزِعْنِي أَنْ أَشْكُرَ نِعْمَتَكَ الَّتِي أَنْعَمْتَ عَلَيَّ وَعَلَىٰ وَالِدَيَّ وَأَنْ أَعْمَلَ صَالِحًا تَرْضَاهُ وَأَصْلِحْ لِي فِي ذُرِّيَّتِي ۖ إِنِّي تُبْتُ إِلَيْكَ وَإِنِّي مِنَ الْمُسْلِمِينَ",
+   "en": "My Lord, enable me to be grateful for Your favor which You have bestowed upon me and upon my parents and to work righteousness of which You will approve and make righteous for me my offspring. Indeed, I have repented to You, and indeed, I am of the Muslims.",
+   "surah": 46,
+   "from": 15,
+   "to": 15,
+   "surahAr": "الاحقاف",
+   "surahEn": "Al-Ahqaf",
+   "topic": "family"
+  },
+  {
+   "ar": "أَنِّي مَغْلُوبٌ فَانْتَصِرْ",
+   "en": "Indeed, I am overpowered, so help.",
+   "surah": 54,
+   "from": 10,
+   "to": 10,
+   "surahAr": "القمر",
+   "surahEn": "Al-Qamar",
+   "topic": "hardship"
+  },
+  {
+   "ar": "رَبَّنَا اغْفِرْ لَنَا وَلِإِخْوَانِنَا الَّذِينَ سَبَقُونَا بِالْإِيمَانِ وَلَا تَجْعَلْ فِي قُلُوبِنَا غِلًّا لِلَّذِينَ آمَنُوا رَبَّنَا إِنَّكَ رَءُوفٌ رَحِيمٌ",
+   "en": "Our Lord, forgive us and our brothers who preceded us in faith and put not in our hearts [any] resentment toward those who have believed. Our Lord, indeed You are Kind and Merciful.",
+   "surah": 59,
+   "from": 10,
+   "to": 10,
+   "surahAr": "الحشر",
+   "surahEn": "Al-Hashr",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبَّنَا عَلَيْكَ تَوَكَّلْنَا وَإِلَيْكَ أَنَبْنَا وَإِلَيْكَ الْمَصِيرُ ﴿٤﴾ رَبَّنَا لَا تَجْعَلْنَا فِتْنَةً لِلَّذِينَ كَفَرُوا وَاغْفِرْ لَنَا رَبَّنَا ۖ إِنَّكَ أَنْتَ الْعَزِيزُ الْحَكِيمُ ﴿٥﴾",
+   "en": "Our Lord, upon You we have relied, and to You we have returned, and to You is the destination. Our Lord, make us not [objects of] torment for the disbelievers and forgive us, our Lord. Indeed, it is You who is the Exalted in Might, the Wise.",
+   "surah": 60,
+   "from": 4,
+   "to": 5,
+   "surahAr": "الممتحنة",
+   "surahEn": "Al-Mumtahana",
+   "topic": "praise"
+  },
+  {
+   "ar": "رَبَّنَا أَتْمِمْ لَنَا نُورَنَا وَاغْفِرْ لَنَا ۖ إِنَّكَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
+   "en": "Our Lord, perfect for us our light and forgive us. Indeed, You are over all things competent.",
+   "surah": 66,
+   "from": 8,
+   "to": 8,
+   "surahAr": "التحريم",
+   "surahEn": "At-Tahrim",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "رَبِّ ابْنِ لِي عِنْدَكَ بَيْتًا فِي الْجَنَّةِ وَنَجِّنِي مِنْ فِرْعَوْنَ وَعَمَلِهِ وَنَجِّنِي مِنَ الْقَوْمِ الظَّالِمِينَ",
+   "en": "My Lord, build for me near You a house in Paradise and save me from Pharaoh and his deeds and save me from the wrongdoing people.",
+   "surah": 66,
+   "from": 11,
+   "to": 11,
+   "surahAr": "التحريم",
+   "surahEn": "At-Tahrim",
+   "topic": "goodness"
+  },
+  {
+   "ar": "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَلِمَنْ دَخَلَ بَيْتِيَ مُؤْمِنًا وَلِلْمُؤْمِنِينَ وَالْمُؤْمِنَاتِ وَلَا تَزِدِ الظَّالِمِينَ إِلَّا تَبَارًا",
+   "en": "My Lord, forgive me and my parents and whoever enters my house a believer and the believing men and believing women. And do not increase the wrongdoers except in destruction.",
+   "surah": 71,
+   "from": 28,
+   "to": 28,
+   "surahAr": "نوح",
+   "surahEn": "Nooh",
+   "topic": "forgiveness"
+  }
+ ],
+ "hadith": [
+  {
+   "ar": "اللَّهُمَّ أَنْتَ رَبِّي، لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَىَّ وَأَبُوءُ لَكَ بِذَنْبِي، فَاغْفِرْ لِي، فَإِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ",
+   "en": "O Allah, You are my Lord; there is no god but You. You created me and I am Your servant, and I hold to Your covenant and promise as much as I can. I seek refuge in You from the evil of what I have done. I acknowledge Your favour upon me, and I acknowledge my sin, so forgive me, for none forgives sins but You.",
+   "book": "bukhari",
+   "number": 6306,
+   "titleAr": "سيد الاستغفار",
+   "titleEn": "The master of seeking forgiveness",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي ظَلَمْتُ نَفْسِي ظُلْمًا كَثِيرًا وَلاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ، فَاغْفِرْ لِي مَغْفِرَةً مِنْ عِنْدِكَ، وَارْحَمْنِي إِنَّكَ أَنْتَ الْغَفُورُ الرَّحِيمُ",
+   "en": "O Allah, I have wronged myself greatly, and none forgives sins but You. So forgive me with forgiveness from You, and have mercy on me. You are the Forgiving, the Merciful.",
+   "book": "bukhari",
+   "number": 834,
+   "titleAr": "علّمه النبي ﷺ أبا بكر",
+   "titleEn": "Taught to Abu Bakr",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "اللَّهُمَّ اغْفِرْ لِي خَطِيئَتِي وَجَهْلِي وَإِسْرَافِي فِي أَمْرِي وَمَا أَنْتَ أَعْلَمُ بِهِ مِنِّي اللَّهُمَّ اغْفِرْ لِي جِدِّي وَهَزْلِي وَخَطَئِي وَعَمْدِي وَكُلُّ ذَلِكَ عِنْدِي اللَّهُمَّ اغْفِرْ لِي مَا قَدَّمْتُ وَمَا أَخَّرْتُ وَمَا أَسْرَرْتُ وَمَا أَعْلَنْتُ وَمَا أَنْتَ أَعْلَمُ بِهِ مِنِّي أَنْتَ الْمُقَدِّمُ وَأَنْتَ الْمُؤَخِّرُ وَأَنْتَ عَلَى كُلِّ شَىْءٍ قَدِيرٌ",
+   "en": "O Allah, forgive me my mistakes, my ignorance, my excess in my affairs, and what You know better than I. O Allah, forgive me what I did in earnest and in jest, by error and on purpose, and all of that is in me. O Allah, forgive me what I have done and what I will do, what I did in secret and what I did openly, and what You know better than I. You bring forward and You put back, and You have power over all things.",
+   "book": "muslim",
+   "number": 2719,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "اللَّهُمَّ اغْفِرْ لِي ذَنْبِي كُلَّهُ دِقَّهُ وَجِلَّهُ وَأَوَّلَهُ وَآخِرَهُ وَعَلاَنِيَتَهُ وَسِرَّهُ",
+   "en": "O Allah, forgive me all my sins, the small and the great, the first and the last, the open and the secret.",
+   "book": "muslim",
+   "number": 483,
+   "titleAr": "في السجود",
+   "titleEn": "In prostration",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "سُبْحَانَكَ اللَّهُمَّ رَبَّنَا وَبِحَمْدِكَ، اللَّهُمَّ اغْفِرْ لِي",
+   "en": "Glory be to You, O Allah, our Lord, and praise be to You. O Allah, forgive me.",
+   "book": "bukhari",
+   "number": 794,
+   "titleAr": "في الركوع والسجود",
+   "titleEn": "In bowing and prostration",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "اللَّهُمَّ بَاعِدْ بَيْنِي وَبَيْنَ خَطَايَاىَ كَمَا بَاعَدْتَ بَيْنَ الْمَشْرِقِ وَالْمَغْرِبِ، اللَّهُمَّ نَقِّنِي مِنَ الْخَطَايَا كَمَا يُنَقَّى الثَّوْبُ الأَبْيَضُ مِنَ الدَّنَسِ، اللَّهُمَّ اغْسِلْ خَطَايَاىَ بِالْمَاءِ وَالثَّلْجِ وَالْبَرَدِ",
+   "en": "O Allah, put a distance between me and my sins as You have put a distance between the east and the west. O Allah, cleanse me of sins as a white garment is cleansed of dirt. O Allah, wash away my sins with water, snow and hail.",
+   "book": "bukhari",
+   "number": 744,
+   "titleAr": "دعاء الاستفتاح",
+   "titleEn": "Opening the prayer",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "اللَّهُمَّ لَكَ الْحَمْدُ مِلْءَ السَّمَاءِ وَمِلْءَ الأَرْضِ وَمِلْءَ مَا شِئْتَ مِنْ شَىْءٍ بَعْدُ اللَّهُمَّ طَهِّرْنِي بِالثَّلْجِ وَالْبَرَدِ وَالْمَاءِ الْبَارِدِ اللَّهُمَّ طَهِّرْنِي مِنَ الذُّنُوبِ وَالْخَطَايَا كَمَا يُنَقَّى الثَّوْبُ الأَبْيَضُ مِنَ الْوَسَخِ",
+   "en": "O Allah, to You belongs the praise, filling the heavens, filling the earth and filling whatever You will besides. O Allah, purify me with snow, hail and cold water. O Allah, purify me of sins and mistakes as a white garment is purified of dirt.",
+   "book": "muslim",
+   "number": 476,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "اللَّهُمَّ أَنْتَ الْمَلِكُ لاَ إِلَهَ إِلاَّ أَنْتَ أَنْتَ رَبِّي وَأَنَا عَبْدُكَ ظَلَمْتُ نَفْسِي وَاعْتَرَفْتُ بِذَنْبِي فَاغْفِرْ لِي ذُنُوبِي جَمِيعًا إِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ وَاهْدِنِي لأَحْسَنِ الأَخْلاَقِ لاَ يَهْدِي لأَحْسَنِهَا إِلاَّ أَنْتَ وَاصْرِفْ عَنِّي سَيِّئَهَا لاَ يَصْرِفُ عَنِّي سَيِّئَهَا إِلاَّ أَنْتَ لَبَّيْكَ وَسَعْدَيْكَ وَالْخَيْرُ كُلُّهُ فِي يَدَيْكَ وَالشَّرُّ لَيْسَ إِلَيْكَ أَنَا بِكَ وَإِلَيْكَ تَبَارَكْتَ وَتَعَالَيْتَ أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ",
+   "en": "O Allah, You are the King; there is no god but You. You are my Lord and I am Your servant. I have wronged myself and I admit my sin, so forgive me all my sins, for none forgives sins but You. Guide me to the best of character, for none guides to the best of it but You, and turn away from me its bad, for none turns away its bad but You. Here I am, at Your service; all good is in Your hands and evil is not attributed to You. I am by You and to You; blessed and exalted are You. I seek Your forgiveness and I turn to You in repentance.",
+   "book": "muslim",
+   "number": 771,
+   "titleAr": "من دعاء الاستفتاح",
+   "titleEn": "Opening the prayer",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "اللَّهُمَّ اغْفِرْ لِي وَارْحَمْنِي وَاهْدِنِي وَارْزُقْنِي",
+   "en": "O Allah, forgive me, have mercy on me, guide me and provide for me.",
+   "book": "muslim",
+   "number": 2697,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "forgiveness"
+  },
+  {
+   "ar": "اللَّهُمَّ أَصْلِحْ لِي دِينِيَ الَّذِي هُوَ عِصْمَةُ أَمْرِي وَأَصْلِحْ لِي دُنْيَاىَ الَّتِي فِيهَا مَعَاشِي وَأَصْلِحْ لِي آخِرَتِي الَّتِي فِيهَا مَعَادِي وَاجْعَلِ الْحَيَاةَ زِيَادَةً لِي فِي كُلِّ خَيْرٍ وَاجْعَلِ الْمَوْتَ رَاحَةً لِي مِنْ كُلِّ شَرٍّ",
+   "en": "O Allah, set right for me my religion, which is the safeguard of my affairs; set right for me my world, in which is my living; set right for me my Hereafter, to which is my return. Make life an increase for me in every good, and make death a rest for me from every evil.",
+   "book": "muslim",
+   "number": 2720,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "guidance"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى",
+   "en": "O Allah, I ask You for guidance, piety, chastity and sufficiency.",
+   "book": "muslim",
+   "number": 2721,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "guidance"
+  },
+  {
+   "ar": "اللَّهُمَّ مُصَرِّفَ الْقُلُوبِ صَرِّفْ قُلُوبَنَا عَلَى طَاعَتِكَ",
+   "en": "O Allah, Turner of the hearts, turn our hearts to Your obedience.",
+   "book": "muslim",
+   "number": 2654,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "guidance"
+  },
+  {
+   "ar": "اللَّهُمَّ اهْدِنِي وَسَدِّدْنِي",
+   "en": "O Allah, guide me and keep me on the right course.",
+   "book": "muslim",
+   "number": 2725,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "guidance"
+  },
+  {
+   "ar": "اللَّهُمَّ لَكَ أَسْلَمْتُ وَبِكَ آمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَإِلَيْكَ أَنَبْتُ وَبِكَ خَاصَمْتُ اللَّهُمَّ إِنِّي أَعُوذُ بِعِزَّتِكَ لاَ إِلَهَ إِلاَّ أَنْتَ أَنْ تُضِلَّنِي أَنْتَ الْحَىُّ الَّذِي لاَ يَمُوتُ وَالْجِنُّ وَالإِنْسُ يَمُوتُونَ",
+   "en": "O Allah, to You I have submitted, in You I believe, in You I trust, to You I turn, and by You I argue. O Allah, I seek refuge in Your might, there is no god but You, from Your letting me go astray. You are the Ever-Living who does not die, while jinn and men die.",
+   "book": "muslim",
+   "number": 2717,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "guidance"
+  },
+  {
+   "ar": "اللَّهُمَّ رَبَّ جِبْرَائِيلَ وَمِيكَائِيلَ وَإِسْرَافِيلَ فَاطِرَ السَّمَوَاتِ وَالأَرْضِ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ أَنْتَ تَحْكُمُ بَيْنَ عِبَادِكَ فِيمَا كَانُوا فِيهِ يَخْتَلِفُونَ اهْدِنِي لِمَا اخْتُلِفَ فِيهِ مِنَ الْحَقِّ بِإِذْنِكَ إِنَّكَ تَهْدِي مَنْ تَشَاءُ إِلَى صِرَاطٍ مُسْتَقِيمٍ",
+   "en": "O Allah, Lord of Jibril, Mika'il and Israfil, Creator of the heavens and the earth, Knower of the unseen and the seen, You judge between Your servants in what they differed over. Guide me, by Your leave, to the truth in what they differed over; You guide whom You will to a straight path.",
+   "book": "muslim",
+   "number": 770,
+   "titleAr": "في قيام الليل",
+   "titleEn": "Opening the night prayer",
+   "topic": "guidance"
+  },
+  {
+   "ar": "اللَّهُمَّ اجْعَلْ فِي قَلْبِي نُورًا، وَفِي بَصَرِي نُورًا، وَفِي سَمْعِي نُورًا، وَعَنْ يَمِينِي نُورًا، وَعَنْ يَسَارِي نُورًا، وَفَوْقِي نُورًا، وَتَحْتِي نُورًا، وَأَمَامِي نُورًا، وَخَلْفِي نُورًا، وَاجْعَلْ لِي نُورًا",
+   "en": "O Allah, place light in my heart, light in my sight and light in my hearing; light on my right, light on my left, light above me, light below me, light in front of me and light behind me; and make for me light.",
+   "book": "bukhari",
+   "number": 6316,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "guidance"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَسْتَخِيرُكَ بِعِلْمِكَ، وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ، وَأَسْأَلُكَ مِنْ فَضْلِكَ الْعَظِيمِ، فَإِنَّكَ تَقْدِرُ وَلاَ أَقْدِرُ، وَتَعْلَمُ وَلاَ أَعْلَمُ، وَأَنْتَ عَلاَّمُ الْغُيُوبِ، اللَّهُمَّ إِنْ كُنْتَ تَعْلَمُ أَنَّ هَذَا الأَمْرَ خَيْرٌ لِي فِي دِينِي وَمَعَاشِي وَعَاقِبَةِ أَمْرِي ـ أَوْ قَالَ عَاجِلِ أَمْرِي وَآجِلِهِ ـ فَاقْدُرْهُ لِي، وَإِنْ كُنْتَ تَعْلَمُ أَنَّ هَذَا الأَمْرَ شَرٌّ لِي فِي دِينِي وَمَعَاشِي وَعَاقِبَةِ أَمْرِي ـ أَوْ قَالَ فِي عَاجِلِ أَمْرِي وَآجِلِهِ ـ فَاصْرِفْهُ عَنِّي وَاصْرِفْنِي عَنْهُ، وَاقْدُرْ لِيَ الْخَيْرَ حَيْثُ كَانَ، ثُمَّ رَضِّنِي بِهِ",
+   "en": "O Allah, I ask You to choose for me by Your knowledge, I ask You to enable me by Your power, and I ask You of Your great bounty, for You are able and I am not, You know and I do not, and You are the Knower of the unseen. O Allah, if You know that this matter is good for me in my religion, my living and the outcome of my affairs, then decree it for me. And if You know that it is bad for me in my religion, my living and the outcome of my affairs, then turn it away from me and turn me away from it, and decree for me the good wherever it is, then make me pleased with it. (Then name your need.)",
+   "book": "bukhari",
+   "number": 6382,
+   "titleAr": "دعاء الاستخارة",
+   "titleEn": "Istikhara: asking Allah to choose",
+   "topic": "guidance"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْجُبْنِ وَالْبُخْلِ، وَضَلَعِ الدَّيْنِ، وَغَلَبَةِ الرِّجَالِ",
+   "en": "O Allah, I seek refuge in You from worry and grief, from helplessness and laziness, from cowardice and miserliness, and from being overwhelmed by debt and overpowered by men.",
+   "book": "bukhari",
+   "number": 6369,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "protection"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ وَأَعُوذُ بِكَ مِنْ فِتْنَةِ الْمَسِيحِ الدَّجَّالِ، وَأَعُوذُ بِكَ مِنْ فِتْنَةِ الْمَحْيَا وَفِتْنَةِ الْمَمَاتِ، اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْمَأْثَمِ وَالْمَغْرَمِ",
+   "en": "O Allah, I seek refuge in You from the punishment of the grave, I seek refuge in You from the trial of the False Messiah, and I seek refuge in You from the trials of life and death. O Allah, I seek refuge in You from sin and from debt.",
+   "book": "bukhari",
+   "number": 832,
+   "titleAr": "قبل السلام من الصلاة",
+   "titleEn": "Before ending the prayer",
+   "topic": "protection"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكَسَلِ وَالْهَرَمِ، وَالْمَأْثَمِ وَالْمَغْرَمِ، وَمِنْ فِتْنَةِ الْقَبْرِ وَعَذَابِ الْقَبْرِ، وَمِنْ فِتْنَةِ النَّارِ وَعَذَابِ النَّارِ، وَمِنْ شَرِّ فِتْنَةِ الْغِنَى، وَأَعُوذُ بِكَ مِنْ فِتْنَةِ الْفَقْرِ، وَأَعُوذُ بِكَ مِنْ فِتْنَةِ الْمَسِيحِ الدَّجَّالِ، اللَّهُمَّ اغْسِلْ عَنِّي خَطَايَاىَ بِمَاءِ الثَّلْجِ وَالْبَرَدِ، وَنَقِّ قَلْبِي مِنَ الْخَطَايَا، كَمَا نَقَّيْتَ الثَّوْبَ الأَبْيَضَ مِنَ الدَّنَسِ، وَبَاعِدْ بَيْنِي وَبَيْنَ خَطَايَاىَ كَمَا بَاعَدْتَ بَيْنَ الْمَشْرِقِ وَالْمَغْرِبِ",
+   "en": "O Allah, I seek refuge in You from laziness, old age, sin and debt; from the trial of the grave and the punishment of the grave; from the trial of the Fire and the punishment of the Fire; from the evil of the trial of wealth; and I seek refuge in You from the trial of poverty, and from the trial of the False Messiah. O Allah, wash away my sins with snow and hail water, cleanse my heart of sins as You cleanse a white garment of dirt, and put a distance between me and my sins as You have put a distance between the east and the west.",
+   "book": "bukhari",
+   "number": 6368,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "protection"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْبُخْلِ، وَأَعُوذُ بِكَ مِنَ الْجُبْنِ، وَأَعُوذُ بِكَ أَنْ أُرَدَّ إِلَى أَرْذَلِ الْعُمُرِ، وَأَعُوذُ بِكَ مِنْ فِتْنَةِ الدُّنْيَا وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ",
+   "en": "O Allah, I seek refuge in You from miserliness, I seek refuge in You from cowardice, I seek refuge in You from being returned to the worst of old age, I seek refuge in You from the trial of this world, and I seek refuge in You from the punishment of the grave.",
+   "book": "bukhari",
+   "number": 6365,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "protection"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْعَجْزِ وَالْكَسَلِ وَالْجُبْنِ وَالْبُخْلِ وَالْهَرَمِ وَعَذَابِ الْقَبْرِ اللَّهُمَّ آتِ نَفْسِي تَقْوَاهَا وَزَكِّهَا أَنْتَ خَيْرُ مَنْ زَكَّاهَا أَنْتَ وَلِيُّهَا وَمَوْلاَهَا اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عِلْمٍ لاَ يَنْفَعُ وَمِنْ قَلْبٍ لاَ يَخْشَعُ وَمِنْ نَفْسٍ لاَ تَشْبَعُ وَمِنْ دَعْوَةٍ لاَ يُسْتَجَابُ لَهَا",
+   "en": "O Allah, I seek refuge in You from helplessness and laziness, cowardice, miserliness, old age and the punishment of the grave. O Allah, give my soul its piety and purify it, You are the best to purify it; You are its Guardian and its Master. O Allah, I seek refuge in You from knowledge that does not benefit, from a heart that does not humble itself, from a soul that is never satisfied, and from a dua that is not answered.",
+   "book": "muslim",
+   "number": 2722,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "protection"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ زَوَالِ نِعْمَتِكَ وَتَحَوُّلِ عَافِيَتِكَ وَفُجَاءَةِ نِقْمَتِكَ وَجَمِيعِ سَخَطِكَ",
+   "en": "O Allah, I seek refuge in You from the loss of Your blessings, the change of Your protection, the suddenness of Your punishment and all of Your anger.",
+   "book": "muslim",
+   "number": 2739,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "protection"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ شَرِّ مَا عَمِلْتُ وَمِنْ شَرِّ مَا لَمْ أَعْمَلْ",
+   "en": "O Allah, I seek refuge in You from the evil of what I have done and from the evil of what I have not done.",
+   "book": "muslim",
+   "number": 2716,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "protection"
+  },
+  {
+   "ar": "اللَّهُمَّ أَعُوذُ بِرِضَاكَ مِنْ سَخَطِكَ وَبِمُعَافَاتِكَ مِنْ عُقُوبَتِكَ وَأَعُوذُ بِكَ مِنْكَ لاَ أُحْصِي ثَنَاءً عَلَيْكَ أَنْتَ كَمَا أَثْنَيْتَ عَلَى نَفْسِكَ",
+   "en": "O Allah, I seek refuge in Your pleasure from Your anger, in Your pardon from Your punishment, and I seek refuge in You from You. I cannot count Your praises; You are as You have praised Yourself.",
+   "book": "muslim",
+   "number": 486,
+   "titleAr": "",
+   "titleEn": "",
+   "topic": "protection"
+  },
+  {
+   "ar": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+   "en": "I seek refuge in the perfect words of Allah from the evil of what He has created.",
+   "book": "muslim",
+   "number": 2708,
+   "titleAr": "عند نزول منزل",
+   "titleEn": "When stopping at a place",
+   "topic": "protection"
+  },
+  {
+   "ar": "لاَ إِلَهَ إِلاَّ اللَّهُ الْعَظِيمُ الْحَلِيمُ، لاَ إِلَهَ إِلاَّ اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لاَ إِلَهَ إِلاَّ اللَّهُ رَبُّ السَّمَوَاتِ، وَرَبُّ الأَرْضِ، وَرَبُّ الْعَرْشِ الْكَرِيمِ",
+   "en": "There is no god but Allah, the Mighty, the Forbearing. There is no god but Allah, Lord of the Mighty Throne. There is no god but Allah, Lord of the heavens, Lord of the earth and Lord of the Noble Throne.",
+   "book": "bukhari",
+   "number": 6346,
+   "titleAr": "دعاء الكرب",
+   "titleEn": "In distress",
+   "topic": "hardship"
+  },
+  {
+   "ar": "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ اللَّهُمَّ أْجُرْنِي فِي مُصِيبَتِي وَأَخْلِفْ لِي خَيْرًا مِنْهَا",
+   "en": "To Allah we belong and to Him we return. O Allah, reward me for my calamity and replace it for me with something better.",
+   "book": "muslim",
+   "number": 918,
+   "titleAr": "عند المصيبة",
+   "titleEn": "When struck by a calamity",
+   "topic": "hardship"
+  },
+  {
+   "ar": "اللَّهُمَّ أَحْيِنِي مَا كَانَتِ الْحَيَاةُ خَيْرًا لِي، وَتَوَفَّنِي إِذَا كَانَتِ الْوَفَاةُ خَيْرًا لِي",
+   "en": "O Allah, keep me alive as long as life is better for me, and take me when death is better for me.",
+   "book": "bukhari",
+   "number": 5671,
+   "titleAr": "لمن اشتد عليه البلاء",
+   "titleEn": "For one in severe hardship",
+   "topic": "hardship"
+  },
+  {
+   "ar": "اللَّهُمَّ مُنْزِلَ الْكِتَابِ وَمُجْرِيَ السَّحَابِ وَهَازِمَ الأَحْزَابِ، اهْزِمْهُمْ وَانْصُرْنَا عَلَيْهِمْ",
+   "en": "O Allah, Revealer of the Book, Mover of the clouds, Defeater of the confederates, defeat them and give us victory over them.",
+   "book": "bukhari",
+   "number": 2966,
+   "titleAr": "عند لقاء العدو",
+   "titleEn": "When facing the enemy",
+   "topic": "hardship"
+  },
+  {
+   "ar": "بِاسْمِ اللَّهِ، اللَّهُمَّ جَنِّبْنَا الشَّيْطَانَ، وَجَنِّبِ الشَّيْطَانَ مَا رَزَقْتَنَا",
+   "en": "In the name of Allah. O Allah, keep Satan away from us and keep Satan away from what You grant us.",
+   "book": "bukhari",
+   "number": 6388,
+   "titleAr": "عند إتيان الأهل",
+   "titleEn": "Before intimacy with one's spouse",
+   "topic": "family"
+  },
+  {
+   "ar": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّةِ مِنْ كُلِّ شَيْطَانٍ وَهَامَّةٍ، وَمِنْ كُلِّ عَيْنٍ لاَمَّةٍ",
+   "en": "I seek refuge in the perfect words of Allah from every devil and every poisonous creature, and from every evil eye. (The Prophet ﷺ said it over al-Hasan and al-Husayn.)",
+   "book": "bukhari",
+   "number": 3371,
+   "titleAr": "تعويذ الأولاد",
+   "titleEn": "Seeking protection for children",
+   "topic": "family"
+  },
+  {
+   "ar": "اللَّهُمَّ رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً، وَفِي الآخِرَةِ حَسَنَةً، وَقِنَا عَذَابَ النَّارِ",
+   "en": "O Allah, our Lord, give us good in this world and good in the Hereafter, and protect us from the punishment of the Fire.",
+   "book": "bukhari",
+   "number": 6389,
+   "titleAr": "أكثر دعاء النبي ﷺ",
+   "titleEn": "The Prophet's most frequent dua",
+   "topic": "goodness"
+  },
+  {
+   "ar": "اللَّهُمَّ خَلَقْتَ نَفْسِي وَأَنْتَ تَوَفَّاهَا لَكَ مَمَاتُهَا وَمَحْيَاهَا إِنْ أَحْيَيْتَهَا فَاحْفَظْهَا وَإِنْ أَمَتَّهَا فَاغْفِرْ لَهَا اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَافِيَةَ",
+   "en": "O Allah, You created my soul and You take it; its death and its life are Yours. If You keep it alive, protect it, and if You cause it to die, forgive it. O Allah, I ask You for well-being.",
+   "book": "muslim",
+   "number": 2712,
+   "titleAr": "عند النوم",
+   "titleEn": "Before sleeping",
+   "topic": "goodness"
+  },
+  {
+   "ar": "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ، وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ عَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ، اللَّهُمَّ بَارِكْ عَلَى مُحَمَّدٍ، وَعَلَى آلِ مُحَمَّدٍ، كَمَا بَارَكْتَ عَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ",
+   "en": "O Allah, send prayers upon Muhammad and the family of Muhammad as You sent prayers upon the family of Ibrahim; You are Praiseworthy, Glorious. O Allah, bless Muhammad and the family of Muhammad as You blessed the family of Ibrahim; You are Praiseworthy, Glorious.",
+   "book": "bukhari",
+   "number": 6357,
+   "titleAr": "الصلاة على النبي ﷺ",
+   "titleEn": "Sending blessings on the Prophet ﷺ",
+   "topic": "praise"
+  },
+  {
+   "ar": "اللَّهُمَّ لَكَ الْحَمْدُ أَنْتَ قَيِّمُ السَّمَوَاتِ وَالأَرْضِ وَمَنْ فِيهِنَّ وَلَكَ الْحَمْدُ، لَكَ مُلْكُ السَّمَوَاتِ وَالأَرْضِ وَمَنْ فِيهِنَّ، وَلَكَ الْحَمْدُ أَنْتَ نُورُ السَّمَوَاتِ وَالأَرْضِ، وَلَكَ الْحَمْدُ أَنْتَ الْحَقُّ، وَوَعْدُكَ الْحَقُّ، وَلِقَاؤُكَ حَقٌّ، وَقَوْلُكَ حَقٌّ، وَالْجَنَّةُ حَقٌّ، وَالنَّارُ حَقٌّ، وَالنَّبِيُّونَ حَقٌّ، وَمُحَمَّدٌ صلى الله عليه وسلم حَقٌّ، وَالسَّاعَةُ حَقٌّ، اللَّهُمَّ لَكَ أَسْلَمْتُ، وَبِكَ آمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ، وَإِلَيْكَ أَنَبْتُ، وَبِكَ خَاصَمْتُ، وَإِلَيْكَ حَاكَمْتُ، فَاغْفِرْ لِي مَا قَدَّمْتُ وَمَا أَخَّرْتُ، وَمَا أَسْرَرْتُ وَمَا أَعْلَنْتُ، أَنْتَ الْمُقَدِّمُ وَأَنْتَ الْمُؤَخِّرُ، لاَ إِلَهَ إِلاَّ أَنْتَ",
+   "en": "O Allah, to You belongs the praise; You are the Sustainer of the heavens and the earth and whoever is in them. To You belongs the praise; Yours is the dominion of the heavens and the earth and whoever is in them. To You belongs the praise; You are the Light of the heavens and the earth. To You belongs the praise; You are the Truth, Your promise is true, meeting You is true, Your word is true, Paradise is true, the Fire is true, the prophets are true, Muhammad ﷺ is true, and the Hour is true. O Allah, to You I have submitted, in You I believe, in You I trust, to You I turn, by You I argue and to You I bring my case. So forgive me what I have done and what I will do, what I did in secret and what I did openly. You bring forward and You put back; there is no god but You.",
+   "book": "bukhari",
+   "number": 1120,
+   "titleAr": "في قيام الليل",
+   "titleEn": "In the night prayer",
+   "topic": "praise"
+  },
+  {
+   "ar": "اللَّهُمَّ رَبَّ السَّمَوَاتِ وَرَبَّ الأَرْضِ وَرَبَّ الْعَرْشِ الْعَظِيمِ رَبَّنَا وَرَبَّ كُلِّ شَىْءٍ فَالِقَ الْحَبِّ وَالنَّوَى وَمُنْزِلَ التَّوْرَاةِ وَالإِنْجِيلِ وَالْفُرْقَانِ أَعُوذُ بِكَ مِنْ شَرِّ كُلِّ شَىْءٍ أَنْتَ آخِذٌ بِنَاصِيَتِهِ اللَّهُمَّ أَنْتَ الأَوَّلُ فَلَيْسَ قَبْلَكَ شَىْءٌ وَأَنْتَ الآخِرُ فَلَيْسَ بَعْدَكَ شَىْءٌ وَأَنْتَ الظَّاهِرُ فَلَيْسَ فَوْقَكَ شَىْءٌ وَأَنْتَ الْبَاطِنُ فَلَيْسَ دُونَكَ شَىْءٌ اقْضِ عَنَّا الدَّيْنَ وَأَغْنِنَا مِنَ الْفَقْرِ",
+   "en": "O Allah, Lord of the heavens, Lord of the earth and Lord of the Mighty Throne, our Lord and Lord of all things, Splitter of the seed and the date-stone, Revealer of the Torah, the Gospel and the Criterion, I seek refuge in You from the evil of every thing whose forelock You hold. O Allah, You are the First, there is nothing before You; You are the Last, there is nothing after You; You are the Manifest, there is nothing above You; You are the Hidden, there is nothing beyond You. Settle our debt for us and free us from poverty.",
+   "book": "muslim",
+   "number": 2713,
+   "titleAr": "عند النوم",
+   "titleEn": "Before sleeping",
+   "topic": "praise"
+  },
+  {
+   "ar": "رَبَّنَا لَكَ الْحَمْدُ مِلْءَ السَّمَوَاتِ وَالأَرْضِ وَمِلْءَ مَا شِئْتَ مِنْ شَىْءٍ بَعْدُ أَهْلَ الثَّنَاءِ وَالْمَجْدِ أَحَقُّ مَا قَالَ الْعَبْدُ وَكُلُّنَا لَكَ عَبْدٌ اللَّهُمَّ لاَ مَانِعَ لِمَا أَعْطَيْتَ وَلاَ مُعْطِيَ لِمَا مَنَعْتَ وَلاَ يَنْفَعُ ذَا الْجَدِّ مِنْكَ الْجَدُّ",
+   "en": "Our Lord, to You belongs the praise, filling the heavens and the earth and filling whatever You will besides. You are worthy of praise and glory; the truest thing a servant has said, and we are all Your servants: O Allah, none can withhold what You give, none can give what You withhold, and the wealth of the wealthy does not avail him against You.",
+   "book": "muslim",
+   "number": 477,
+   "titleAr": "بعد الرفع من الركوع",
+   "titleEn": "Rising from bowing",
+   "topic": "praise"
+  },
+  {
+   "ar": "لاَ إِلَهَ إِلاَّ اللَّهُ، وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ، وَلَهُ الْحَمْدُ، وَهْوَ عَلَى كُلِّ شَىْءٍ قَدِيرٌ، اللَّهُمَّ لاَ مَانِعَ لِمَا أَعْطَيْتَ، وَلاَ مُعْطِيَ لِمَا مَنَعْتَ، وَلاَ يَنْفَعُ ذَا الْجَدِّ مِنْكَ الْجَدُّ",
+   "en": "There is no god but Allah alone, without partner; His is the dominion and His is the praise, and He has power over all things. O Allah, none can withhold what You give, none can give what You withhold, and the wealth of the wealthy does not avail him against You.",
+   "book": "bukhari",
+   "number": 6330,
+   "titleAr": "بعد الصلاة",
+   "titleEn": "After the prayer",
+   "topic": "praise"
+  },
+  {
+   "ar": "اللَّهُمَّ أَنْتَ السَّلاَمُ وَمِنْكَ السَّلاَمُ تَبَارَكْتَ ذَا الْجَلاَلِ وَالإِكْرَامِ",
+   "en": "O Allah, You are Peace and from You is peace. Blessed are You, Owner of majesty and honour.",
+   "book": "muslim",
+   "number": 591,
+   "titleAr": "بعد السلام من الصلاة",
+   "titleEn": "After ending the prayer",
+   "topic": "praise"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ",
+   "en": "O Allah, I seek refuge in You from the male and female devils.",
+   "book": "bukhari",
+   "number": 142,
+   "titleAr": "عند دخول الخلاء",
+   "titleEn": "Entering the toilet",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ أَسْلَمْتُ نَفْسِي إِلَيْكَ، وَفَوَّضْتُ أَمْرِي إِلَيْكَ، وَوَجَّهْتُ وَجْهِي إِلَيْكَ، وَأَلْجَأْتُ ظَهْرِي إِلَيْكَ، رَغْبَةً وَرَهْبَةً إِلَيْكَ، لاَ مَلْجَأَ وَلاَ مَنْجَا مِنْكَ إِلاَّ إِلَيْكَ، آمَنْتُ بِكِتَابِكَ الَّذِي أَنْزَلْتَ، وَبِنَبِيِّكَ الَّذِي أَرْسَلْتَ",
+   "en": "O Allah, I have submitted my soul to You, entrusted my affair to You, turned my face to You and leaned my back on You, in hope and in fear of You. There is no refuge and no escape from You except to You. I believe in Your Book which You revealed and in Your Prophet whom You sent.",
+   "book": "bukhari",
+   "number": 6313,
+   "titleAr": "عند النوم",
+   "titleEn": "Before sleeping",
+   "topic": "occasions"
+  },
+  {
+   "ar": "بِاسْمِكَ رَبِّ وَضَعْتُ جَنْبِي، وَبِكَ أَرْفَعُهُ، إِنْ أَمْسَكْتَ نَفْسِي فَارْحَمْهَا، وَإِنْ أَرْسَلْتَهَا فَاحْفَظْهَا بِمَا تَحْفَظُ بِهِ عِبَادَكَ الصَّالِحِينَ",
+   "en": "In Your name, my Lord, I lay down my side, and by You I raise it. If You keep my soul, have mercy on it, and if You send it back, protect it with what You protect Your righteous servants.",
+   "book": "bukhari",
+   "number": 6320,
+   "titleAr": "عند النوم",
+   "titleEn": "Before sleeping",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ بِاسْمِكَ أَحْيَا وَبِاسْمِكَ أَمُوتُ",
+   "en": "O Allah, in Your name I live and in Your name I die.",
+   "book": "muslim",
+   "number": 2711,
+   "titleAr": "عند النوم",
+   "titleEn": "Before sleeping",
+   "topic": "occasions"
+  },
+  {
+   "ar": "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
+   "en": "Praise be to Allah who gave us life after He had caused us to die, and to Him is the resurrection.",
+   "book": "muslim",
+   "number": 2711,
+   "titleAr": "عند الاستيقاظ",
+   "titleEn": "On waking up",
+   "topic": "occasions"
+  },
+  {
+   "ar": "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَىْءٍ قَدِيرٌ رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ",
+   "en": "We have reached the evening and the dominion belongs to Allah. Praise be to Allah; there is no god but Allah alone, without partner. His is the dominion and His is the praise, and He has power over all things. My Lord, I ask You for the good of what is in this night and the good of what comes after it, and I seek refuge in You from the evil of what is in this night and the evil of what comes after it. My Lord, I seek refuge in You from laziness and the evil of old age. My Lord, I seek refuge in You from a punishment in the Fire and a punishment in the grave. (In the morning say: \"We have reached the morning and the dominion belongs to Allah\", and \"this day\".)",
+   "book": "muslim",
+   "number": 2723,
+   "titleAr": "في المساء",
+   "titleEn": "In the evening",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ وَالصَّلاَةِ الْقَائِمَةِ آتِ مُحَمَّدًا الْوَسِيلَةَ وَالْفَضِيلَةَ وَابْعَثْهُ مَقَامًا مَحْمُودًا الَّذِي وَعَدْتَهُ",
+   "en": "O Allah, Lord of this perfect call and of the prayer about to be established, give Muhammad the Wasilah and the virtue, and raise him to the praised station that You promised him.",
+   "book": "bukhari",
+   "number": 614,
+   "titleAr": "بعد الأذان",
+   "titleEn": "After the call to prayer",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ",
+   "en": "O Allah, open for me the doors of Your mercy.",
+   "book": "muslim",
+   "number": 713,
+   "titleAr": "عند دخول المسجد",
+   "titleEn": "Entering the mosque",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ",
+   "en": "O Allah, I ask You of Your bounty.",
+   "book": "muslim",
+   "number": 713,
+   "titleAr": "عند الخروج من المسجد",
+   "titleEn": "Leaving the mosque",
+   "topic": "occasions"
+  },
+  {
+   "ar": "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَذَا الْبِرَّ وَالتَّقْوَى وَمِنَ الْعَمَلِ مَا تَرْضَى اللَّهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَذَا وَاطْوِ عَنَّا بُعْدَهُ اللَّهُمَّ أَنْتَ الصَّاحِبُ فِي السَّفَرِ وَالْخَلِيفَةُ فِي الأَهْلِ اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ وَعْثَاءِ السَّفَرِ وَكَآبَةِ الْمَنْظَرِ وَسُوءِ الْمُنْقَلَبِ فِي الْمَالِ وَالأَهْلِ",
+   "en": "Glory be to Him who has subjected this to us, and we could never have done it ourselves, and to our Lord we will surely return. O Allah, we ask You on this journey of ours for righteousness and piety, and for deeds that please You. O Allah, make this journey easy for us and shorten its distance for us. O Allah, You are the Companion on the journey and the One left in charge of the family. O Allah, I seek refuge in You from the hardship of travel, from a distressing sight, and from an evil return to wealth and family.",
+   "book": "muslim",
+   "number": 1342,
+   "titleAr": "دعاء السفر",
+   "titleEn": "Setting out on a journey",
+   "topic": "occasions"
+  },
+  {
+   "ar": "آيِبُونَ تَائِبُونَ عَابِدُونَ لِرَبِّنَا حَامِدُونَ",
+   "en": "Returning, repenting, worshipping, and praising our Lord.",
+   "book": "muslim",
+   "number": 1342,
+   "titleAr": "عند الرجوع من السفر",
+   "titleEn": "Returning from a journey",
+   "topic": "occasions"
+  },
+  {
+   "ar": "لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ لَبَّيْكَ لاَ شَرِيكَ لَكَ لَبَّيْكَ إِنَّ الْحَمْدَ وَالنِّعْمَةَ لَكَ وَالْمُلْكَ لاَ شَرِيكَ لَكَ",
+   "en": "Here I am, O Allah, here I am. Here I am, You have no partner, here I am. All praise, blessings and dominion are Yours; You have no partner.",
+   "book": "muslim",
+   "number": 1184,
+   "titleAr": "التلبية",
+   "titleEn": "The Talbiyah",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ أَغِثْنَا",
+   "en": "O Allah, send us rain. (Said three times.)",
+   "book": "muslim",
+   "number": 897,
+   "titleAr": "عند طلب المطر",
+   "titleEn": "Asking for rain",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ حَوْلَنَا وَلاَ عَلَيْنَا اللَّهُمَّ عَلَى الآكَامِ وَالظِّرَابِ وَبُطُونِ الأَوْدِيَةِ وَمَنَابِتِ الشَّجَرِ",
+   "en": "O Allah, around us and not upon us. O Allah, on the hills, the high ground, the valleys and where trees grow.",
+   "book": "muslim",
+   "number": 897,
+   "titleAr": "عند كثرة المطر",
+   "titleEn": "When rain is too much",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَهَا وَخَيْرَ مَا فِيهَا وَخَيْرَ مَا أُرْسِلَتْ بِهِ وَأَعُوذُ بِكَ مِنْ شَرِّهَا وَشَرِّ مَا فِيهَا وَشَرِّ مَا أُرْسِلَتْ بِهِ",
+   "en": "O Allah, I ask You for its good, the good of what it carries and the good of what it was sent with, and I seek refuge in You from its evil, the evil of what it carries and the evil of what it was sent with.",
+   "book": "muslim",
+   "number": 899,
+   "titleAr": "عند هبوب الريح",
+   "titleEn": "When the wind blows",
+   "topic": "occasions"
+  },
+  {
+   "ar": "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ",
+   "en": "I seek refuge in Allah from Satan.",
+   "book": "bukhari",
+   "number": 3282,
+   "titleAr": "عند الغضب",
+   "titleEn": "When angry",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ رَبَّ النَّاسِ مُذْهِبَ الْبَاسِ اشْفِ أَنْتَ الشَّافِي لاَ شَافِيَ إِلاَّ أَنْتَ، شِفَاءً لاَ يُغَادِرُ سَقَمًا",
+   "en": "O Allah, Lord of mankind, Remover of harm, cure; You are the Healer, there is no healer but You; a cure that leaves no illness behind.",
+   "book": "bukhari",
+   "number": 5742,
+   "titleAr": "رقية المريض",
+   "titleEn": "For the sick",
+   "topic": "occasions"
+  },
+  {
+   "ar": "أَعُوذُ بِاللَّهِ وَقُدْرَتِهِ مِنْ شَرِّ مَا أَجِدُ وَأُحَاذِرُ",
+   "en": "I seek refuge in Allah and His power from the evil of what I feel and fear. (Put your hand on the place of pain, say \"In the name of Allah\" three times, then this seven times.)",
+   "book": "muslim",
+   "number": 2202,
+   "titleAr": "عند الألم",
+   "titleEn": "For pain",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ اغْفِرْ لَهُ وَارْحَمْهُ وَعَافِهِ وَاعْفُ عَنْهُ وَأَكْرِمْ نُزُلَهُ وَوَسِّعْ مُدْخَلَهُ وَاغْسِلْهُ بِالْمَاءِ وَالثَّلْجِ وَالْبَرَدِ وَنَقِّهِ مِنَ الْخَطَايَا كَمَا نَقَّيْتَ الثَّوْبَ الأَبْيَضَ مِنَ الدَّنَسِ وَأَبْدِلْهُ دَارًا خَيْرًا مِنْ دَارِهِ وَأَهْلاً خَيْرًا مِنْ أَهْلِهِ وَزَوْجًا خَيْرًا مِنْ زَوْجِهِ وَأَدْخِلْهُ الْجَنَّةَ وَأَعِذْهُ مِنْ عَذَابِ الْقَبْرِ أَوْ مِنْ عَذَابِ النَّارِ",
+   "en": "O Allah, forgive him, have mercy on him, keep him safe and pardon him. Honour his place of rest and widen his entrance. Wash him with water, snow and hail, and cleanse him of sins as You cleanse a white garment of dirt. Give him a home better than his home, a family better than his family and a spouse better than his spouse. Admit him to Paradise and protect him from the punishment of the grave, or from the punishment of the Fire.",
+   "book": "muslim",
+   "number": 963,
+   "titleAr": "في صلاة الجنازة",
+   "titleEn": "In the funeral prayer",
+   "topic": "occasions"
+  },
+  {
+   "ar": "السَّلاَمُ عَلَيْكُمْ أَهْلَ الدِّيَارِ مِنَ الْمُؤْمِنِينَ وَالْمُسْلِمِينَ وَإِنَّا إِنْ شَاءَ اللَّهُ لَلَاحِقُونَ أَسْأَلُ اللَّهَ لَنَا وَلَكُمْ الْعَافِيَةَ",
+   "en": "Peace be upon you, people of these dwellings, believers and Muslims. We will, if Allah wills, join you. I ask Allah for well-being for us and for you.",
+   "book": "muslim",
+   "number": 975,
+   "titleAr": "عند زيارة القبور",
+   "titleEn": "Visiting the graves",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ بَارِكْ لَهُمْ فِي مَا رَزَقْتَهُمْ وَاغْفِرْ لَهُمْ وَارْحَمْهُمْ",
+   "en": "O Allah, bless them in what You have provided them, forgive them and have mercy on them.",
+   "book": "muslim",
+   "number": 2042,
+   "titleAr": "دعاء الضيف لأهل البيت",
+   "titleEn": "A guest's dua for the hosts",
+   "topic": "occasions"
+  },
+  {
+   "ar": "اللَّهُمَّ أَطْعِمْ مَنْ أَطْعَمَنِي وَأَسْقِ مَنْ أَسْقَانِي",
+   "en": "O Allah, feed whoever fed me and give drink to whoever gave me drink.",
+   "book": "muslim",
+   "number": 2055,
+   "titleAr": "لمن أطعمك",
+   "titleEn": "For whoever gave you food",
+   "topic": "occasions"
+  }
+ ],
+ "source": {
+  "ar": "آيات القرآن من نص مصحف تنزيل (api.alquran.cloud) وترجمتها من Sahih International. الأحاديث منقولة بنصها من صحيح البخاري وصحيح مسلم، وترقيم مسلم ترقيم محمد فؤاد عبد الباقي. جُمعت الأدعية بمراجعة كل آية وحديث فيه دعاء، واستُبعد ما كان لشخص بعينه أو على قوم بأعيانهم.",
+  "en": "Quran text: Tanzil (api.alquran.cloud), translation: Sahih International. Hadith texts are quoted word for word from Sahih al-Bukhari and Sahih Muslim (Muslim numbered by Muhammad Fuad Abdul-Baqi); their English is our own. Every verse and narration with a supplication was reviewed; duas for or against named people were left out."
+ }
+}

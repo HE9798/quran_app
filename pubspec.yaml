@@ -79,6 +79,7 @@ flutter:
     - assets/companion/
     - assets/hadith/
     - assets/manasik/
+    - assets/dua/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

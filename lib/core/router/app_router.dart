@@ -8,6 +8,7 @@ import '../../features/companion/companion_screen.dart';
 import '../../features/hifz/hifz_screen.dart';
 import '../../features/hifz/hifz_session_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../../features/dua/dua_screen.dart';
 import '../../features/khatma/khatma_dua_screen.dart';
 import '../../features/khatma/khatma_screen.dart';
 import '../../features/prayer_times/prayer_screen.dart';
@@ -79,6 +80,10 @@ final appRouter = GoRouter(
                     ),
                   ),
                 ],
+              ),
+              GoRoute(
+                path: 'dua',
+                builder: (context, state) => const DuaScreen(),
               ),
               GoRoute(
                 path: 'companion',
