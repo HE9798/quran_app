@@ -144,10 +144,25 @@ class PrayerNotifications {
     await _plugin.cancel(id: _missedId(now.subtract(const Duration(days: 1)), set));
   }
 
+  /// Exact alarms allowed ("Alarms & reminders"). Without them Android can
+  /// deliver the adhan several minutes late. Always true before Android 12.
+  Future<bool> canExact() async {
+    await init();
+    return await _android?.canScheduleExactNotifications() ?? true;
+  }
+
+  /// Opens the phone's "Alarms & reminders" page for this app.
+  Future<void> askExact() async {
+    await init();
+    await _android?.requestExactAlarmsPermission();
+  }
+
   /// Replaces all reminders with the ones for [enabled] prayers.
   Future<void> reschedule(PrayerSchedule schedule, Set<Prayer> enabled) async {
     await init();
-    await _plugin.cancelAll();
+    // Only the planned ones: cancelAll() would also remove the notifications
+    // on screen, and removing an adhan that is playing stops its sound.
+    await _plugin.cancelAllPendingNotifications();
     final settings = AppSettings.instance;
     if (!settings.notifications) return; // master switch is off
     final wantAzkar =

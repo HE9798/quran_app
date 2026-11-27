@@ -6,19 +6,21 @@ class CompanionWidget {
 
   static const _channel = MethodChannel('werd/companion');
 
-  /// permission = "Display over other apps" allowed; enabled = companion is on;
-  /// type = "sheikh" or "sister"; bubbles = speech bubbles allowed.
-  static Future<({bool permission, bool enabled, String type, bool bubbles})> state() async {
+  /// permission = "Display over other apps" allowed; enabled = companion mode
+  /// is on; hidden = the character was put away on the X but its reminders
+  /// were kept; type = "sheikh" or "sister"; bubbles = speech bubbles allowed.
+  static Future<({bool permission, bool enabled, bool hidden, String type, bool bubbles})> state() async {
     try {
       final m = await _channel.invokeMapMethod<String, dynamic>('state');
       return (
         permission: (m?['permission'] as bool?) ?? false,
         enabled: (m?['enabled'] as bool?) ?? false,
+        hidden: (m?['hidden'] as bool?) ?? false,
         type: (m?['type'] as String?) ?? 'sheikh',
         bubbles: (m?['bubbles'] as bool?) ?? true,
       );
     } catch (_) {
-      return (permission: false, enabled: false, type: 'sheikh', bubbles: true);
+      return (permission: false, enabled: false, hidden: false, type: 'sheikh', bubbles: true);
     }
   }
 
@@ -45,6 +47,16 @@ class CompanionWidget {
     try {
       await syncImages();
       return await _channel.invokeMethod<bool>('start', type) ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Shows the character again after it was put away on the X.
+  static Future<bool> show() async {
+    try {
+      await syncImages();
+      return await _channel.invokeMethod<bool>('show') ?? false;
     } catch (_) {
       return false;
     }

@@ -171,6 +171,16 @@ class CompanionStore extends ChangeNotifier {
         'lock_title': displayName(_ar),
         'lock_dismiss': _ar ? 'إغلاق' : 'Dismiss',
         'lock_open': _ar ? 'فتح التطبيق' : 'Open app',
+        // dropped on the X
+        'x_title': _ar ? 'إخفاء ${displayName(true)}؟' : 'Hide ${displayName(false)}?',
+        'x_body': _ar
+            ? 'هل تريد إيقاف تذكيراته أيضًا؟ إن أبقيتها سيظهر على شاشة القفل في أوقات الصلاة.'
+            : 'Also stop its reminders? If you keep them, it will still appear on the lock screen at prayer times.',
+        'x_keep': _ar ? 'إبقاء التذكيرات' : 'Keep reminders',
+        'x_stop': _ar ? 'إيقاف التذكيرات أيضًا' : 'Stop reminders too',
+        'x_cancel': _ar ? 'إلغاء' : 'Cancel',
+        // reminders as a notification while the character is hidden
+        'reminder_channel': _ar ? 'تذكيرات الرفيق' : 'Companion reminders',
       });
 
   // ----------------------------------------------------------- daily counts

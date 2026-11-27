@@ -11,6 +11,7 @@ import 'data/location_service.dart';
 import 'adhan_settings_card.dart';
 import 'azkar_countdown.dart';
 import 'data/prayer_models.dart';
+import 'data/prayer_notifications.dart';
 import 'prayer_controller.dart';
 
 /// Prayer times for today at the phone's location, with a reminder switch
@@ -25,12 +26,23 @@ class PrayerScreen extends StatefulWidget {
 class _PrayerScreenState extends State<PrayerScreen>
     with WidgetsBindingObserver {
   final _controller = PrayerController.instance;
+  bool _exact = true; // exact alarms allowed (the adhan comes on the minute)
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _controller.start();
+    _checkExact();
+  }
+
+  /// Without "Alarms & reminders" Android can deliver the adhan minutes late.
+  /// When the user has just allowed it, plan everything again in exact mode.
+  Future<void> _checkExact() async {
+    final exact = await PrayerNotifications.instance.canExact();
+    if (!mounted) return;
+    if (exact && !_exact) _controller.refreshReminders();
+    if (exact != _exact) setState(() => _exact = exact);
   }
 
   @override
@@ -48,6 +60,7 @@ class _PrayerScreenState extends State<PrayerScreen>
       if (_controller.schedule == null || _controller.needsRefresh) {
         _controller.load();
       }
+      _checkExact();
     }
   }
 
@@ -104,6 +117,7 @@ class _PrayerScreenState extends State<PrayerScreen>
               busy: c.loading,
               onCityTap: () => c.load(refreshLocation: true),
             ),
+            if (!_exact) _ExactAlarmBanner(onAllow: PrayerNotifications.instance.askExact),
             Expanded(child: body),
           ],
         );
@@ -116,6 +130,54 @@ class _PrayerScreenState extends State<PrayerScreen>
     final date = context.dateLine(now);
     final hijri = context.digits(c.today?.hijriFor(context.isArabic) ?? '');
     return hijri.isEmpty ? date : '$date · $hijri';
+  }
+}
+
+// ------------------------------------------------------------ exact alarms
+
+/// Asks for "Alarms & reminders" so the adhan comes on the minute.
+class _ExactAlarmBanner extends StatelessWidget {
+  const _ExactAlarmBanner({required this.onAllow});
+
+  final VoidCallback onAllow;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      child: Material(
+        color: scheme.errorContainer,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onAllow,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+            child: Row(
+              children: [
+                Icon(Icons.alarm_rounded, color: scheme.onErrorContainer),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    context.tr(
+                      'The adhan may come late. Allow "Alarms & reminders" so it rings on time.',
+                      'قد يتأخر الأذان. اسمح بـ «المنبّهات والتذكيرات» ليصلك في وقته.',
+                    ),
+                    style: TextStyle(fontSize: 13, height: 1.4, color: scheme.onErrorContainer),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  context.tr('Allow', 'سماح'),
+                  style: TextStyle(fontWeight: FontWeight.w800, color: scheme.onErrorContainer),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

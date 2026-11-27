@@ -116,6 +116,10 @@ class PrayerController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Plans the adhan reminders, the countdown and the companion's bubbles
+  /// again (e.g. after "Alarms & reminders" was allowed).
+  void refreshReminders() => _scheduleReminders();
+
   void _scheduleReminders() {
     final current = schedule;
     if (current == null) return;

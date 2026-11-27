@@ -87,6 +87,17 @@
             android:name=".CompanionAlarmReceiver"
             android:exported="false" />
 
+        <!-- Plans the companion's bubbles again after a restart or an app update -->
+        <receiver
+            android:name=".CompanionBootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
+
         <!-- Prayer countdown in the status bar -->
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"

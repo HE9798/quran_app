@@ -17,6 +17,7 @@ class CompanionTile extends StatefulWidget {
 
 class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserver {
   bool _on = false;
+  bool _hidden = false; // put away on the X, reminders kept
   bool _lock = true; //     companion on the lock screen
   bool _lockAllowed = true; // Android 14+: full-screen notifications allowed
 
@@ -50,10 +51,13 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
     final lock = await CompanionWidget.lockState();
     if (!mounted) return;
     final on = s.enabled && s.permission;
-    if (on == _on && lock.enabled == _lock && lock.allowed == _lockAllowed) return;
+    if (on == _on && s.hidden == _hidden && lock.enabled == _lock && lock.allowed == _lockAllowed) {
+      return;
+    }
     final closedOutside = _on && !on;
     setState(() {
       _on = on;
+      _hidden = s.hidden;
       _lock = lock.enabled;
       _lockAllowed = lock.allowed;
     });
@@ -191,14 +195,27 @@ class _CompanionTileState extends State<CompanionTile> with WidgetsBindingObserv
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(context.tr('Companion', 'الرفيق')),
-            subtitle: Text(_on
-                ? context.tr('${store.displayName(false)} is on your screen. Drag to move, or onto the X to close.',
-                    '${store.displayName(true)} على شاشتك. اسحبه لتحريكه، أو إلى علامة X لإغلاقه.')
-                : context.tr('A little friend that floats on your screen',
-                    'رفيق صغير يظهر على شاشتك')),
+            subtitle: Text(!_on
+                ? context.tr('A little friend that floats on your screen',
+                    'رفيق صغير يظهر على شاشتك')
+                : _hidden
+                    ? context.tr('${store.displayName(false)} is hidden. Its reminders still come at prayer times.',
+                        '${store.displayName(true)} مخفي، وتذكيراته تصلك في أوقات الصلاة.')
+                    : context.tr('${store.displayName(false)} is on your screen. Drag to move, or onto the X to hide.',
+                        '${store.displayName(true)} على شاشتك. اسحبه لتحريكه، أو إلى علامة X لإخفائه.')),
             value: _on,
             onChanged: _toggle,
           ),
+          if (_on && _hidden)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.visibility_outlined),
+              title: Text(context.tr('Show ${store.displayName(false)} again',
+                  'إظهار ${store.displayName(true)} مرة أخرى')),
+              onTap: () async {
+                if (await CompanionWidget.show() && mounted) setState(() => _hidden = false);
+              },
+            ),
           if (_on) ...[
             SwitchListTile(
               contentPadding: EdgeInsets.zero,

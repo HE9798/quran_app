@@ -72,7 +72,7 @@ class _TargetTileState extends State<TargetTile> {
               style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 2),
           Text(
-            context.tr('When it is full, the x on top goes up by one',
+            context.tr('When it is full, the x goes up by one',
                 'عند امتلائه يزيد الرقم x بمقدار واحد'),
             style: Theme.of(context).textTheme.bodySmall,
           ),

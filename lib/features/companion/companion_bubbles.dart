@@ -33,7 +33,9 @@ class CompanionBubbles {
 
     final events = <({int id, int at, String text})>[];
     final now = DateTime.now();
-    final horizon = now.add(const Duration(days: 2));
+    // a week ahead: the phone side keeps the list and plans it again after a
+    // restart, so the bubbles keep coming even if the app is not opened
+    final horizon = now.add(const Duration(days: 7));
 
     int idFor(DateTime date, int slot) =>
         70000000 + ((date.year % 100) * 10000 + date.month * 100 + date.day) * 100 + slot;
@@ -101,6 +103,6 @@ class CompanionBubbles {
     }
 
     events.sort((a, b) => a.at.compareTo(b.at));
-    await CompanionWidget.scheduleBubbles(events.take(40).toList());
+    await CompanionWidget.scheduleBubbles(events.take(100).toList());
   }
 }

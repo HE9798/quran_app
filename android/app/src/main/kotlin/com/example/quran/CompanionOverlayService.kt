@@ -92,6 +92,7 @@ class CompanionOverlayService : Service(), FloaterSpacing.Floater {
 
     override fun onDestroy() {
         instance = null
+        closeDialogNow()
         hideBubbleNow()
         bobbing?.let { handler.removeCallbacks(it) }
         Choreographer.getInstance().removeFrameCallback(frame)
@@ -315,6 +316,118 @@ class CompanionOverlayService : Service(), FloaterSpacing.Floater {
         b.pointTailAt(cx - (x + bw / 2))
     }
 
+    // ------------------------------------------------- closing on the X
+
+    private var closeDialog: View? = null
+
+    /**
+     * Dropped on the X: "Also stop reminders?"
+     *  - Keep reminders: the character and its bubbles go away; at prayer times
+     *    it still appears full screen on the lock screen (a notification when
+     *    the phone is unlocked). It comes back from the app's settings.
+     *  - Stop reminders: companion mode is turned off.
+     *  - Cancel (or a tap outside): it goes back where it was.
+     */
+    private fun askOnClose() {
+        if (closeDialog != null) return
+        hideBubbleNow()
+        val dim = FrameLayout(this).apply { setBackgroundColor(Color.parseColor("#99000000")) }
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(22f), dp(20f), dp(22f), dp(14f))
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#F7EBD4"))
+                cornerRadius = dp(22f).toFloat()
+            }
+            isClickable = true // taps on the card don't close it
+        }
+        fun label(text: String, size: Float, bold: Boolean, top: Int) = TextView(this).apply {
+            this.text = text
+            textSize = size
+            setTextColor(Color.parseColor("#0E4F47"))
+            if (bold) typeface = Typeface.DEFAULT_BOLD
+            textDirection = View.TEXT_DIRECTION_FIRST_STRONG
+            textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+            setPadding(0, top, 0, 0)
+        }
+        fun button(text: String, filled: Boolean, onTap: () -> Unit) = TextView(this).apply {
+            this.text = text
+            gravity = Gravity.CENTER
+            textSize = 16f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(if (filled) Color.parseColor("#F7EBD4") else Color.parseColor("#12685E"))
+            background = GradientDrawable().apply {
+                cornerRadius = dp(24f).toFloat()
+                if (filled) setColor(Color.parseColor("#12685E"))
+                else setStroke(dp(2f), Color.parseColor("#12685E"))
+            }
+            setOnClickListener { onTap() }
+        }
+        card.addView(label(CompanionStore.string(this, "x_title", "Hide your companion?"), 19f, true, 0))
+        card.addView(label(
+            CompanionStore.string(
+                this, "x_body",
+                "Also stop its reminders? If you keep them, it will still appear on the lock screen at prayer times."
+            ), 15f, false, dp(8f)
+        ))
+        val buttonParams = { top: Int ->
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(48f)).apply { topMargin = top }
+        }
+        card.addView(button(CompanionStore.string(this, "x_keep", "Keep reminders"), true) {
+            closeDialogNow()
+            CompanionStore.setHidden(this, true)
+            stopSelf()
+        }, buttonParams(dp(18f)))
+        card.addView(button(CompanionStore.string(this, "x_stop", "Stop reminders too"), false) {
+            closeDialogNow()
+            CompanionStore.setHidden(this, false)
+            CompanionStore.setEnabled(this, false)
+            stopSelf()
+        }, buttonParams(dp(10f)))
+        card.addView(TextView(this).apply {
+            text = CompanionStore.string(this@CompanionOverlayService, "x_cancel", "Cancel")
+            gravity = Gravity.CENTER
+            textSize = 15f
+            setTextColor(Color.parseColor("#0E4F47"))
+            setOnClickListener { cancelClose() }
+        }, buttonParams(dp(4f)))
+        dim.addView(card, FrameLayout.LayoutParams(
+            dp(320f), FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER
+        ))
+        dim.setOnClickListener { cancelClose() }
+        runCatching {
+            windowManager.addView(dim, WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                PixelFormat.TRANSLUCENT
+            ))
+            closeDialog = dim
+        }.onFailure {
+            // could not show the question: keep the reminders (the safe choice)
+            CompanionStore.setHidden(this, true)
+            stopSelf()
+        }
+    }
+
+    private fun closeDialogNow() {
+        closeDialog?.let { runCatching { windowManager.removeView(it) } }
+        closeDialog = null
+    }
+
+    /** Not closing after all: back to where it was before the drag. */
+    private fun cancelClose() {
+        closeDialogNow()
+        val v = view ?: return
+        val prefs = CompanionStore.prefs(this)
+        params.x = prefs.getInt("x", params.x)
+        params.y = prefs.getInt("y", params.y)
+        keepOnScreen()
+        v.scaleX = if (params.x + params.width / 2 > OverlayArea.of(this).widthPixels / 2) -1f else 1f
+        runCatching { windowManager.updateViewLayout(v, params) }
+    }
+
     /** Removes the bubble at once. */
     private fun hideBubbleNow() {
         hideBubble?.let { handler.removeCallbacks(it) }
@@ -483,11 +596,9 @@ class CompanionOverlayService : Service(), FloaterSpacing.Floater {
                             trash?.visibility = View.GONE
                             closeView?.hover = false
                             if (overBin) {
-                                // let go over the X: the companion is turned off
-                                // (turn it on again from the app's settings)
+                                // let go over the X: ask whether its reminders stay on
                                 overBin = false
-                                CompanionStore.setEnabled(this, false)
-                                stopSelf()
+                                askOnClose()
                             } else {
                                 CompanionStore.prefs(this).edit()
                                     .putInt("x", params.x).putInt("y", params.y).apply()

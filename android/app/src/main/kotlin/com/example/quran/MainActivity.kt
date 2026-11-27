@@ -31,6 +31,7 @@ class MainActivity : AudioServiceActivity() {
                         mapOf(
                             "permission" to Settings.canDrawOverlays(this),
                             "enabled" to CompanionStore.enabled(this),
+                            "hidden" to CompanionStore.hidden(this),
                             "type" to CompanionStore.type(this),
                             "bubbles" to CompanionStore.bubbles(this)
                         )
@@ -40,6 +41,7 @@ class MainActivity : AudioServiceActivity() {
                         if (Settings.canDrawOverlays(this)) {
                             CompanionStore.setType(this, (call.arguments as? String) ?: "sheikh")
                             CompanionStore.setEnabled(this, true)
+                            CompanionStore.setHidden(this, false)
                             stopService(Intent(this, CompanionOverlayService::class.java))
                             startCompanion()
                             result.success(true)
@@ -109,14 +111,27 @@ class MainActivity : AudioServiceActivity() {
                         CompanionStore.setBubbles(this, (call.arguments as? Boolean) ?: true)
                         result.success(null)
                     }
+                    // the character was put away on the X (reminders kept): show it again
+                    "show" -> {
+                        if (CompanionStore.enabled(this) && Settings.canDrawOverlays(this)) {
+                            CompanionStore.setHidden(this, false)
+                            startCompanion()
+                            result.success(true)
+                        } else {
+                            result.success(false)
+                        }
+                    }
                     "stop" -> {
                         CompanionStore.setEnabled(this, false)
+                        CompanionStore.setHidden(this, false)
                         stopService(Intent(this, CompanionOverlayService::class.java))
                         result.success(null)
                     }
                     // arg true = the pictures changed: show the new ones
                     "restore" -> {
-                        if (CompanionStore.enabled(this) && Settings.canDrawOverlays(this)) {
+                        if (CompanionStore.enabled(this) && !CompanionStore.hidden(this) &&
+                            Settings.canDrawOverlays(this)
+                        ) {
                             if (call.arguments == true) {
                                 stopService(Intent(this, CompanionOverlayService::class.java))
                             }

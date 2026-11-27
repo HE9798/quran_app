@@ -51,9 +51,19 @@ object CompanionStore {
     fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
+    /** Companion mode is on: reminders (bubbles, lock screen) and coins. */
     fun enabled(context: Context) = prefs(context).getBoolean("enabled", false)
     fun setEnabled(context: Context, on: Boolean) =
         prefs(context).edit().putBoolean("enabled", on).apply()
+
+    /**
+     * The character was put away on the X with "keep reminders": it is not on
+     * the screen, but its reminders still come (full screen on the lock
+     * screen, a notification otherwise).
+     */
+    fun hidden(context: Context) = prefs(context).getBoolean("hidden", false)
+    fun setHidden(context: Context, on: Boolean) =
+        prefs(context).edit().putBoolean("hidden", on).apply()
 
     /** "sheikh" or "sister" */
     fun type(context: Context): String = prefs(context).getString("type", "sheikh") ?: "sheikh"
