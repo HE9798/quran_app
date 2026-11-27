@@ -87,8 +87,8 @@ class _OverlayTileState extends State<OverlayTile> with WidgetsBindingObserver {
       contentPadding: EdgeInsets.zero,
       title: Text(context.tr('Floating Tasbeeh button', 'زر التسبيح العائم')),
       subtitle: Text(context.tr(
-          'Stays on top of other apps. Drag it to the fire to close it.',
-          'يبقى فوق التطبيقات. اسحبه إلى النار لإغلاقه.')),
+          'Stays on top of other apps.',
+          'يبقى فوق التطبيقات.')),
       value: _on,
       onChanged: _toggle,
     );
