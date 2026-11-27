@@ -8,6 +8,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -48,7 +49,7 @@ import kotlin.math.max
  *    to turn the companion off (like the floating Tasbeeh)
  * It is turned on and off from the app's settings.
  */
-class CompanionOverlayService : Service() {
+class CompanionOverlayService : Service(), FloaterSpacing.Floater {
 
     companion object {
         const val ACTION_SAY = "werd.companion.say"
@@ -69,6 +70,9 @@ class CompanionOverlayService : Service() {
     private var trash: FrameLayout? = null      // the close target's window
     private var closeView: CloseView? = null
     private var overBin = false                 // the companion is over the X
+    private var dragging = false                // a finger is moving the companion
+    private var screenW = 0                     // screen size the position was set for
+    private var screenH = 0
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -177,7 +181,7 @@ class CompanionOverlayService : Service() {
         val v = CompanionView(this, bitmap, head, widthPx, heightPx, bob)
         view = v
 
-        val m = resources.displayMetrics
+        val m = OverlayArea.of(this)
         val prefs = CompanionStore.prefs(this)
         params = WindowManager.LayoutParams(
             widthPx, heightPx + bob,
@@ -190,10 +194,83 @@ class CompanionOverlayService : Service() {
             x = prefs.getInt("x", dp(12f))            // starts on the left half
             y = prefs.getInt("y", (m.heightPixels * 0.62f).toInt())
         }
+        screenW = m.widthPixels
+        screenH = m.heightPixels
+        keepOnScreen()      // the saved place may be off this screen (e.g. phone sideways)
         v.scaleX = if (params.x + widthPx / 2 > m.widthPixels / 2) -1f else 1f
         v.setOnTouchListener(touchListener(v))
         windowManager.addView(v, params)
         startBobbing(v)
+        v.post { FloaterSpacing.check(this) }   // it may appear on the Tasbeeh
+    }
+
+    // -------------------------------------------------------------- rotation
+    /**
+     * The phone was turned (portrait <-> landscape): the screen changed shape,
+     * so the old position could be off screen. Keep the companion at the same
+     * relative place (e.g. 60% down, near the right edge) and fully visible.
+     */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val v = view ?: return
+        val m = OverlayArea.of(this)
+        if (m.widthPixels == screenW && m.heightPixels == screenH) return
+        // a drag gliding to a stop ends here, in the old layout
+        settled?.let { settled = null; it() }
+        Choreographer.getInstance().removeFrameCallback(frame)
+        following = false
+        if (screenW > 0 && screenH > 0) {
+            val cx = (params.x + params.width / 2f) / screenW * m.widthPixels
+            val cy = (params.y + params.height / 2f) / screenH * m.heightPixels
+            params.x = (cx - params.width / 2f).toInt()
+            params.y = (cy - params.height / 2f).toInt()
+        }
+        screenW = m.widthPixels
+        screenH = m.heightPixels
+        keepOnScreen()
+        v.scaleX = if (params.x + params.width / 2 > m.widthPixels / 2) -1f else 1f
+        runCatching { windowManager.updateViewLayout(v, params) }
+        bubble?.let { b ->
+            val lp = bubbleParams
+            if (b.parent != null && lp != null) {
+                placeBubble(b, lp)
+                runCatching { windowManager.updateViewLayout(b, lp) }
+            }
+        }
+        CompanionStore.prefs(this).edit().putInt("x", params.x).putInt("y", params.y).apply()
+        // the bars and the camera cut-out can settle a moment after the turn: check again
+        v.postDelayed({
+            if (view !== v) return@postDelayed
+            keepOnScreen()
+            v.scaleX = if (params.x + params.width / 2 > OverlayArea.of(this).widthPixels / 2) -1f else 1f
+            runCatching { windowManager.updateViewLayout(v, params) }
+            CompanionStore.prefs(this).edit().putInt("x", params.x).putInt("y", params.y).apply()
+            FloaterSpacing.check(this)
+        }, 500)
+    }
+
+    // ---------------------------------------------- keeping clear of the Tasbeeh
+    override val busy get() = dragging || following
+    override fun body(): Rect? =
+        if (view == null) null else Rect(params.x, params.y, params.x + params.width, params.y + params.height)
+    override fun limits(): Rect {
+        val m = OverlayArea.of(this)
+        return Rect(0, 0, max(0, m.widthPixels - params.width), max(0, m.heightPixels - params.height))
+    }
+    override fun position() = Pair(params.x, params.y)
+    override fun glideTo(x: Int, y: Int) {
+        if (view == null) return
+        px = params.x.toFloat(); py = params.y.toFloat()
+        tx = x.toFloat(); ty = y.toFloat()
+        settled = { CompanionStore.prefs(this).edit().putInt("x", params.x).putInt("y", params.y).apply() }
+        startFollow()
+    }
+
+    /** Pulls the companion fully inside the current screen. */
+    private fun keepOnScreen() {
+        val m = OverlayArea.of(this)
+        params.x = params.x.coerceIn(0, max(0, m.widthPixels - params.width))
+        params.y = params.y.coerceIn(0, max(0, m.heightPixels - params.height))
     }
 
     // ----------------------------------------------------------- speech bubble
@@ -204,7 +281,7 @@ class CompanionOverlayService : Service() {
             if (!CompanionStore.bubbles(this)) return@post
             val b = bubble ?: BubbleView(this) { hideBubbleNow() }.also { bubble = it }
             b.setContent(text)
-            val m = resources.displayMetrics
+            val m = OverlayArea.of(this)
             b.measure(
                 View.MeasureSpec.makeMeasureSpec(m.widthPixels - dp(24f), View.MeasureSpec.AT_MOST),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
@@ -227,7 +304,7 @@ class CompanionOverlayService : Service() {
 
     /** Keeps the bubble above the companion's head, inside the screen. */
     private fun placeBubble(b: BubbleView, lp: WindowManager.LayoutParams) {
-        val m = resources.displayMetrics
+        val m = OverlayArea.of(this)
         val margin = dp(8f)
         val bw = b.measuredWidth
         val bh = b.measuredHeight
@@ -337,7 +414,7 @@ class CompanionOverlayService : Service() {
             params.y = py.toInt()
 
             // left half: looks right (as drawn). right half: flipped, looks left.
-            val m = resources.displayMetrics
+            val m = OverlayArea.of(this@CompanionOverlayService)
             v.scaleX = if (params.x + params.width / 2 > m.widthPixels / 2) -1f else 1f
             runCatching { windowManager.updateViewLayout(v, params) }
             bubble?.let { b ->
@@ -370,7 +447,6 @@ class CompanionOverlayService : Service() {
         var downY = 0f
         var startX = 0
         var startY = 0
-        var dragging = false
         return View.OnTouchListener { _, e ->
             when (e.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -393,7 +469,7 @@ class CompanionOverlayService : Service() {
                         closeView?.hover = false
                     }
                     if (dragging) {
-                        val m = resources.displayMetrics
+                        val m = OverlayArea.of(this)
                         tx = (startX + dx).coerceIn(0f, max(0, m.widthPixels - params.width).toFloat())
                         ty = (startY + dy).coerceIn(0f, max(0, m.heightPixels - params.height).toFloat())
                         startFollow()
@@ -415,7 +491,10 @@ class CompanionOverlayService : Service() {
                             } else {
                                 CompanionStore.prefs(this).edit()
                                     .putInt("x", params.x).putInt("y", params.y).apply()
+                                dragging = false
+                                FloaterSpacing.check(this)   // dropped on the Tasbeeh: move apart
                             }
+                            dragging = false
                         }
                         startFollow()
                     }

@@ -16,6 +16,7 @@ import android.graphics.Path
 import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.PixelFormat
@@ -48,14 +49,23 @@ import kotlin.math.min
  * The Tasbeeh button that floats on top of other apps.
  * Tap = +1. Drag to move it. While dragging, an X appears at the bottom of
  * the screen: let go over it to close the button (turn it on again from the
- * app's settings). Round design: the button is a circle, a half ring around it
- * is the slider, and a quarter ring (top corner) shows the "x" combo.
+ * app's settings). Round design: the button is a circle, the top half of the
+ * ring around it is the slider, and a bottom quarter shows the "x" combo.
  */
-class TasbeehOverlayService : Service() {
+class TasbeehOverlayService : Service(), FloaterSpacing.Floater {
+
+    companion object {
+        /** The running service (null when the floating Tasbeeh is off). */
+        @Volatile
+        var instance: TasbeehOverlayService? = null
+    }
 
     private lateinit var windowManager: WindowManager
     private var root: RingView? = null           // the whole round widget
     private var sliderLeft = true                // which side of the button the slider is on
+    private var dragging = false                 // a finger is moving the widget
+    private var screenW = 0                      // screen size the position was set for
+    private var screenH = 0
     private var shownCombo = -1
     private var completing = false
     private var trash: FrameLayout? = null      // the close button's window
@@ -70,10 +80,97 @@ class TasbeehOverlayService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    // the phone switched between light and dark: matters when the app follows the phone
+    // the phone switched between light and dark (matters when the app follows
+    // the phone), or was turned between upright and sideways
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         applyTheme()
+        onScreenResized()
+    }
+
+    /**
+     * The phone was turned: the screen changed shape, so the old position could
+     * be off screen. Keep the widget at the same relative place and fully visible.
+     */
+    private fun onScreenResized() {
+        val v = root ?: return
+        val m = OverlayArea.of(this)
+        if (m.widthPixels == screenW && m.heightPixels == screenH) return
+        // a drag gliding to a stop ends here, in the old layout
+        settled?.let { settled = null; it() }
+        Choreographer.getInstance().removeFrameCallback(frame)
+        following = false
+        if (screenW > 0 && screenH > 0) {
+            val cx = (params.x + params.width / 2f) / screenW * m.widthPixels
+            val cy = (params.y + params.height / 2f) / screenH * m.heightPixels
+            params.x = (cx - params.width / 2f).toInt()
+            params.y = (cy - params.height / 2f).toInt()
+        }
+        screenW = m.widthPixels
+        screenH = m.heightPixels
+        keepOnScreen()
+        runCatching { windowManager.updateViewLayout(v, params) }
+        saveSpot()
+        // the bars and the camera cut-out can settle a moment after the turn: check again
+        v.postDelayed({
+            if (root !== v) return@postDelayed
+            keepOnScreen()
+            runCatching { windowManager.updateViewLayout(v, params) }
+            saveSpot()
+            FloaterSpacing.check(this)
+        }, 500)
+    }
+
+    // ---------------------------------------------- keeping clear of the Companion
+    override val busy get() = dragging || following
+    /** The drawing (button + rings), without the empty margin around it. */
+    override fun body(): Rect? {
+        val v = root ?: return null
+        val p = v.padPx
+        return Rect(params.x + p, params.y + p, params.x + params.width - p, params.y + params.height - p)
+    }
+    override fun limits(): Rect {
+        val v = root
+        val ext = v?.padPx ?: 0
+        val m = OverlayArea.of(this)
+        val size = params.width
+        return Rect(-ext, -ext, max(-ext, m.widthPixels - size + ext), max(-ext, m.heightPixels - size + ext))
+    }
+    override fun position() = Pair(params.x, params.y)
+    override fun glideTo(x: Int, y: Int) {
+        if (root == null) return
+        px = params.x.toFloat(); py = params.y.toFloat()
+        tx = x.toFloat(); ty = y.toFloat()
+        settled = { saveSpot() }
+        startFollow()
+    }
+
+    /** Remembers where the widget is (the saved place is the top-left of the BUTTON). */
+    private fun saveSpot() {
+        val size = params.width
+        TasbeehStore.prefs(this).edit()
+            .putInt("overlay_x", params.x + size / 2 - button / 2)
+            .putInt("overlay_y", params.y + size / 2 - button / 2)
+            .apply()
+    }
+
+    /**
+     * Pulls the whole widget (button + rings) inside the current screen; only the
+     * empty margin around the drawing may go past the edges (same rule as dragging).
+     * Also turns the design to face the middle of the screen.
+     */
+    private fun keepOnScreen() {
+        val v = root ?: return
+        val m = OverlayArea.of(this)
+        val size = params.width
+        val ext = v.padPx
+        params.x = params.x.coerceIn(-ext, max(-ext, m.widthPixels - size + ext))
+        params.y = params.y.coerceIn(-ext, max(-ext, m.heightPixels - size + ext))
+        val wantLeft = params.x + size / 2 > m.widthPixels / 2
+        if (wantLeft != sliderLeft) {
+            sliderLeft = wantLeft
+            v.setSide(wantLeft)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -87,6 +184,7 @@ class TasbeehOverlayService : Service() {
     }
 
     override fun onDestroy() {
+        instance = null
         Choreographer.getInstance().removeFrameCallback(frame)
         following = false
         stopEffects()
@@ -180,7 +278,7 @@ class TasbeehOverlayService : Service() {
         root = view
         val size = view.sizePx
 
-        val metrics = resources.displayMetrics
+        val metrics = OverlayArea.of(this)
         val saved = TasbeehStore.prefs(this)
         // the saved place is the top-left of the BUTTON
         val bx = saved.getInt("overlay_x", metrics.widthPixels - button - dp(16f))
@@ -201,12 +299,18 @@ class TasbeehOverlayService : Service() {
             y = by + button / 2 - size / 2
         }
 
+        screenW = metrics.widthPixels
+        screenH = metrics.heightPixels
+        keepOnScreen()      // the saved place may be off this screen (e.g. saved while sideways)
+
         view.setOnTouchListener(touchListener(view))
         windowManager.addView(view, params)
         saved.registerOnSharedPreferenceChangeListener(listener)
         flutterPrefs().registerOnSharedPreferenceChangeListener(themeListener)
         applyTheme()
         refresh()
+        instance = this
+        view.post { FloaterSpacing.check(this) }   // it may appear on the Companion
     }
 
     private fun fraction(): Float {
@@ -342,7 +446,7 @@ class TasbeehOverlayService : Service() {
             params.y = py.toInt()
 
             // mirror the design when the widget crosses the middle of the screen
-            val m = resources.displayMetrics
+            val m = OverlayArea.of(this@TasbeehOverlayService)
             val wantLeft = params.x + params.width / 2 > m.widthPixels / 2
             if (wantLeft != sliderLeft) {
                 sliderLeft = wantLeft
@@ -373,7 +477,6 @@ class TasbeehOverlayService : Service() {
         var downY = 0f
         var startX = 0
         var startY = 0
-        var dragging = false
         var onButton = false
 
         fun center(v: View): Pair<Float, Float> {
@@ -408,7 +511,7 @@ class TasbeehOverlayService : Service() {
                         setHover(false)
                     }
                     if (dragging) {
-                        val m = resources.displayMetrics
+                        val m = OverlayArea.of(this)
                         val size = params.width
                         // the whole widget (button + both rings) stays on screen: only the
                         // empty margin around the drawing may go past the edges
@@ -434,12 +537,11 @@ class TasbeehOverlayService : Service() {
                                 TasbeehStore.setOverlayEnabled(this, false)
                                 stopSelf()
                             } else {
-                                val size = params.width
-                                TasbeehStore.prefs(this).edit()
-                                    .putInt("overlay_x", params.x + size / 2 - button / 2)
-                                    .putInt("overlay_y", params.y + size / 2 - button / 2)
-                                    .apply()
+                                saveSpot()
+                                dragging = false
+                                FloaterSpacing.check(this)   // dropped on the Companion: move apart
                             }
+                            dragging = false
                         }
                         startFollow()
                     }
@@ -454,9 +556,12 @@ class TasbeehOverlayService : Service() {
 /**
  * The whole round widget in one view:
  *  - a round 3D button in the middle (edges raised, middle sunk),
- *  - a half ring around it that fills from the bottom up (the slider), on the
- *    side that faces the middle of the screen,
- *  - a quarter ring in the top corner on the other side, with the "x" combo.
+ *  - the slider: the TOP half of the ring. It starts on the side next to the
+ *    screen edge and fills over the top towards the middle of the screen
+ *    (widget on the right half: from the right side round to the left),
+ *  - the "x" combo: the bottom quarter on the side facing the middle of the
+ *    screen (widget on the right half: bottom-left).
+ * Everything is mirrored when the widget is on the left half.
  */
 private class RingView(context: Context) : View(context) {
     private val d = resources.displayMetrics.density * 1.25f   // everything 25% bigger
@@ -468,7 +573,7 @@ private class RingView(context: Context) : View(context) {
     val sizePx = ((buttonR + gap + comboT + pad) * 2).toInt()
     val padPx = pad.toInt()          // empty margin around the drawing inside the window
 
-    private var left = true            // slider on the left (widget on the right half)
+    private var left = true            // widget on the right half (slider ends on the left)
     private var dark = true
     private var fraction = 0f
     private var animator: ValueAnimator? = null
@@ -592,18 +697,22 @@ private class RingView(context: Context) : View(context) {
         val cx = width / 2f
         val cy = height / 2f
 
-        // ---- the slider: a half ring that fills from the bottom upwards
+        // ---- the slider: the top half of the ring, filling over the top.
+        // Angles: 0 = right, 90 = bottom, 180 = left, 270 = top; + = clockwise.
+        // Right half of the screen: starts at the right (0) and goes
+        // anticlockwise over the top to the left (180). Left half: mirrored.
         val rs = buttonR + gap + sliderT / 2f
         val e = edge(rs, sliderT)
-        val dir = if (left) 1f else -1f          // clockwise on the left side
+        val start = if (left) -e else 180f + e
+        val dir = if (left) -1f else 1f
         val total = 180f - 2f * e
         oval.set(cx - rs, cy - rs, cx + rs, cy + rs)
-        canvas.drawArc(oval, 90f + dir * e, dir * total, false, track)
-        canvas.drawArc(oval, 90f + dir * e, dir * total, false, channel)
+        canvas.drawArc(oval, start, dir * total, false, track)
+        canvas.drawArc(oval, start, dir * total, false, channel)
         if (fraction > 0.001f) {
-            canvas.drawArc(oval, 90f + dir * e, dir * total * fraction, false, fill)
+            canvas.drawArc(oval, start, dir * total * fraction, false, fill)
         }
-        val a = Math.toRadians((90f + dir * (e + total * fraction)).toDouble())
+        val a = Math.toRadians((start + dir * total * fraction).toDouble())
         val kx = cx + rs * Math.cos(a).toFloat()
         val ky = cy + rs * Math.sin(a).toFloat()
         val kr = sliderT / 2f - 2.5f * d          // the knob stays inside the track
@@ -611,20 +720,23 @@ private class RingView(context: Context) : View(context) {
         canvas.drawCircle(kx, ky, kr, knobRing)
         canvas.drawCircle(kx, ky, 2.5f * d, dot)
 
-        // ---- the combo: a quarter ring in the top corner on the other side
+        // ---- the combo: the bottom quarter facing the middle of the screen
         val rc = buttonR + gap + comboT / 2f
         val ec = edge(rc, comboT)
-        val startQ = if (left) 270f else 180f    // top-right, or top-left when mirrored
+        val startQ = if (left) 90f else 0f       // bottom-left, or bottom-right when mirrored
         canvas.save()
         val s = 1f + 0.12f * pop
         canvas.scale(s, s, cx, cy)
         oval.set(cx - rc, cy - rc, cx + rc, cy + rc)
         canvas.drawArc(oval, startQ + ec, 90f - 2f * ec, false, comboPaint)
-        // the text follows the curve (it reads left to right)
-        val rt = rc - textPaint.textSize * 0.36f
+        // the text follows the curve and reads left to right: along the bottom
+        // the path runs anticlockwise, so the letters stand upright with their
+        // tops towards the button; the baseline sits on the outer side of the
+        // ring's middle so the text is centred in the ring
+        val rt = rc + textPaint.textSize * 0.36f
         oval.set(cx - rt, cy - rt, cx + rt, cy + rt)
         path.reset()
-        path.addArc(oval, startQ, 90f)
+        path.addArc(oval, startQ + 90f, -90f)
         val arcLen = rt * Math.PI.toFloat() / 2f
         val offset = max(0f, (arcLen - textPaint.measureText(comboText)) / 2f)
         canvas.drawTextOnPath(comboText, path, offset, 0f, textPaint)
