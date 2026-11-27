@@ -8,6 +8,7 @@ import '../../features/companion/companion_screen.dart';
 import '../../features/hifz/hifz_screen.dart';
 import '../../features/hifz/hifz_session_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../../features/khatma/khatma_dua_screen.dart';
 import '../../features/khatma/khatma_screen.dart';
 import '../../features/prayer_times/prayer_screen.dart';
 import '../../features/settings/settings_screen.dart';
@@ -69,6 +70,13 @@ final appRouter = GoRouter(
                     path: 'surah/:number',
                     builder: (context, state) =>
                         _surah(state, fromKhatma: true),
+                  ),
+                  // دعاء ختم القرآن (?done=1: a khatma was just completed)
+                  GoRoute(
+                    path: 'dua',
+                    builder: (context, state) => KhatmaDuaScreen(
+                      justCompleted: state.uri.queryParameters['done'] == '1',
+                    ),
                   ),
                 ],
               ),

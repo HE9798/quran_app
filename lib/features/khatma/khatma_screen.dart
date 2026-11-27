@@ -42,24 +42,8 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
   Future<void> _setPage(int page) async {
     final finished = await _store.setPage(page);
     if (finished || _store.todayDone) CompanionStore.instance.khatmaDayDone(); // coins + bubble (only if Companion mode is on)
-    if (finished && mounted) {
-      await showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(context.tr('Khatma completed', 'تمت الختمة')),
-          content: Text(context.tr(
-            'May Allah accept it from you. Start a new khatma whenever you are ready.',
-            'تقبل الله منك. ابدأ ختمة جديدة متى شئت.',
-          )),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(context.tr('Amen', 'آمين')),
-            ),
-          ],
-        ),
-      );
-    }
+    // completed: congratulations + دعاء ختم القرآن
+    if (finished && mounted) context.push('/khatma/dua?done=1');
   }
 
   Future<void> _confirmReset() async {
@@ -263,8 +247,16 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
           ),
         ),
       ],
+      const SizedBox(height: 8),
+      Center(child: _duaLink(context)),
     ];
   }
+
+  Widget _duaLink(BuildContext context) => TextButton.icon(
+        onPressed: () => context.push('/khatma/dua'),
+        icon: const Icon(Icons.volunteer_activism_outlined),
+        label: Text(context.tr('Completing the Quran: dua', 'دعاء ختم القرآن')),
+      );
 
   // ------------------------------------------------------------ active
 
@@ -422,7 +414,8 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
           ),
         ],
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 12),
+      Center(child: _duaLink(context)),
       Center(
         child: TextButton.icon(
           onPressed: _confirmReset,

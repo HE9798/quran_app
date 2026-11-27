@@ -305,9 +305,45 @@ class _SurahReaderState extends State<_SurahReader> {
       KhatmaStore.instance.readUpTo(_current.number).then((todayDone) {
         if (todayDone) CompanionStore.instance.khatmaDayDone();
       });
+      if (_current.number >= KhatmaStore.totalPages) _offerToFinishKhatma();
       return;
     }
     BookmarkStore.instance.setLastRead(_savedPage());
+  }
+
+  bool _askedToFinish = false;
+
+  /// The Khatma reader reached the last page of the mushaf: ask once whether
+  /// the khatma is complete (finishing stays the user's choice), then open
+  /// the congratulations and دعاء ختم القرآن.
+  Future<void> _offerToFinishKhatma() async {
+    final store = KhatmaStore.instance;
+    if (_askedToFinish || !store.active) return;
+    _askedToFinish = true;
+    final done = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.tr('The end of the Quran', 'خاتمة المصحف')),
+        content: Text(context.tr(
+          'You reached the last page. Did you complete your khatma?',
+          'وصلت إلى آخر صفحة في المصحف. هل أتممت ختمتك؟',
+        )),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(context.tr('Not yet', 'ليس بعد')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(context.tr('Yes, completed', 'نعم، أتممتها')),
+          ),
+        ],
+      ),
+    );
+    if (done != true || !mounted) return;
+    final finished = await store.setPage(KhatmaStore.totalPages);
+    CompanionStore.instance.khatmaDayDone(); // coins + bubble (only if Companion mode is on)
+    if (finished && mounted) context.go('/khatma/dua?done=1');
   }
 
   Future<void> _toggleBookmark() async {
