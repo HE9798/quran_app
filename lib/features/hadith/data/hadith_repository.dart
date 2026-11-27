@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../core/text/html_text.dart';
 import 'hadith_models.dart';
 
 /// Loads whole books from the free hadith API by fawazahmed0
@@ -135,7 +136,8 @@ HadithCollection _parse(List<String> args) {
   final counts = <int, int>{};
   for (final raw in (json['hadiths'] as List<dynamic>)) {
     if (raw is! Map) continue;
-    final text = '${raw['text'] ?? ''}'.trim();
+    // some ahadeeth carry HTML (e.g. <br> line breaks): plain text only
+    final text = htmlToText('${raw['text'] ?? ''}');
     if (text.isEmpty) continue;
 
     final hadithNumber = raw['hadithnumber'];

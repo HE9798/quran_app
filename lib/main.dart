@@ -16,6 +16,7 @@ import 'features/companion/data/companion_store.dart';
 import 'features/tasbeeh/tasbeeh_widget.dart';
 import 'features/bookmarks/data/bookmark_store.dart';
 import 'features/hadith/data/hadith_bookmark_store.dart';
+import 'features/quran/data/reading_sources.dart';
 import 'features/prayer_times/data/prayer_notifications.dart';
 
 Future<void> main() async {
@@ -28,6 +29,7 @@ Future<void> main() async {
   await CompanionStore.instance.load(); // coins and streak (does nothing if Companion mode is off)
   await BookmarkStore.instance.load(); // saved pages + last read position
   await HadithBookmarkStore.instance.load(); // saved ahadeeth
+  await ReadingSources.instance.load(); // chosen tafsir / translation (lists refresh in the background)
   try {
     await QuranAudioController.instance.init(); // saved reciter + player
   } catch (_) {}

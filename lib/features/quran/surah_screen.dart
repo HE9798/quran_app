@@ -17,8 +17,11 @@ import '../audio/data/activity_reciters.dart';
 import '../audio/quran_audio_controller.dart';
 import '../bookmarks/data/bookmark_store.dart';
 import 'data/quran_repository.dart';
+import 'data/reading_sources.dart';
 import 'data/surah.dart';
 import 'data/surah_detail.dart';
+import 'data/verse_text_repository.dart';
+import 'source_picker.dart';
 
 /// Reader. The surah is shown in mushaf pages (like the printed Quran):
 ///  - swipe left-to-right  = next page (like turning a page of an Arabic book)
@@ -1324,36 +1327,20 @@ class _VersePanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Row(
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: p.primarySoft,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  tafseerTab
-                      ? context.tr('Al-Muyassar', 'التفسير الميسر')
-                      : context.tr('Saheeh International', 'صحيح إنترناشيونال'),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: p.onPrimarySoft,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          // the chosen tafsir / translation: tap to choose another
+          _SourceChip(kind: tafseerTab ? SourceKind.tafsir : SourceKind.translation),
           const SizedBox(height: 8),
           // long tafseer scrolls inside the panel
           ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 190),
+            constraints: const BoxConstraints(maxHeight: 220),
             child: SingleChildScrollView(
               child: SizedBox(
                 width: double.infinity,
-                child: tafseerTab ? _tafseer(context, p) : _translation(context, p),
+                child: _VerseSourceText(
+                  kind: tafseerTab ? SourceKind.tafsir : SourceKind.translation,
+                  surah: surah.number,
+                  ayah: ayah,
+                ),
               ),
             ),
           ),
@@ -1361,32 +1348,179 @@ class _VersePanel extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _tafseer(BuildContext context, AppPalette p) {
-    if (ayah.tafseer.isEmpty) {
-      return Text(
-        context.tr('Tafseer is not available for this verse right now.',
-            'التفسير غير متاح لهذه الآية حاليًا.'),
-        style: TextStyle(fontSize: 14, color: p.muted),
-      );
-    }
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Text(ayah.tafseer, style: AppTheme.arabic(size: 20, height: 1.9)),
+/// The name of the chosen tafsir or translation, with a little arrow: tap to
+/// pick another one from the full list.
+class _SourceChip extends StatelessWidget {
+  const _SourceChip({required this.kind});
+
+  final SourceKind kind;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return ListenableBuilder(
+      listenable: ReadingSources.instance,
+      builder: (context, _) {
+        final source = ReadingSources.instance.chosen(kind);
+        return Material(
+          color: p.primarySoft,
+          borderRadius: BorderRadius.circular(999),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(999),
+            onTap: () => showSourcePicker(context, kind),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 6, 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      source.name(context.isArabic),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: p.onPrimarySoft,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.expand_more_rounded, size: 18, color: p.onPrimarySoft),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
+}
 
-  Widget _translation(BuildContext context, AppPalette p) {
-    if (ayah.translation.isEmpty) {
-      return Text(
-        context.tr('Translation is not available for this verse.',
-            'الترجمة غير متاحة لهذه الآية.'),
-        style: TextStyle(fontSize: 14, color: p.muted),
-      );
+/// The text of the chosen tafsir or translation for one verse. Downloads it
+/// when needed (saved on the phone after that) and follows a new choice.
+class _VerseSourceText extends StatefulWidget {
+  const _VerseSourceText({required this.kind, required this.surah, required this.ayah});
+
+  final SourceKind kind;
+  final int surah;
+  final Ayah ayah;
+
+  @override
+  State<_VerseSourceText> createState() => _VerseSourceTextState();
+}
+
+class _VerseSourceTextState extends State<_VerseSourceText> {
+  final _sources = ReadingSources.instance;
+  Future<VerseText>? _future;
+  String? _loadedFor;
+
+  @override
+  void initState() {
+    super.initState();
+    _sources.addListener(_onSources);
+  }
+
+  @override
+  void dispose() {
+    _sources.removeListener(_onSources);
+    super.dispose();
+  }
+
+  void _onSources() {
+    if (mounted) setState(() {});
+  }
+
+  Future<VerseText> _futureFor(TextSource source) {
+    final key = '${source.key}|${widget.surah}|${widget.ayah.numberInSurah}';
+    if (key != _loadedFor || _future == null) {
+      _loadedFor = key;
+      _future = VerseTextRepository.instance.load(source, widget.surah, widget.ayah);
     }
-    return Text(
-      ayah.translation,
-      style: const TextStyle(fontSize: 15, height: 1.55),
+    return _future!;
+  }
+
+  void _retry() => setState(() => _future = null);
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final source = _sources.chosen(widget.kind);
+    final isTafsir = widget.kind == SourceKind.tafsir;
+
+    return FutureBuilder<VerseText>(
+      future: _futureFor(source),
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 18),
+            child: Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5))),
+          );
+        }
+        final data = snap.data;
+        if (snap.hasError || data == null) {
+          return Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.tr("Couldn't load it. Check your internet connection.",
+                      'تعذّر التحميل. تحقق من اتصالك بالإنترنت.'),
+                  style: TextStyle(fontSize: 14, color: p.muted),
+                ),
+              ),
+              TextButton(onPressed: _retry, child: Text(context.tr('Retry', 'إعادة المحاولة'))),
+            ],
+          );
+        }
+        if (data.text.isEmpty) {
+          return Text(
+            isTafsir
+                ? context.tr('This tafsir has nothing for this verse.', 'لا يوجد في هذا التفسير شيء لهذه الآية.')
+                : context.tr('Translation is not available for this verse.', 'الترجمة غير متاحة لهذه الآية.'),
+            style: TextStyle(fontSize: 14, color: p.muted),
+          );
+        }
+
+        // right to left only when the text really is in a right-to-left script
+        // (e.g. "Roman Urdu" is Urdu written in Latin letters)
+        final rtl = source.rtl && RegExp('[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]').hasMatch(data.text);
+        final TextStyle style;
+        if (source.isArabic) {
+          style = AppTheme.arabic(size: 20, height: 1.9);
+        } else if (rtl) {
+          style = const TextStyle(fontSize: 17, height: 1.8);
+        } else {
+          style = const TextStyle(fontSize: 15, height: 1.55);
+        }
+
+        // a passage that explains a few verses together says so
+        final covers = data.covers;
+        final range = covers.length > 1
+            ? '${covers.first.split(':').last}–${covers.last.split(':').last}'
+            : null;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (range != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(
+                  context.tr('Explains verses $range together', 'تفسير الآيات ${context.digits(range)} معًا'),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: p.muted),
+                ),
+              ),
+            Directionality(
+              textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
+              child: SizedBox(
+                width: double.infinity,
+                child: Text(data.text, style: style),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
